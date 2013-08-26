@@ -1,0 +1,5 @@
+name: Suite
+tests:
+    - name: Unit
+      packages:
+        - eloquent.lockbox.*
