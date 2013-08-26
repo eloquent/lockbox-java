@@ -10,7 +10,7 @@
 package co.lqnt.lockbox.key;
 
 import co.lqnt.lockbox.key.exception.InvalidPrivateKeyException;
-import java.security.spec.KeySpec;
+import java.security.KeyPair;
 
 /**
  * The interface implemented by encryption key factories.
@@ -18,48 +18,13 @@ import java.security.spec.KeySpec;
 interface KeyFactoryInterface
 {
     /**
-     * Create a new private key.
+     * Create a key pair from a PEM formatted private key.
      *
      * @param key The PEM formatted private key.
      *
-     * @return The newly created private key.
+     * @return The key pair.
      * @throws InvalidPrivateKeyException If the key is invalid.
      */
-    public KeySpec createPrivateKey(final byte[] key)
-        throws InvalidPrivateKeyException;
-
-    /**
-     * Create a new private key.
-     *
-     * @param key The PEM formatted private key.
-     *
-     * @return The newly created private key.
-     * @throws InvalidPrivateKeyException If the key is invalid.
-     */
-    public KeySpec createPrivateKey(final String key)
-        throws InvalidPrivateKeyException;
-
-    /**
-     * Create a new private key.
-     *
-     * @param key    The PEM formatted private key.
-     * @param String The key password.
-     *
-     * @return The newly created private key.
-     * @throws InvalidPrivateKeyException If the key is invalid.
-     */
-    public KeySpec createPrivateKey(final byte[] key, final String password)
-        throws InvalidPrivateKeyException;
-
-    /**
-     * Create a new private key.
-     *
-     * @param key    The PEM formatted private key.
-     * @param String The key password.
-     *
-     * @return The newly created private key.
-     * @throws InvalidPrivateKeyException If the key is invalid.
-     */
-    public KeySpec createPrivateKey(final String key, final String password)
+    public KeyPair createKeyPair(final byte[] key)
         throws InvalidPrivateKeyException;
 }
