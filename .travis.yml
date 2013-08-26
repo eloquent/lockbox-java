@@ -1,2 +1,2 @@
-language: scala
-script: sbt coveralls
+language: java
+script: mvn test jacoco:report coveralls:jacoco
