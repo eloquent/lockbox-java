@@ -2,4 +2,4 @@ name: Suite
 tests:
     - name: Unit
       packages:
-        - eloquent.lockbox.*
+        - co.lqnt.lockbox.*

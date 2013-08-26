@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-package eloquent.lockbox;
+package co.lqnt.lockbox;
 
 public class Placeholder
 {
