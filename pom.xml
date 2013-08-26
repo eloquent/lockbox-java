@@ -8,6 +8,9 @@
     <version>0.1.0</version>
     <name>Lockbox for Java</name>
     <url>https://github.com/eloquent/lockbox-java</url>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.testng</groupId>
