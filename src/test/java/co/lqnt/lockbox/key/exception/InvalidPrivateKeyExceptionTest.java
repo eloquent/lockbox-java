@@ -38,5 +38,20 @@ public class InvalidPrivateKeyExceptionTest
         Assert.assertSame(exception.getCause(), cause);
     }
 
+    @Test
+    public void testExceptionWithoutCause()
+    {
+        InvalidPrivateKeyException exception = new InvalidPrivateKeyException(
+            this.key
+        );
+
+        Assert.assertEquals(
+            new String(exception.key(), Charset.forName("US-ASCII")),
+            "foobar"
+        );
+        Assert.assertNull(exception.getCause());
+    }
+
+
     private byte[] key;
 }
