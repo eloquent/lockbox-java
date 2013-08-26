@@ -9,6 +9,7 @@
 
 package co.lqnt.lockbox.key;
 
+import co.lqnt.lockbox.key.exception.InvalidPrivateKeyException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
@@ -16,11 +17,13 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import org.bouncycastle.openssl.PEMWriter;
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 public class KeyFactoryTest
 {
-    public KeyFactoryTest()
+    @BeforeMethod
+    public void setUp()
     {
         this.factory = new KeyFactory();
 
@@ -71,6 +74,12 @@ public class KeyFactoryTest
         );
 
         Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyStringNoPassword);
+    }
+
+    @Test(expectedExceptions = InvalidPrivateKeyException.class)
+    public void testCreateKeyPairFailureInvalidKey() throws Throwable
+    {
+        this.factory.createKeyPair("foobar".getBytes(Charset.forName("US-ASCII")));
     }
 
     protected String publicKeyToPemString(PublicKey key)

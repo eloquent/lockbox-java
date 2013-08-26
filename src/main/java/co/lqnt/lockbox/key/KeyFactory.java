@@ -27,14 +27,6 @@ import org.bouncycastle.openssl.PEMReader;
 class KeyFactory implements KeyFactoryInterface
 {
     /**
-     * Construct a new key factory.
-     */
-    public KeyFactory()
-    {
-        Security.addProvider(new BouncyCastleProvider());
-    }
-
-    /**
      * Create a key pair from a PEM formatted private key.
      *
      * @param key The PEM formatted private key.
@@ -45,21 +37,40 @@ class KeyFactory implements KeyFactoryInterface
     public KeyPair createKeyPair(final byte[] key)
         throws InvalidPrivateKeyException
     {
-        Reader keyReader = new BufferedReader(
+        Reader reader = new BufferedReader(
             new InputStreamReader(
                 new ByteArrayInputStream(key),
                 Charset.forName("US-ASCII")
             )
         );
-        PEMReader pemReader = new PEMReader(keyReader);
 
         KeyPair keyPair;
         try {
-            keyPair = (KeyPair) pemReader.readObject();
+            keyPair = (KeyPair) this.readPem(reader);
         } catch (IOException e) {
-            throw new InvalidPrivateKeyException(key, e);
+            throw new RuntimeException("Unknown PEMReader failure.");
+        }
+
+        if (null == keyPair) {
+            throw new InvalidPrivateKeyException(key);
         }
 
         return keyPair;
+    }
+
+    /**
+     * Wraps PEMReader so that IOExceptions can be mocked.
+     *
+     * @param reader The reader to read from.
+     *
+     * @return The resulting object.
+     * @throws IOException If PEMReader throws an IOException.
+     */
+    public Object readPem(Reader reader) throws IOException
+    {
+        Security.addProvider(new BouncyCastleProvider());
+        PEMReader pemReader = new PEMReader(reader);
+
+        return pemReader.readObject();
     }
 }
