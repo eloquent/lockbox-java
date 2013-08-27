@@ -9,8 +9,10 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidPrivateKeyException;
+import co.lqnt.lockbox.key.exception.KeyPairReadException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.security.KeyPair;
@@ -69,17 +71,26 @@ public class KeyFactoryTest
     @Test
     public void testCreateKeyPair() throws Throwable
     {
-        KeyPair keyPair = this.factory.createKeyPair(
-            this.privateKeyStringNoPassword.getBytes(Charset.forName("US-ASCII"))
-        );
+        KeyPair keyPair = this.factory.createKeyPair(this.stringToInputStream(this.privateKeyStringNoPassword));
 
         Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyStringNoPassword);
     }
 
-    @Test(expectedExceptions = InvalidPrivateKeyException.class)
+    @Test(expectedExceptions = KeyPairReadException.class)
     public void testCreateKeyPairFailureInvalidKey() throws Throwable
     {
-        this.factory.createKeyPair("foobar".getBytes(Charset.forName("US-ASCII")));
+        this.factory.createKeyPair(this.stringToInputStream("foobar"));
+    }
+
+    @Test(expectedExceptions = KeyPairReadException.class)
+    public void testCreateKeyPairFailureNoEnd() throws Throwable
+    {
+        this.factory.createKeyPair(this.stringToInputStream("-----BEGIN RSA PRIVATE KEY-----\n"));
+    }
+
+    protected InputStream stringToInputStream(String string)
+    {
+        return new ByteArrayInputStream(string.getBytes(Charset.forName("US-ASCII")));
     }
 
     protected String publicKeyToPemString(PublicKey key)

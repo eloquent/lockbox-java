@@ -9,68 +9,88 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidPrivateKeyException;
+import co.lqnt.lockbox.key.exception.KeyPairReadException;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.Charset;
 import java.security.KeyPair;
-import java.security.Security;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMReader;
+import org.bouncycastle.openssl.PEMException;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 
 /**
  * Creates encryption keys.
  */
-class KeyFactory implements KeyFactoryInterface
+class KeyFactory
 {
+    public KeyFactory()
+    {
+        this.keyConverter = new JcaPEMKeyConverter();
+        this.keyConverter.setProvider(new BouncyCastleProvider());
+    }
+
+    public KeyFactory(JcaPEMKeyConverter keyConverter)
+    {
+        this.keyConverter = keyConverter;
+    }
+
+    public JcaPEMKeyConverter keyConverter()
+    {
+        return this.keyConverter;
+    }
+
     /**
      * Create a key pair from a PEM formatted private key.
      *
-     * @param key The PEM formatted private key.
+     * @param input The PEM data to read.
      *
      * @return The key pair.
-     * @throws InvalidPrivateKeyException If the key is invalid.
+     * @throws KeyPairReadException If reading of the key pair fails.
      */
-    public KeyPair createKeyPair(final byte[] key)
-        throws InvalidPrivateKeyException
+    public KeyPair createKeyPair(InputStream input)
+        throws KeyPairReadException
     {
-        Reader reader = new BufferedReader(
-            new InputStreamReader(
-                new ByteArrayInputStream(key),
-                Charset.forName("US-ASCII")
-            )
-        );
+        PEMParser parser = this.createParser(input);
+        Object pemObject;
+        try {
+            pemObject = parser.readObject();
+        } catch (IOException e) {
+            throw new KeyPairReadException(e);
+        }
+
+        if (null == pemObject) {
+            throw new KeyPairReadException();
+        }
+
+        PEMKeyPair pemKeyPair;
+        if (pemObject instanceof PEMKeyPair) {
+            pemKeyPair = (PEMKeyPair) pemObject;
+        } else {
+            throw new KeyPairReadException();
+        }
 
         KeyPair keyPair;
         try {
-            keyPair = (KeyPair) this.readPem(reader);
-        } catch (IOException e) {
-            throw new RuntimeException("Unknown PEMReader failure.");
-        }
-
-        if (null == keyPair) {
-            throw new InvalidPrivateKeyException(key);
+            keyPair = this.keyConverter().getKeyPair(pemKeyPair);
+        } catch (PEMException e) {
+            throw new KeyPairReadException(e);
         }
 
         return keyPair;
     }
 
-    /**
-     * Wraps PEMReader so that IOExceptions can be mocked.
-     *
-     * @param reader The reader to read from.
-     *
-     * @return The resulting object.
-     * @throws IOException If PEMReader throws an IOException.
-     */
-    public Object readPem(Reader reader) throws IOException
+    protected PEMParser createParser(InputStream input)
     {
-        Security.addProvider(new BouncyCastleProvider());
-        PEMReader pemReader = new PEMReader(reader);
-
-        return pemReader.readObject();
+        return new PEMParser(
+            new BufferedReader(
+                new InputStreamReader(input, Charset.forName("US-ASCII"))
+            )
+        );
     }
+
+    private JcaPEMKeyConverter keyConverter;
 }
