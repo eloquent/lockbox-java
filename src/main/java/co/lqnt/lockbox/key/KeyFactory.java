@@ -11,11 +11,14 @@ package co.lqnt.lockbox.key;
 
 import co.lqnt.lockbox.pem.PemParserFactory;
 import co.lqnt.lockbox.key.exception.KeyPairReadException;
+import co.lqnt.lockbox.key.exception.PublicKeyReadException;
 import co.lqnt.lockbox.pem.PemParserFactoryInterface;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyPair;
 import java.security.Provider;
+import java.security.PublicKey;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMDecryptorProvider;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
@@ -28,7 +31,7 @@ import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 /**
  * Creates encryption keys.
  */
-public class KeyFactory
+public class KeyFactory implements KeyFactoryInterface
 {
     /**
      * Construct a new key factory.
@@ -57,9 +60,9 @@ public class KeyFactory
      * @param keyConverter             The key converter to use.
      */
     public KeyFactory(
-        PemParserFactoryInterface pemParserFactory,
-        JcePEMDecryptorProviderBuilder decryptorProviderBuilder,
-        JcaPEMKeyConverter keyConverter
+        final PemParserFactoryInterface pemParserFactory,
+        final JcePEMDecryptorProviderBuilder decryptorProviderBuilder,
+        final JcaPEMKeyConverter keyConverter
     ) {
         this.pemParserFactory = pemParserFactory;
         this.decryptorProviderBuilder = decryptorProviderBuilder;
@@ -104,7 +107,7 @@ public class KeyFactory
      * @return The key pair.
      * @throws KeyPairReadException If reading of the key pair fails.
      */
-    public KeyPair createKeyPair(InputStream input)
+    public KeyPair createKeyPair(final InputStream input)
         throws KeyPairReadException
     {
         Object pemObject;
@@ -133,7 +136,7 @@ public class KeyFactory
      * @return The key pair.
      * @throws KeyPairReadException If reading of the key pair fails.
      */
-    public KeyPair createKeyPair(InputStream input, String password)
+    public KeyPair createKeyPair(final InputStream input, final String password)
         throws KeyPairReadException
     {
         Object pemObject;
@@ -164,6 +167,41 @@ public class KeyFactory
     }
 
     /**
+     * Create a public key from a PEM formatted public key.
+     *
+     * @param input The PEM data to read.
+     *
+     * @return The public key
+     * @throws PublicKeyReadException If reading of the public key fails.
+     */
+    public PublicKey createPublicKey(final InputStream input)
+        throws PublicKeyReadException
+    {
+        Object pemObject;
+        try {
+            pemObject = this.parsePemObject(input);
+        } catch (PEMException e) {
+            throw new PublicKeyReadException(e);
+        }
+
+        SubjectPublicKeyInfo publicKeyInfo;
+        if (pemObject instanceof SubjectPublicKeyInfo) {
+            publicKeyInfo = (SubjectPublicKeyInfo) pemObject;
+        } else {
+            throw new PublicKeyReadException();
+        }
+
+        PublicKey publicKey;
+        try {
+            publicKey = this.keyConverter().getPublicKey(publicKeyInfo);
+        } catch (PEMException e) {
+            throw new PublicKeyReadException(e);
+        }
+
+        return publicKey;
+    }
+
+    /**
      * Parses PEM data and returns a specialized object.
      *
      * @param input The PEM data to read.
@@ -171,7 +209,7 @@ public class KeyFactory
      * @return The specialized object.
      * @throws PEMException If the PEM data is invalid.
      */
-    protected Object parsePemObject(InputStream input) throws PEMException
+    protected Object parsePemObject(final InputStream input) throws PEMException
     {
         PEMParser parser = this.pemParserFactory.create(input);
         Object pemObject;
@@ -196,7 +234,7 @@ public class KeyFactory
      * @return The JCE key pair.
      * @throws KeyPairReadException If the conversion cannot be performed.
      */
-    protected KeyPair convertKeyPair(PEMKeyPair pemKeyPair)
+    protected KeyPair convertKeyPair(final PEMKeyPair pemKeyPair)
         throws KeyPairReadException
     {
         KeyPair keyPair;
