@@ -20,7 +20,7 @@ public class KeyPairReadExceptionTest
         Exception cause = new Exception();
         KeyPairReadException exception = new KeyPairReadException(cause);
 
-        Assert.assertSame(exception.getMessage(), "Unable to read a PEM key pair from the supplied data.");
+        Assert.assertEquals(exception.getMessage(), "Unable to read a PEM key pair from the supplied data.");
         Assert.assertSame(exception.getCause(), cause);
     }
 
@@ -29,7 +29,7 @@ public class KeyPairReadExceptionTest
     {
         KeyPairReadException exception = new KeyPairReadException();
 
-        Assert.assertSame(exception.getMessage(), "Unable to read a PEM key pair from the supplied data.");
+        Assert.assertEquals(exception.getMessage(), "Unable to read a PEM key pair from the supplied data.");
         Assert.assertNull(exception.getCause());
     }
 }
