@@ -187,9 +187,46 @@ public class KeyFactoryTest
     }
 
     @Test
+    public void testCreateKeyPairWithPasswordByteArray() throws Throwable
+    {
+        KeyPair keyPair = this.factory.createKeyPair(
+            this.privateKeyString.getBytes(Charset.forName("US-ASCII")),
+            "password"
+        );
+
+        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyString);
+    }
+
+    @Test
+    public void testCreateKeyPairWithPasswordString() throws Throwable
+    {
+        KeyPair keyPair = this.factory.createKeyPair(this.privateKeyString, "password");
+
+        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyString);
+    }
+
+    @Test
     public void testCreateKeyPairNoPassword() throws Throwable
     {
         KeyPair keyPair = this.factory.createKeyPair(this.stringToInputStream(this.privateKeyStringNoPassword));
+
+        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyStringNoPassword);
+    }
+
+    @Test
+    public void testCreateKeyPairNoPasswordByteArray() throws Throwable
+    {
+        KeyPair keyPair = this.factory.createKeyPair(
+            this.privateKeyStringNoPassword.getBytes(Charset.forName("US-ASCII"))
+        );
+
+        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyStringNoPassword);
+    }
+
+    @Test
+    public void testCreateKeyPairNoPasswordString() throws Throwable
+    {
+        KeyPair keyPair = this.factory.createKeyPair(this.privateKeyStringNoPassword);
 
         Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyStringNoPassword);
     }
@@ -262,6 +299,22 @@ public class KeyFactoryTest
     public void testCreatePublicKey() throws Throwable
     {
         PublicKey publicKey = this.factory.createPublicKey(this.stringToInputStream(this.publicKeyString));
+
+        Assert.assertEquals(this.publicKeyToPemString(publicKey), this.publicKeyString);
+    }
+
+    @Test
+    public void testCreatePublicKeyByteArray() throws Throwable
+    {
+        PublicKey publicKey = this.factory.createPublicKey(this.publicKeyString.getBytes(Charset.forName("US-ASCII")));
+
+        Assert.assertEquals(this.publicKeyToPemString(publicKey), this.publicKeyString);
+    }
+
+    @Test
+    public void testCreatePublicKeyString() throws Throwable
+    {
+        PublicKey publicKey = this.factory.createPublicKey(this.publicKeyString);
 
         Assert.assertEquals(this.publicKeyToPemString(publicKey), this.publicKeyString);
     }

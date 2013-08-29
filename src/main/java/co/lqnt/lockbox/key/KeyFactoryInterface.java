@@ -34,6 +34,28 @@ interface KeyFactoryInterface
     /**
      * Create a key pair from a PEM formatted private key.
      *
+     * @param input The PEM data to read.
+     *
+     * @return The key pair.
+     * @throws KeyPairReadException If reading of the key pair fails.
+     */
+    public KeyPair createKeyPair(final byte[] input)
+        throws KeyPairReadException;
+
+    /**
+     * Create a key pair from a PEM formatted private key.
+     *
+     * @param input The PEM data to read.
+     *
+     * @return The key pair.
+     * @throws KeyPairReadException If reading of the key pair fails.
+     */
+    public KeyPair createKeyPair(final String input)
+        throws KeyPairReadException;
+
+    /**
+     * Create a key pair from a PEM formatted private key.
+     *
      * @param input    The PEM data to read.
      * @param password The password to use to decrypt the key.
      *
@@ -41,6 +63,30 @@ interface KeyFactoryInterface
      * @throws KeyPairReadException If reading of the key pair fails.
      */
     public KeyPair createKeyPair(final InputStream input, final String password)
+        throws KeyPairReadException;
+
+    /**
+     * Create a key pair from a PEM formatted private key.
+     *
+     * @param input    The PEM data to read.
+     * @param password The password to use to decrypt the key.
+     *
+     * @return The key pair.
+     * @throws KeyPairReadException If reading of the key pair fails.
+     */
+    public KeyPair createKeyPair(final byte[] input, final String password)
+        throws KeyPairReadException;
+
+    /**
+     * Create a key pair from a PEM formatted private key.
+     *
+     * @param input    The PEM data to read.
+     * @param password The password to use to decrypt the key.
+     *
+     * @return The key pair.
+     * @throws KeyPairReadException If reading of the key pair fails.
+     */
+    public KeyPair createKeyPair(final String input, final String password)
         throws KeyPairReadException;
 
     /**
@@ -52,5 +98,27 @@ interface KeyFactoryInterface
      * @throws PublicKeyReadException If reading of the public key fails.
      */
     public PublicKey createPublicKey(final InputStream input)
+        throws PublicKeyReadException;
+
+    /**
+     * Create a public key from a PEM formatted public key.
+     *
+     * @param input The PEM data to read.
+     *
+     * @return The public key
+     * @throws PublicKeyReadException If reading of the public key fails.
+     */
+    public PublicKey createPublicKey(final byte[] input)
+        throws PublicKeyReadException;
+
+    /**
+     * Create a public key from a PEM formatted public key.
+     *
+     * @param input The PEM data to read.
+     *
+     * @return The public key
+     * @throws PublicKeyReadException If reading of the public key fails.
+     */
+    public PublicKey createPublicKey(final String input)
         throws PublicKeyReadException;
 }

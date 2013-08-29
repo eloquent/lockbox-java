@@ -13,8 +13,10 @@ import co.lqnt.lockbox.pem.PemParserFactory;
 import co.lqnt.lockbox.key.exception.KeyPairReadException;
 import co.lqnt.lockbox.key.exception.PublicKeyReadException;
 import co.lqnt.lockbox.pem.PemParserFactoryInterface;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.security.KeyPair;
 import java.security.Provider;
 import java.security.PublicKey;
@@ -130,6 +132,34 @@ public class KeyFactory implements KeyFactoryInterface
     /**
      * Create a key pair from a PEM formatted private key.
      *
+     * @param input The PEM data to read.
+     *
+     * @return The key pair.
+     * @throws KeyPairReadException If reading of the key pair fails.
+     */
+    public KeyPair createKeyPair(final byte[] input)
+        throws KeyPairReadException
+    {
+        return this.createKeyPair(new ByteArrayInputStream(input));
+    }
+
+    /**
+     * Create a key pair from a PEM formatted private key.
+     *
+     * @param input The PEM data to read.
+     *
+     * @return The key pair.
+     * @throws KeyPairReadException If reading of the key pair fails.
+     */
+    public KeyPair createKeyPair(final String input)
+        throws KeyPairReadException
+    {
+        return this.createKeyPair(input.getBytes(Charset.forName("US-ASCII")));
+    }
+
+    /**
+     * Create a key pair from a PEM formatted private key.
+     *
      * @param input    The PEM data to read.
      * @param password The password to use to decrypt the key.
      *
@@ -167,6 +197,39 @@ public class KeyFactory implements KeyFactoryInterface
     }
 
     /**
+     * Create a key pair from a PEM formatted private key.
+     *
+     * @param input    The PEM data to read.
+     * @param password The password to use to decrypt the key.
+     *
+     * @return The key pair.
+     * @throws KeyPairReadException If reading of the key pair fails.
+     */
+    public KeyPair createKeyPair(final byte[] input, final String password)
+        throws KeyPairReadException
+    {
+        return this.createKeyPair(new ByteArrayInputStream(input), password);
+    }
+
+    /**
+     * Create a key pair from a PEM formatted private key.
+     *
+     * @param input    The PEM data to read.
+     * @param password The password to use to decrypt the key.
+     *
+     * @return The key pair.
+     * @throws KeyPairReadException If reading of the key pair fails.
+     */
+    public KeyPair createKeyPair(final String input, final String password)
+        throws KeyPairReadException
+    {
+        return this.createKeyPair(
+            input.getBytes(Charset.forName("US-ASCII")),
+            password
+        );
+    }
+
+    /**
      * Create a public key from a PEM formatted public key.
      *
      * @param input The PEM data to read.
@@ -199,6 +262,36 @@ public class KeyFactory implements KeyFactoryInterface
         }
 
         return publicKey;
+    }
+
+    /**
+     * Create a public key from a PEM formatted public key.
+     *
+     * @param input The PEM data to read.
+     *
+     * @return The public key
+     * @throws PublicKeyReadException If reading of the public key fails.
+     */
+    public PublicKey createPublicKey(final byte[] input)
+        throws PublicKeyReadException
+    {
+        return this.createPublicKey(new ByteArrayInputStream(input));
+    }
+
+    /**
+     * Create a public key from a PEM formatted public key.
+     *
+     * @param input The PEM data to read.
+     *
+     * @return The public key
+     * @throws PublicKeyReadException If reading of the public key fails.
+     */
+    public PublicKey createPublicKey(final String input)
+        throws PublicKeyReadException
+    {
+        return this.createPublicKey(
+            input.getBytes(Charset.forName("US-ASCII"))
+        );
     }
 
     /**
