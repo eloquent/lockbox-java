@@ -14,6 +14,9 @@ import co.lqnt.lockbox.key.exception.KeyPairReadException;
 import co.lqnt.lockbox.key.exception.PublicKeyReadException;
 import co.lqnt.lockbox.pem.PemParserFactoryInterface;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -160,6 +163,31 @@ public class KeyFactory implements KeyFactoryInterface
     /**
      * Create a key pair from a PEM formatted private key.
      *
+     * @param input The PEM data to read.
+     *
+     * @return The key pair.
+     * @throws KeyPairReadException If reading of the key pair fails.
+     */
+    public KeyPair createKeyPair(final File input)
+        throws KeyPairReadException
+    {
+        InputStream inputStream = null;
+        KeyPair keyPair;
+        try {
+            inputStream = new FileInputStream(input);
+            keyPair = this.createKeyPair(inputStream);
+        } catch (FileNotFoundException e) {
+            throw new KeyPairReadException(e);
+        } finally {
+            this.closeInputStream(inputStream);
+        }
+
+        return keyPair;
+    }
+
+    /**
+     * Create a key pair from a PEM formatted private key.
+     *
      * @param input    The PEM data to read.
      * @param password The password to use to decrypt the key.
      *
@@ -230,6 +258,32 @@ public class KeyFactory implements KeyFactoryInterface
     }
 
     /**
+     * Create a key pair from a PEM formatted private key.
+     *
+     * @param input    The PEM data to read.
+     * @param password The password to use to decrypt the key.
+     *
+     * @return The key pair.
+     * @throws KeyPairReadException If reading of the key pair fails.
+     */
+    public KeyPair createKeyPair(final File input, final String password)
+        throws KeyPairReadException
+    {
+        InputStream inputStream = null;
+        KeyPair keyPair;
+        try {
+            inputStream = new FileInputStream(input);
+            keyPair = this.createKeyPair(inputStream, password);
+        } catch (FileNotFoundException e) {
+            throw new KeyPairReadException(e);
+        } finally {
+            this.closeInputStream(inputStream);
+        }
+
+        return keyPair;
+    }
+
+    /**
      * Create a public key from a PEM formatted public key.
      *
      * @param input The PEM data to read.
@@ -295,6 +349,31 @@ public class KeyFactory implements KeyFactoryInterface
     }
 
     /**
+     * Create a public key from a PEM formatted public key.
+     *
+     * @param input The PEM data to read.
+     *
+     * @return The public key
+     * @throws PublicKeyReadException If reading of the public key fails.
+     */
+    public PublicKey createPublicKey(final File input)
+        throws PublicKeyReadException
+    {
+        InputStream inputStream = null;
+        PublicKey publicKey;
+        try {
+            inputStream = new FileInputStream(input);
+            publicKey = this.createPublicKey(inputStream);
+        } catch (FileNotFoundException e) {
+            throw new PublicKeyReadException(e);
+        } finally {
+            this.closeInputStream(inputStream);
+        }
+
+        return publicKey;
+    }
+
+    /**
      * Parses PEM data and returns a specialized object.
      *
      * @param input The PEM data to read.
@@ -338,6 +417,26 @@ public class KeyFactory implements KeyFactoryInterface
         }
 
         return keyPair;
+    }
+
+    /**
+     * Close an input stream or die trying.
+     *
+     * @param input The input stream to close.
+     *
+     * @throws RuntimeException If the stream cannot be closed.
+     */
+    protected void closeInputStream(InputStream input)
+    {
+        if (null == input) {
+            return;
+        }
+
+        try {
+            input.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to close stream.", e);
+        }
     }
 
     private PemParserFactoryInterface pemParserFactory;

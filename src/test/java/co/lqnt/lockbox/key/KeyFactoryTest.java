@@ -13,9 +13,12 @@ import co.lqnt.lockbox.key.exception.KeyPairReadException;
 import co.lqnt.lockbox.key.exception.PublicKeyReadException;
 import co.lqnt.lockbox.pem.PemParserFactory;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -206,6 +209,15 @@ public class KeyFactoryTest
     }
 
     @Test
+    public void testCreateKeyPairWithPasswordFile() throws Throwable
+    {
+        File input = new File(this.getClass().getClassLoader().getResource("pem/rsa-2048.private.pem").toURI());
+        KeyPair keyPair = this.factory.createKeyPair(input, "password");
+
+        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyString);
+    }
+
+    @Test
     public void testCreateKeyPairNoPassword() throws Throwable
     {
         KeyPair keyPair = this.factory.createKeyPair(this.stringToInputStream(this.privateKeyStringNoPassword));
@@ -231,6 +243,15 @@ public class KeyFactoryTest
         Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyStringNoPassword);
     }
 
+    @Test
+    public void testCreateKeyPairNoPasswordFile() throws Throwable
+    {
+        File input = new File(this.getClass().getClassLoader().getResource("pem/rsa-2048-nopass.private.pem").toURI());
+        KeyPair keyPair = this.factory.createKeyPair(input);
+
+        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyStringNoPassword);
+    }
+
     @Test(expectedExceptions = KeyPairReadException.class)
     public void testCreateKeyPairFailureNonPemData() throws Throwable
     {
@@ -244,7 +265,7 @@ public class KeyFactoryTest
     }
 
     @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairFailureNoPemEnd() throws Throwable
+    public void testCreateKeyPairWithPasswordFailureNoPemEnd() throws Throwable
     {
         this.factory.createKeyPair(this.stringToInputStream("-----BEGIN RSA PRIVATE KEY-----\n"), "password");
     }
@@ -256,7 +277,7 @@ public class KeyFactoryTest
     }
 
     @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairFailureNotPrivateKey() throws Throwable
+    public void testCreateKeyPairWithPasswordFailureNotPrivateKey() throws Throwable
     {
         this.factory.createKeyPair(this.stringToInputStream(this.publicKeyString), "password");
     }
@@ -268,7 +289,7 @@ public class KeyFactoryTest
     }
 
     @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairFailurePemConversion() throws Throwable
+    public void testCreateKeyPairWithPasswordFailurePemConversion() throws Throwable
     {
         this.keyConverter = Mockito.mock(JcaPEMKeyConverter.class);
         Mockito.when(this.keyConverter.getKeyPair(Mockito.any(PEMKeyPair.class)))
@@ -290,9 +311,21 @@ public class KeyFactoryTest
     }
 
     @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairFailureDecryption() throws Throwable
+    public void testCreateKeyPairWithPasswordFailureDecryption() throws Throwable
     {
         this.factory.createKeyPair(this.stringToInputStream(this.privateKeyStringWrongIv), "password");
+    }
+
+    @Test(expectedExceptions = KeyPairReadException.class)
+    public void testCreateKeyPairWithPasswordFailureFileNotFound() throws Throwable
+    {
+        this.factory.createKeyPair(new File("nonexistent"), "password");
+    }
+
+    @Test(expectedExceptions = KeyPairReadException.class)
+    public void testCreateKeyPairNoPasswordFailureFileNotFound() throws Throwable
+    {
+        this.factory.createKeyPair(new File("nonexistent"));
     }
 
     @Test
@@ -315,6 +348,15 @@ public class KeyFactoryTest
     public void testCreatePublicKeyString() throws Throwable
     {
         PublicKey publicKey = this.factory.createPublicKey(this.publicKeyString);
+
+        Assert.assertEquals(this.publicKeyToPemString(publicKey), this.publicKeyString);
+    }
+
+    @Test
+    public void testCreatePublicKeyStringFile() throws Throwable
+    {
+        File input = new File(this.getClass().getClassLoader().getResource("pem/rsa-2048.public.pem").toURI());
+        PublicKey publicKey = this.factory.createPublicKey(input);
 
         Assert.assertEquals(this.publicKeyToPemString(publicKey), this.publicKeyString);
     }
@@ -346,6 +388,29 @@ public class KeyFactoryTest
         this.factory = new KeyFactory(this.pemParserFactory, this.decryptorProviderBuilder, this.keyConverter);
 
         this.factory.createPublicKey(this.stringToInputStream(this.publicKeyString));
+    }
+
+    @Test(expectedExceptions = PublicKeyReadException.class)
+    public void testCreatePublicKeyFailureFileNotFound() throws Throwable
+    {
+        this.factory.createPublicKey(new File("nonexistent"));
+    }
+
+    @Test
+    public void testCloseInputStreamFailure() throws Throwable
+    {
+        InputStream input = Mockito.mock(InputStream.class);
+        Mockito.doThrow(new IOException()).when(input).close();
+        Method closeInputStream = KeyFactory.class.getDeclaredMethod("closeInputStream", InputStream.class);
+
+        try {
+            closeInputStream.invoke(this.factory, input);
+            Assert.fail();
+        } catch (InvocationTargetException e) {
+            Assert.assertNotNull(e.getCause());
+            Assert.assertSame(e.getCause().getClass(), RuntimeException.class);
+            Assert.assertEquals(e.getCause().getMessage(), "Unable to close stream.");
+        }
     }
 
     protected InputStream stringToInputStream(String string)
