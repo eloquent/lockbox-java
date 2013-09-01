@@ -40,8 +40,6 @@ public class KeyFactory implements KeyFactoryInterface
 {
     /**
      * Construct a new key factory.
-     *
-     * @throws RuntimeException If the RSA key factory is unavailable.
      */
     public KeyFactory()
     {
@@ -426,7 +424,7 @@ public class KeyFactory implements KeyFactoryInterface
      *
      * @throws RuntimeException If the stream cannot be closed.
      */
-    protected void closeInputStream(InputStream input)
+    protected void closeInputStream(final InputStream input)
     {
         if (null == input) {
             return;
