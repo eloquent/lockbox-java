@@ -10,7 +10,7 @@
 package co.lqnt.lockbox.key.exception;
 
 /**
- * Unable to read a PEM public key from the supplied data.
+ * Unable to read a public key from the supplied data.
  */
 final public class PublicKeyReadException extends Exception
 {
@@ -22,7 +22,7 @@ final public class PublicKeyReadException extends Exception
     public PublicKeyReadException(final Throwable cause)
     {
         super(
-            "Unable to read a PEM public key from the supplied data.",
+            "Unable to read a public key from the supplied data.",
             cause
         );
     }

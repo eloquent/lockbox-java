@@ -9,10 +9,12 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.pem.PemParserFactory;
-import co.lqnt.lockbox.key.exception.KeyPairReadException;
+import co.lqnt.lockbox.util.PemParserFactory;
+import co.lqnt.lockbox.key.exception.PrivateKeyReadException;
 import co.lqnt.lockbox.key.exception.PublicKeyReadException;
-import co.lqnt.lockbox.pem.PemParserFactoryInterface;
+import co.lqnt.lockbox.util.BcKeyParametersFactory;
+import co.lqnt.lockbox.util.BcKeyParametersFactoryInterface;
+import co.lqnt.lockbox.util.PemParserFactoryInterface;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,17 +22,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.security.KeyPair;
-import java.security.Provider;
-import java.security.PublicKey;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.params.RSAKeyParameters;
+import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
+import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMDecryptorProvider;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
 import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 
 /**
@@ -43,33 +45,31 @@ public class KeyFactory implements KeyFactoryInterface
      */
     public KeyFactory()
     {
-        Provider provider = new BouncyCastleProvider();
+        BouncyCastleProvider provider = new BouncyCastleProvider();
 
         this.pemParserFactory = new PemParserFactory();
+        this.bcKeyParametersFactory = new BcKeyParametersFactory();
 
         this.decryptorProviderBuilder =
             new JcePEMDecryptorProviderBuilder();
         this.decryptorProviderBuilder.setProvider(provider);
-
-        this.keyConverter = new JcaPEMKeyConverter();
-        this.keyConverter.setProvider(provider);
     }
 
     /**
      * Construct a new key factory.
      *
-     * @param pemParserFactory         The PEM parser factory to use.
-     * @param decryptorProviderBuilder The decryptor provider builder to use.
-     * @param keyConverter             The key converter to use.
+     * @param pemParserFactory             The PEM parser factory to use.
+     * @param bcPublicKeyParametersFactory The Bouncy Castle public key parameters factory to use.
+     * @param decryptorProviderBuilder     The decryptor provider builder to use.
      */
     public KeyFactory(
         final PemParserFactoryInterface pemParserFactory,
-        final JcePEMDecryptorProviderBuilder decryptorProviderBuilder,
-        final JcaPEMKeyConverter keyConverter
+        final BcKeyParametersFactoryInterface bcPublicKeyParametersFactory,
+        final JcePEMDecryptorProviderBuilder decryptorProviderBuilder
     ) {
         this.pemParserFactory = pemParserFactory;
+        this.bcKeyParametersFactory = bcPublicKeyParametersFactory;
         this.decryptorProviderBuilder = decryptorProviderBuilder;
-        this.keyConverter = keyConverter;
     }
 
     /**
@@ -83,6 +83,16 @@ public class KeyFactory implements KeyFactoryInterface
     }
 
     /**
+     * Get the Bouncy Castle public key parameters factory.
+     *
+     * @return The Bouncy Castle public key parameters factory.
+     */
+    public BcKeyParametersFactoryInterface bcKeyParametersFactory()
+    {
+        return this.bcKeyParametersFactory;
+    }
+
+    /**
      * Get the decryptor provider builder.
      *
      * @return The decryptor provider builder.
@@ -93,120 +103,115 @@ public class KeyFactory implements KeyFactoryInterface
     }
 
     /**
-     * Get the key converter.
-     *
-     * @return The key converter.
-     */
-    public JcaPEMKeyConverter keyConverter()
-    {
-        return this.keyConverter;
-    }
-
-    /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input The PEM data to read.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final InputStream input)
-        throws KeyPairReadException
+    public PrivateKey createPrivateKey(final InputStream input)
+        throws PrivateKeyReadException
     {
         Object pemObject;
         try {
             pemObject = this.parsePemObject(input);
         } catch (PEMException e) {
-            throw new KeyPairReadException(e);
+            throw new PrivateKeyReadException(e);
         }
 
         PEMKeyPair pemKeyPair;
         if (pemObject instanceof PEMKeyPair) {
             pemKeyPair = (PEMKeyPair) pemObject;
         } else {
-            throw new KeyPairReadException();
+            throw new PrivateKeyReadException();
         }
 
-        return this.convertKeyPair(pemKeyPair);
+        return this.convertPrivateKey(pemKeyPair);
     }
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input The PEM data to read.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final byte[] input)
-        throws KeyPairReadException
+    public PrivateKey createPrivateKey(final byte[] input)
+        throws PrivateKeyReadException
     {
-        return this.createKeyPair(new ByteArrayInputStream(input));
+        return this.createPrivateKey(new ByteArrayInputStream(input));
     }
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input The PEM data to read.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final String input)
-        throws KeyPairReadException
+    public PrivateKey createPrivateKey(final String input)
+        throws PrivateKeyReadException
     {
-        return this.createKeyPair(input.getBytes(Charset.forName("US-ASCII")));
+        return this.createPrivateKey(
+            input.getBytes(Charset.forName("US-ASCII"))
+        );
     }
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input The PEM data to read.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final File input)
-        throws KeyPairReadException
+    public PrivateKey createPrivateKey(final File input)
+        throws PrivateKeyReadException
     {
         InputStream inputStream = null;
-        KeyPair keyPair;
+        PrivateKey privateKey;
         try {
             inputStream = new FileInputStream(input);
-            keyPair = this.createKeyPair(inputStream);
+            privateKey = this.createPrivateKey(inputStream);
         } catch (FileNotFoundException e) {
-            throw new KeyPairReadException(e);
+            throw new PrivateKeyReadException(e);
         } finally {
             this.closeInputStream(inputStream);
         }
 
-        return keyPair;
+        return privateKey;
     }
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input    The PEM data to read.
      * @param password The password to use to decrypt the key.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final InputStream input, final String password)
-        throws KeyPairReadException
+    public PrivateKey createPrivateKey(
+        final InputStream input,
+        final String password
+    )
+        throws PrivateKeyReadException
     {
         Object pemObject;
         try {
             pemObject = this.parsePemObject(input);
         } catch (PEMException e) {
-            throw new KeyPairReadException(e);
+            throw new PrivateKeyReadException(e);
         }
 
         PEMEncryptedKeyPair encryptedKeyPair;
         if (pemObject instanceof PEMEncryptedKeyPair) {
             encryptedKeyPair = (PEMEncryptedKeyPair) pemObject;
         } else {
-            throw new KeyPairReadException();
+            throw new PrivateKeyReadException();
         }
 
         PEMDecryptorProvider decryptorProvider = this.decryptorProviderBuilder()
@@ -216,69 +221,75 @@ public class KeyFactory implements KeyFactoryInterface
         try {
             pemKeyPair = encryptedKeyPair.decryptKeyPair(decryptorProvider);
         } catch (IOException e) {
-            throw new KeyPairReadException(e);
+            throw new PrivateKeyReadException(e);
         }
 
-        return this.convertKeyPair(pemKeyPair);
+        return this.convertPrivateKey(pemKeyPair);
     }
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input    The PEM data to read.
      * @param password The password to use to decrypt the key.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final byte[] input, final String password)
-        throws KeyPairReadException
+    public PrivateKey createPrivateKey(
+        final byte[] input,
+        final String password
+    )
+        throws PrivateKeyReadException
     {
-        return this.createKeyPair(new ByteArrayInputStream(input), password);
+        return this.createPrivateKey(new ByteArrayInputStream(input), password);
     }
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input    The PEM data to read.
      * @param password The password to use to decrypt the key.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final String input, final String password)
-        throws KeyPairReadException
+    public PrivateKey createPrivateKey(
+        final String input,
+        final String password
+    )
+        throws PrivateKeyReadException
     {
-        return this.createKeyPair(
+        return this.createPrivateKey(
             input.getBytes(Charset.forName("US-ASCII")),
             password
         );
     }
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input    The PEM data to read.
      * @param password The password to use to decrypt the key.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final File input, final String password)
-        throws KeyPairReadException
+    public PrivateKey createPrivateKey(final File input, final String password)
+        throws PrivateKeyReadException
     {
         InputStream inputStream = null;
-        KeyPair keyPair;
+        PrivateKey privateKey;
         try {
             inputStream = new FileInputStream(input);
-            keyPair = this.createKeyPair(inputStream, password);
+            privateKey = this.createPrivateKey(inputStream, password);
         } catch (FileNotFoundException e) {
-            throw new KeyPairReadException(e);
+            throw new PrivateKeyReadException(e);
         } finally {
             this.closeInputStream(inputStream);
         }
 
-        return keyPair;
+        return privateKey;
     }
 
     /**
@@ -306,14 +317,25 @@ public class KeyFactory implements KeyFactoryInterface
             throw new PublicKeyReadException();
         }
 
-        PublicKey publicKey;
+        AsymmetricKeyParameter keyParameter;
         try {
-            publicKey = this.keyConverter().getPublicKey(publicKeyInfo);
-        } catch (PEMException e) {
+            keyParameter = this.bcKeyParametersFactory()
+                .createPublicKeyParameters(publicKeyInfo);
+        } catch (IOException e) {
             throw new PublicKeyReadException(e);
         }
 
-        return publicKey;
+        RSAKeyParameters publicKeyParameters;
+        if (keyParameter instanceof RSAKeyParameters) {
+            publicKeyParameters = (RSAKeyParameters) keyParameter;
+        } else {
+            throw new PublicKeyReadException();
+        }
+
+        return new PublicKey(
+            publicKeyParameters.getModulus(),
+            publicKeyParameters.getExponent()
+        );
     }
 
     /**
@@ -397,24 +419,41 @@ public class KeyFactory implements KeyFactoryInterface
     }
 
     /**
-     * Converts a PEM key pair into a standard JCE key pair.
+     * Convert a PEM key pair to a Lockbox private key.
      *
      * @param pemKeyPair The PEM key pair.
      *
-     * @return The JCE key pair.
-     * @throws KeyPairReadException If the conversion cannot be performed.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    protected KeyPair convertKeyPair(final PEMKeyPair pemKeyPair)
-        throws KeyPairReadException
+    protected PrivateKey convertPrivateKey(final PEMKeyPair pemKeyPair)
+        throws PrivateKeyReadException
     {
-        KeyPair keyPair;
+        AsymmetricKeyParameter keyParameter;
         try {
-            keyPair = this.keyConverter().getKeyPair(pemKeyPair);
-        } catch (PEMException e) {
-            throw new KeyPairReadException(e);
+            keyParameter = this.bcKeyParametersFactory()
+                .createPrivateKeyParameters(pemKeyPair.getPrivateKeyInfo());
+        } catch (IOException e) {
+            throw new PrivateKeyReadException(e);
         }
 
-        return keyPair;
+        RSAPrivateCrtKeyParameters privateKeyParameters;
+        if (keyParameter instanceof RSAPrivateCrtKeyParameters) {
+            privateKeyParameters = (RSAPrivateCrtKeyParameters) keyParameter;
+        } else {
+            throw new PrivateKeyReadException();
+        }
+
+        return new PrivateKey(
+            privateKeyParameters.getModulus(),
+            privateKeyParameters.getPublicExponent(),
+            privateKeyParameters.getExponent(),
+            privateKeyParameters.getP(),
+            privateKeyParameters.getQ(),
+            privateKeyParameters.getDP(),
+            privateKeyParameters.getDQ(),
+            privateKeyParameters.getQInv()
+        );
     }
 
     /**
@@ -438,6 +477,6 @@ public class KeyFactory implements KeyFactoryInterface
     }
 
     private PemParserFactoryInterface pemParserFactory;
+    private BcKeyParametersFactoryInterface bcKeyParametersFactory;
     private JcePEMDecryptorProviderBuilder decryptorProviderBuilder;
-    private JcaPEMKeyConverter keyConverter;
 }

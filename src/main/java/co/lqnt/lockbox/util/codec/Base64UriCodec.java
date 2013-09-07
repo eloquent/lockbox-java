@@ -7,9 +7,9 @@
  * file that was distributed with this source code.
  */
 
-package co.lqnt.lockbox.codec;
+package co.lqnt.lockbox.util.codec;
 
-import co.lqnt.lockbox.codec.exception.DecodingFailedException;
+import co.lqnt.lockbox.util.codec.exception.DecodingFailedException;
 import java.nio.charset.Charset;
 import javax.xml.bind.DatatypeConverter;
 

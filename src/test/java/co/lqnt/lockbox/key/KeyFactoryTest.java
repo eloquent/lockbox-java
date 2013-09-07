@@ -9,24 +9,20 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.KeyPairReadException;
+import co.lqnt.lockbox.key.exception.PrivateKeyReadException;
 import co.lqnt.lockbox.key.exception.PublicKeyReadException;
-import co.lqnt.lockbox.pem.PemParserFactory;
+import co.lqnt.lockbox.util.BcKeyParametersFactory;
+import co.lqnt.lockbox.util.PemParserFactory;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
-import java.security.KeyPair;
-import java.security.PublicKey;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMException;
-import org.bouncycastle.openssl.PEMKeyPair;
-import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 import org.mockito.Mockito;
@@ -42,6 +38,7 @@ public class KeyFactoryTest
         BouncyCastleProvider provider = new BouncyCastleProvider();
 
         this.pemParserFactory = new PemParserFactory();
+        this.bcPublicKeyParametersFactory = new BcKeyParametersFactory();
 
         this.decryptorProviderBuilder =
             new JcePEMDecryptorProviderBuilder();
@@ -50,7 +47,11 @@ public class KeyFactoryTest
         this.keyConverter = new JcaPEMKeyConverter();
         this.keyConverter.setProvider(provider);
 
-        this.factory = new KeyFactory(this.pemParserFactory, this.decryptorProviderBuilder, this.keyConverter);
+        this.factory = new KeyFactory(
+            this.pemParserFactory,
+            this.bcPublicKeyParametersFactory,
+            this.decryptorProviderBuilder
+        );
 
         this.privateKeyString =
             "-----BEGIN RSA PRIVATE KEY-----\n" +
@@ -161,14 +162,80 @@ public class KeyFactoryTest
             "MHgOFCXFKwkUDZH8pou/7Q4eYWwICCcaPp3QA0wv3FNwyBmgamw7quqbk7xiJuz7\n" +
             "1E/yfdAXEjlPRibVjvwpopYitZcGqIS0Mt9bXtwugzdeQh9TF2karA==\n" +
             "-----END RSA PRIVATE KEY-----\n";
+        this.privateKeyStringNonRsa =
+            "-----BEGIN DSA PRIVATE KEY-----\n" +
+            "Proc-Type: 4,ENCRYPTED\n" +
+            "DEK-Info: DES-EDE3-CBC,B07DB5293FAAC733\n" +
+            "\n" +
+            "G2Nsh3WOOIqtLqII3JKflwEM600WtPL1lTt1F98+7bkHh7+GYbZ412uTgFSjpTWQ\n" +
+            "nj7yb4Zrq3hmDE/He0cwu+YPXMUwaBFxRUDDmIWL94z4VBguyqUjSMNaEHrZu+Vi\n" +
+            "QUqWyPLoUeFWxAcK+iqxkT+595l1mGKnZQTFnjOSfDnZltMUdGhnRO2syOe17qqs\n" +
+            "Pw2b6CTYxpOWRIvAtu701/0WMWWRfEkWWEXXggf37cCn4qPtuGZC9rD4iS60kkxy\n" +
+            "nj8hHUa/vx/lerbUf0Do71JtYYoIeirbOwZXC58ME+S9KX96BkkzxbTQL1tavJUa\n" +
+            "bEPgumwbjeVA+gVDFsS2saUgmTKbjFISvRr2x77eDZo7x6NKpQjq3eHn+rvzHnHg\n" +
+            "tJE0qHOw1ffTOVCVJTBKOcWa1mEUJViJ4SQOdyjsjIP9LrIvISpA+1Bk62A/4tgY\n" +
+            "meTHg/uxMaN8ksNmogdP7RZkDHaYQ5EkrSj8BfOxb3QQutyDaL4bQZ7E47cw9szN\n" +
+            "YdXyR3a94AVNnYM49mzF2jO6x5YQtZAdaaQh7N7mcBOka6UA2BnfZxNU5RcE1Ge/\n" +
+            "CM9VeSSkBwiVg99ipKe3v3YAWG09E+DHEsG/r8TkX6peTU7xRTRL2CuJIhgwfSV/\n" +
+            "Z6Tq8Z0xi42WJVaKekcYQN4hjEFA6Ua7Gu7hNHwK7hdPCXdeQIOxR3kB6ZiFKswh\n" +
+            "ovF7n1/iubX0o5b0DniMGMFjPW59r5e4FU3wI5dgP7ro5m0AwZ5JXVWcDNa+zyy/\n" +
+            "3f7qgu4KKM1TysB/cUEHRYgeO1zVBie6mru0q8aJWE9UP2KzofL+B/ElcU4rZxNh\n" +
+            "rGkEiCNSU+eI9wkX/yUlxT1ymEM678zlLA3kcBvJgyoTPFT/ajMdq59FeNqQ8o7x\n" +
+            "cyXfQJ6aHFCuG3qB2iqUUOUmNgyzEvDo1d8QlR7bUs0vnum/qUN98c86ObOE3JMO\n" +
+            "5zIxxmx6at41qcZcfkb8IYAO3TgovujaAxZ19P9Y/OxgnveXRrQR+uaBEL2ydr+S\n" +
+            "XKiXC7R6zqNELvK2JqrsfKu1LlQ8Pd0L2w9rQav8eobx6mLZC4JdlgjYb7+L6/IF\n" +
+            "8nAn3+JUFVmzryHEbJ6Kqcb6VmBzI771BAnJnzVemN2PJNIEbiMmzM9r7qEnMg2D\n" +
+            "-----END DSA PRIVATE KEY-----";
+        this.privateKeyStringNonRsaNoPassword =
+            "-----BEGIN DSA PRIVATE KEY-----\n" +
+            "MIIDVgIBAAKCAQEAwh+wZY0iayGjeIePlqHlDw4aPXSXrt14ZRFRkeCN47Rj/ZTY\n" +
+            "/M75BZiuJuymxzulMKsrM8R84CUKH+tYJIwUetIPIzH/KBea9v4LOWzs4bG2HyJQ\n" +
+            "ZWSamMYwL+hxa7MunFbFPNqacl3Uk8sub6gaiAvkjc83UeSGt7H8/OgMopS+IbzH\n" +
+            "MPRE6pOR/d5iJIDNCnqlp8WD4/70z4RTJiME6XdzjM7qiesB25DN4+JtXzJfL3FN\n" +
+            "yImgFTmUhKsfW69qJl/1mBQp6uVV3knR/BMbg5t4OtJNMp+onoCeEkE1H6KXCfkB\n" +
+            "39404Rn4mvLqEaiOwG64Bjt01Of5lBmVV9EJ+QIhAJWdJx+2cWH0ZP/Gm13rENb3\n" +
+            "RdZFJ/o1nRiZqmIs/6PXAoIBACkFMOe9d6AOWA14q7GrGYUHjSkP8p+/a32eAbvi\n" +
+            "rdAOlSIgvRsmsyH+n4TAIeARRVvkWLYe1XC2mKAe/k0nUb4CBE46KTy4c+w+HeFJ\n" +
+            "03in8YEDqiFOeV1jIzTIX/FwwwK8er8XeW9h3vxByHH5i6Mc0tleEHELBCxbhbwE\n" +
+            "I8tGcpgJDOnw4S7RKE6J55hCu9W8cW7l113IfQ6GANp/yxgC2bPr+JDCxLDIFUFU\n" +
+            "7iG0AFJ0WOJ2mlcZF0UZtbuuTEz38rq+GPfJBYXZGlwKW8vdtODDI4XSEDc8i/O4\n" +
+            "idsk8DQi5j/i9azHWgphbZYW82AXf4M05NHWXV03HnnBE7UCggEAJ7awS055qn5w\n" +
+            "JKHddJjZ20Vjwfcveatze7DtBejLJyFvABVSjJHbpc6mr71nBOaC6Oh3WeNkXCIK\n" +
+            "XD3d6sgz+iY8euByOny7QLLfPP9i5ZtTVL8iCUWakTuAD8BEbMLSDT8FXUYN88Za\n" +
+            "6pE1Gd2lr72nEU9vn9FQVZxAEBvTQP5WvMSDEeztSllXBjVb9tBi4wfA+pHB5/KG\n" +
+            "yPWfIXJU3YuvDDxZHLDIr0FyzupVC4v2nsK0OylNePv45upLqHsKH5p/2Xq9hbAc\n" +
+            "aX9Z2IrofMRVmABHUs1znHuPAQ3T+T2Ego8EJDCP/gFSfRkc4zriYQPd/kql3bZm\n" +
+            "5EsPCPrIkQIhAICi7eNNexHlXQ37PBDgHtjPUE9aACPBfOS5lP+lWalT\n" +
+            "-----END DSA PRIVATE KEY-----";
+        this.publicKeyStringNonRsa =
+            "-----BEGIN PUBLIC KEY-----\n" +
+            "MIIDRjCCAjkGByqGSM44BAEwggIsAoIBAQDCH7BljSJrIaN4h4+WoeUPDho9dJeu\n" +
+            "3XhlEVGR4I3jtGP9lNj8zvkFmK4m7KbHO6UwqyszxHzgJQof61gkjBR60g8jMf8o\n" +
+            "F5r2/gs5bOzhsbYfIlBlZJqYxjAv6HFrsy6cVsU82ppyXdSTyy5vqBqIC+SNzzdR\n" +
+            "5Ia3sfz86AyilL4hvMcw9ETqk5H93mIkgM0KeqWnxYPj/vTPhFMmIwTpd3OMzuqJ\n" +
+            "6wHbkM3j4m1fMl8vcU3IiaAVOZSEqx9br2omX/WYFCnq5VXeSdH8ExuDm3g60k0y\n" +
+            "n6iegJ4SQTUfopcJ+QHf3jThGfia8uoRqI7AbrgGO3TU5/mUGZVX0Qn5AiEAlZ0n\n" +
+            "H7ZxYfRk/8abXesQ1vdF1kUn+jWdGJmqYiz/o9cCggEAKQUw5713oA5YDXirsasZ\n" +
+            "hQeNKQ/yn79rfZ4Bu+Kt0A6VIiC9GyazIf6fhMAh4BFFW+RYth7VcLaYoB7+TSdR\n" +
+            "vgIETjopPLhz7D4d4UnTeKfxgQOqIU55XWMjNMhf8XDDArx6vxd5b2He/EHIcfmL\n" +
+            "oxzS2V4QcQsELFuFvAQjy0ZymAkM6fDhLtEoTonnmEK71bxxbuXXXch9DoYA2n/L\n" +
+            "GALZs+v4kMLEsMgVQVTuIbQAUnRY4naaVxkXRRm1u65MTPfyur4Y98kFhdkaXApb\n" +
+            "y9204MMjhdIQNzyL87iJ2yTwNCLmP+L1rMdaCmFtlhbzYBd/gzTk0dZdXTceecET\n" +
+            "tQOCAQUAAoIBACe2sEtOeap+cCSh3XSY2dtFY8H3L3mrc3uw7QXoyychbwAVUoyR\n" +
+            "26XOpq+9ZwTmgujod1njZFwiClw93erIM/omPHrgcjp8u0Cy3zz/YuWbU1S/IglF\n" +
+            "mpE7gA/ARGzC0g0/BV1GDfPGWuqRNRndpa+9pxFPb5/RUFWcQBAb00D+VrzEgxHs\n" +
+            "7UpZVwY1W/bQYuMHwPqRwefyhsj1nyFyVN2Lrww8WRywyK9Bcs7qVQuL9p7CtDsp\n" +
+            "TXj7+ObqS6h7Ch+af9l6vYWwHGl/WdiK6HzEVZgAR1LNc5x7jwEN0/k9hIKPBCQw\n" +
+            "j/4BUn0ZHOM64mED3f5Kpd22ZuRLDwj6yJE=\n" +
+            "-----END PUBLIC KEY-----";
     }
 
     @Test
     public void testConstructor()
     {
         Assert.assertSame(this.factory.pemParserFactory(), this.pemParserFactory);
+        Assert.assertSame(this.factory.bcKeyParametersFactory(), this.bcPublicKeyParametersFactory);
         Assert.assertSame(this.factory.decryptorProviderBuilder(), this.decryptorProviderBuilder);
-        Assert.assertSame(this.factory.keyConverter(), this.keyConverter);
     }
 
     @Test
@@ -177,155 +244,180 @@ public class KeyFactoryTest
         this.factory = new KeyFactory();
 
         Assert.assertSame(this.factory.pemParserFactory().getClass(), PemParserFactory.class);
+        Assert.assertSame(this.factory.bcKeyParametersFactory().getClass(), BcKeyParametersFactory.class);
         Assert.assertSame(this.factory.decryptorProviderBuilder().getClass(), JcePEMDecryptorProviderBuilder.class);
-        Assert.assertSame(this.factory.keyConverter().getClass(), JcaPEMKeyConverter.class);
     }
 
     @Test
-    public void testCreateKeyPairWithPassword() throws Throwable
+    public void testCreatePrivateKeyWithPassword() throws Throwable
     {
-        KeyPair keyPair = this.factory.createKeyPair(this.stringToInputStream(this.privateKeyString), "password");
+        PrivateKey privateKey = this.factory.createPrivateKey(
+            this.stringToInputStream(this.privateKeyString),
+            "password"
+        );
 
-        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyString);
+        Assert.assertEquals(privateKey.publicKey().toString(), this.publicKeyString);
     }
 
     @Test
-    public void testCreateKeyPairWithPasswordByteArray() throws Throwable
+    public void testCreatePrivateKeyWithPasswordByteArray() throws Throwable
     {
-        KeyPair keyPair = this.factory.createKeyPair(
+        PrivateKey privateKey = this.factory.createPrivateKey(
             this.privateKeyString.getBytes(Charset.forName("US-ASCII")),
             "password"
         );
 
-        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyString);
+        Assert.assertEquals(privateKey.publicKey().toString(), this.publicKeyString);
     }
 
     @Test
-    public void testCreateKeyPairWithPasswordString() throws Throwable
+    public void testCreatePrivateKeyWithPasswordString() throws Throwable
     {
-        KeyPair keyPair = this.factory.createKeyPair(this.privateKeyString, "password");
+        PrivateKey privateKey = this.factory.createPrivateKey(this.privateKeyString, "password");
 
-        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyString);
+        Assert.assertEquals(privateKey.publicKey().toString(), this.publicKeyString);
     }
 
     @Test
-    public void testCreateKeyPairWithPasswordFile() throws Throwable
+    public void testCreatePrivateKeyWithPasswordFile() throws Throwable
     {
         File input = new File(this.getClass().getClassLoader().getResource("pem/rsa-2048.private.pem").toURI());
-        KeyPair keyPair = this.factory.createKeyPair(input, "password");
+        PrivateKey privateKey = this.factory.createPrivateKey(input, "password");
 
-        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyString);
+        Assert.assertEquals(privateKey.publicKey().toString(), this.publicKeyString);
     }
 
     @Test
-    public void testCreateKeyPairNoPassword() throws Throwable
+    public void testCreatePrivateKeyNoPassword() throws Throwable
     {
-        KeyPair keyPair = this.factory.createKeyPair(this.stringToInputStream(this.privateKeyStringNoPassword));
+        PrivateKey privateKey = this.factory.createPrivateKey(
+            this.stringToInputStream(this.privateKeyStringNoPassword)
+        );
 
-        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyStringNoPassword);
+        Assert.assertEquals(privateKey.publicKey().toString(), this.publicKeyStringNoPassword);
     }
 
     @Test
-    public void testCreateKeyPairNoPasswordByteArray() throws Throwable
+    public void testCreatePrivateKeyNoPasswordByteArray() throws Throwable
     {
-        KeyPair keyPair = this.factory.createKeyPair(
+        PrivateKey privateKey = this.factory.createPrivateKey(
             this.privateKeyStringNoPassword.getBytes(Charset.forName("US-ASCII"))
         );
 
-        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyStringNoPassword);
+        Assert.assertEquals(privateKey.publicKey().toString(), this.publicKeyStringNoPassword);
     }
 
     @Test
-    public void testCreateKeyPairNoPasswordString() throws Throwable
+    public void testCreatePrivateKeyNoPasswordString() throws Throwable
     {
-        KeyPair keyPair = this.factory.createKeyPair(this.privateKeyStringNoPassword);
+        PrivateKey privateKey = this.factory.createPrivateKey(this.privateKeyStringNoPassword);
 
-        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyStringNoPassword);
+        Assert.assertEquals(privateKey.publicKey().toString(), this.publicKeyStringNoPassword);
     }
 
     @Test
-    public void testCreateKeyPairNoPasswordFile() throws Throwable
+    public void testCreatePrivateKeyNoPasswordFile() throws Throwable
     {
         File input = new File(this.getClass().getClassLoader().getResource("pem/rsa-2048-nopass.private.pem").toURI());
-        KeyPair keyPair = this.factory.createKeyPair(input);
+        PrivateKey privateKey = this.factory.createPrivateKey(input);
 
-        Assert.assertEquals(this.publicKeyToPemString(keyPair.getPublic()), this.publicKeyStringNoPassword);
+        Assert.assertEquals(privateKey.publicKey().toString(), this.publicKeyStringNoPassword);
     }
 
-    @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairFailureNonPemData() throws Throwable
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyFailureNonPemData() throws Throwable
     {
-        this.factory.createKeyPair(this.stringToInputStream(""), "password");
+        this.factory.createPrivateKey(this.stringToInputStream(""), "password");
     }
 
-    @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairNoPasswordFailureNonPemData() throws Throwable
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyNoPasswordFailureNonPemData() throws Throwable
     {
-        this.factory.createKeyPair(this.stringToInputStream(""));
+        this.factory.createPrivateKey(this.stringToInputStream(""));
     }
 
-    @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairWithPasswordFailureNoPemEnd() throws Throwable
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyWithPasswordFailureNoPemEnd() throws Throwable
     {
-        this.factory.createKeyPair(this.stringToInputStream("-----BEGIN RSA PRIVATE KEY-----\n"), "password");
+        this.factory.createPrivateKey(this.stringToInputStream("-----BEGIN RSA PRIVATE KEY-----\n"), "password");
     }
 
-    @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairNoPasswordFailureNoPemEnd() throws Throwable
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyNoPasswordFailureNoPemEnd() throws Throwable
     {
-        this.factory.createKeyPair(this.stringToInputStream("-----BEGIN RSA PRIVATE KEY-----\n"));
+        this.factory.createPrivateKey(this.stringToInputStream("-----BEGIN RSA PRIVATE KEY-----\n"));
     }
 
-    @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairWithPasswordFailureNotPrivateKey() throws Throwable
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyWithPasswordFailureNotPrivateKey() throws Throwable
     {
-        this.factory.createKeyPair(this.stringToInputStream(this.publicKeyString), "password");
+        this.factory.createPrivateKey(this.stringToInputStream(this.publicKeyString), "password");
     }
 
-    @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairNoPasswordFailureNotPrivateKey() throws Throwable
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyNoPasswordFailureNotPrivateKey() throws Throwable
     {
-        this.factory.createKeyPair(this.stringToInputStream(this.publicKeyString));
+        this.factory.createPrivateKey(this.stringToInputStream(this.publicKeyString));
     }
 
-    @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairWithPasswordFailurePemConversion() throws Throwable
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyWithPasswordFailureKeyParameterConversion() throws Throwable
     {
-        this.keyConverter = Mockito.mock(JcaPEMKeyConverter.class);
-        Mockito.when(this.keyConverter.getKeyPair(Mockito.any(PEMKeyPair.class)))
-            .thenThrow(new PEMException(""));
-        this.factory = new KeyFactory(this.pemParserFactory, this.decryptorProviderBuilder, this.keyConverter);
+        BcKeyParametersFactory mockKeyParametersFactory = Mockito.mock(BcKeyParametersFactory.class);
+        Mockito.when(mockKeyParametersFactory.createPrivateKeyParameters(Mockito.any(PrivateKeyInfo.class)))
+            .thenThrow(new IOException());
+        this.factory = new KeyFactory(
+            this.pemParserFactory,
+            mockKeyParametersFactory,
+            this.decryptorProviderBuilder
+        );
 
-        this.factory.createKeyPair(this.stringToInputStream(this.privateKeyString), "password");
+        this.factory.createPrivateKey(this.stringToInputStream(this.privateKeyString), "password");
     }
 
-    @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairNoPasswordFailurePemConversion() throws Throwable
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyNoPasswordFailureKeyParameterConversion() throws Throwable
     {
-        this.keyConverter = Mockito.mock(JcaPEMKeyConverter.class);
-        Mockito.when(this.keyConverter.getKeyPair(Mockito.any(PEMKeyPair.class)))
-            .thenThrow(new PEMException(""));
-        this.factory = new KeyFactory(this.pemParserFactory, this.decryptorProviderBuilder, this.keyConverter);
+        BcKeyParametersFactory mockKeyParametersFactory = Mockito.mock(BcKeyParametersFactory.class);
+        Mockito.when(mockKeyParametersFactory.createPrivateKeyParameters(Mockito.any(PrivateKeyInfo.class)))
+            .thenThrow(new IOException());
+        this.factory = new KeyFactory(
+            this.pemParserFactory,
+            mockKeyParametersFactory,
+            this.decryptorProviderBuilder
+        );
 
-        this.factory.createKeyPair(this.stringToInputStream(this.privateKeyStringNoPassword));
+        this.factory.createPrivateKey(this.stringToInputStream(this.privateKeyStringNoPassword));
     }
 
-    @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairWithPasswordFailureDecryption() throws Throwable
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyWithPasswordFailureNotRsaKey() throws Throwable
     {
-        this.factory.createKeyPair(this.stringToInputStream(this.privateKeyStringWrongIv), "password");
+        this.factory.createPrivateKey(this.stringToInputStream(this.privateKeyStringNonRsa), "password");
     }
 
-    @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairWithPasswordFailureFileNotFound() throws Throwable
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyNoPasswordFailureNotRsaKey() throws Throwable
     {
-        this.factory.createKeyPair(new File("nonexistent"), "password");
+        this.factory.createPrivateKey(this.stringToInputStream(this.privateKeyStringNonRsaNoPassword));
     }
 
-    @Test(expectedExceptions = KeyPairReadException.class)
-    public void testCreateKeyPairNoPasswordFailureFileNotFound() throws Throwable
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyWithPasswordFailureDecryption() throws Throwable
     {
-        this.factory.createKeyPair(new File("nonexistent"));
+        this.factory.createPrivateKey(this.stringToInputStream(this.privateKeyStringWrongIv), "password");
+    }
+
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyWithPasswordFailureFileNotFound() throws Throwable
+    {
+        this.factory.createPrivateKey(new File("nonexistent"), "password");
+    }
+
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyNoPasswordFailureFileNotFound() throws Throwable
+    {
+        this.factory.createPrivateKey(new File("nonexistent"));
     }
 
     @Test
@@ -333,7 +425,7 @@ public class KeyFactoryTest
     {
         PublicKey publicKey = this.factory.createPublicKey(this.stringToInputStream(this.publicKeyString));
 
-        Assert.assertEquals(this.publicKeyToPemString(publicKey), this.publicKeyString);
+        Assert.assertEquals(publicKey.toString(), this.publicKeyString);
     }
 
     @Test
@@ -341,7 +433,7 @@ public class KeyFactoryTest
     {
         PublicKey publicKey = this.factory.createPublicKey(this.publicKeyString.getBytes(Charset.forName("US-ASCII")));
 
-        Assert.assertEquals(this.publicKeyToPemString(publicKey), this.publicKeyString);
+        Assert.assertEquals(publicKey.toString(), this.publicKeyString);
     }
 
     @Test
@@ -349,7 +441,7 @@ public class KeyFactoryTest
     {
         PublicKey publicKey = this.factory.createPublicKey(this.publicKeyString);
 
-        Assert.assertEquals(this.publicKeyToPemString(publicKey), this.publicKeyString);
+        Assert.assertEquals(publicKey.toString(), this.publicKeyString);
     }
 
     @Test
@@ -358,7 +450,7 @@ public class KeyFactoryTest
         File input = new File(this.getClass().getClassLoader().getResource("pem/rsa-2048.public.pem").toURI());
         PublicKey publicKey = this.factory.createPublicKey(input);
 
-        Assert.assertEquals(this.publicKeyToPemString(publicKey), this.publicKeyString);
+        Assert.assertEquals(publicKey.toString(), this.publicKeyString);
     }
 
     @Test(expectedExceptions = PublicKeyReadException.class)
@@ -380,14 +472,24 @@ public class KeyFactoryTest
     }
 
     @Test(expectedExceptions = PublicKeyReadException.class)
-    public void testCreatePublicKeyFailurePemConversion() throws Throwable
+    public void testCreatePublicKeyFailureKeyParameterConversion() throws Throwable
     {
-        this.keyConverter = Mockito.mock(JcaPEMKeyConverter.class);
-        Mockito.when(this.keyConverter.getPublicKey(Mockito.any(SubjectPublicKeyInfo.class)))
-            .thenThrow(new PEMException(""));
-        this.factory = new KeyFactory(this.pemParserFactory, this.decryptorProviderBuilder, this.keyConverter);
+        BcKeyParametersFactory mockKeyParametersFactory = Mockito.mock(BcKeyParametersFactory.class);
+        Mockito.when(mockKeyParametersFactory.createPublicKeyParameters(Mockito.any(SubjectPublicKeyInfo.class)))
+            .thenThrow(new IOException());
+        this.factory = new KeyFactory(
+            this.pemParserFactory,
+            mockKeyParametersFactory,
+            this.decryptorProviderBuilder
+        );
 
         this.factory.createPublicKey(this.stringToInputStream(this.publicKeyString));
+    }
+
+    @Test(expectedExceptions = PublicKeyReadException.class)
+    public void testCreatePublicKeyFailureNotRsaKey() throws Throwable
+    {
+        this.factory.createPublicKey(this.stringToInputStream(this.publicKeyStringNonRsa));
     }
 
     @Test(expectedExceptions = PublicKeyReadException.class)
@@ -418,23 +520,9 @@ public class KeyFactoryTest
         return new ByteArrayInputStream(string.getBytes(Charset.forName("US-ASCII")));
     }
 
-    protected String publicKeyToPemString(PublicKey key)
-    {
-        StringWriter stringWriter = new StringWriter();
-        PEMWriter pemWriter = new PEMWriter(stringWriter);
-
-        try {
-            pemWriter.writeObject(key);
-            pemWriter.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        return stringWriter.toString();
-    }
-
     private KeyFactory factory;
     private PemParserFactory pemParserFactory;
+    private BcKeyParametersFactory bcPublicKeyParametersFactory;
     private JcePEMDecryptorProviderBuilder decryptorProviderBuilder;
     private JcaPEMKeyConverter keyConverter;
     private String privateKeyString;
@@ -442,4 +530,7 @@ public class KeyFactoryTest
     private String privateKeyStringNoPassword;
     private String publicKeyStringNoPassword;
     private String privateKeyStringWrongIv;
+    private String privateKeyStringNonRsa;
+    private String privateKeyStringNonRsaNoPassword;
+    private String publicKeyStringNonRsa;
 }

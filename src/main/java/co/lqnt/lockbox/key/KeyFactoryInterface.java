@@ -9,12 +9,10 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.KeyPairReadException;
+import co.lqnt.lockbox.key.exception.PrivateKeyReadException;
 import co.lqnt.lockbox.key.exception.PublicKeyReadException;
 import java.io.File;
 import java.io.InputStream;
-import java.security.KeyPair;
-import java.security.PublicKey;
 
 /**
  * The interface implemented by key factories.
@@ -22,96 +20,108 @@ import java.security.PublicKey;
 interface KeyFactoryInterface
 {
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input The PEM data to read.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final InputStream input)
-        throws KeyPairReadException;
+    public PrivateKey createPrivateKey(final InputStream input)
+        throws PrivateKeyReadException;
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input The PEM data to read.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final byte[] input)
-        throws KeyPairReadException;
+    public PrivateKey createPrivateKey(final byte[] input)
+        throws PrivateKeyReadException;
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input The PEM data to read.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final String input)
-        throws KeyPairReadException;
+    public PrivateKey createPrivateKey(final String input)
+        throws PrivateKeyReadException;
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input The PEM data to read.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final File input)
-        throws KeyPairReadException;
+    public PrivateKey createPrivateKey(final File input)
+        throws PrivateKeyReadException;
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input    The PEM data to read.
      * @param password The password to use to decrypt the key.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final InputStream input, final String password)
-        throws KeyPairReadException;
+    public PrivateKey createPrivateKey(
+        final InputStream input,
+        final String password
+    )
+        throws PrivateKeyReadException;
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input    The PEM data to read.
      * @param password The password to use to decrypt the key.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final byte[] input, final String password)
-        throws KeyPairReadException;
+    public PrivateKey createPrivateKey(
+        final byte[] input,
+        final String password
+    )
+        throws PrivateKeyReadException;
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input    The PEM data to read.
      * @param password The password to use to decrypt the key.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final String input, final String password)
-        throws KeyPairReadException;
+    public PrivateKey createPrivateKey(
+        final String input,
+        final String password
+    )
+        throws PrivateKeyReadException;
 
     /**
-     * Create a key pair from a PEM formatted private key.
+     * Create a private key from a PEM formatted private key.
      *
      * @param input    The PEM data to read.
      * @param password The password to use to decrypt the key.
      *
-     * @return The key pair.
-     * @throws KeyPairReadException If reading of the key pair fails.
+     * @return The private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    public KeyPair createKeyPair(final File input, final String password)
-        throws KeyPairReadException;
+    public PrivateKey createPrivateKey(
+        final File input,
+        final String password
+    )
+        throws PrivateKeyReadException;
 
     /**
      * Create a public key from a PEM formatted public key.

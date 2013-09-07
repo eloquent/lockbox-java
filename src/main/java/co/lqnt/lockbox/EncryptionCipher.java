@@ -11,10 +11,9 @@ package co.lqnt.lockbox;
 
 import co.lqnt.lockbox.util.codec.Base64UriCodec;
 import co.lqnt.lockbox.util.codec.CodecInterface;
-import co.lqnt.lockbox.util.codec.exception.DecodingFailedException;
-import co.lqnt.lockbox.exception.DecryptionFailedException;
-import co.lqnt.lockbox.key.PrivateKeyInterface;
-import java.util.Arrays;
+import co.lqnt.lockbox.key.KeyInterface;
+import java.security.InvalidKeyException;
+import java.security.SecureRandom;
 import org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
@@ -32,11 +31,11 @@ import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 
 /**
- * The standard Lockbox decryption cipher.
+ * The standard Lockbox encryption cipher.
  */
-public class DecryptionCipher
+public class EncryptionCipher
 {
-    public DecryptionCipher()
+    public EncryptionCipher()
     {
         this.base64UriCodec = new Base64UriCodec();
         this.rsaCipher = new OAEPEncoding(new RSAEngine(), new SHA1Digest());
@@ -45,6 +44,7 @@ public class DecryptionCipher
             new PKCS7Padding()
         );
         this.sha1Digest = new SHA1Digest();
+        this.random = new SecureRandom();
     }
 
     public CodecInterface base64UriCodec()
@@ -67,124 +67,118 @@ public class DecryptionCipher
         return this.sha1Digest;
     }
 
-    /**
-     * Decrypt a data packet.
-     *
-     * @param key  They key to decrypt with.
-     * @param data The data to decrypt.
-     *
-     * @return The decrypted data.
-     * @throws DecryptionFailedException If the decryption failed.
-     */
-    public byte[] decrypt(final PrivateKeyInterface key, final byte[] data)
-        throws DecryptionFailedException
+    public SecureRandom random()
     {
-        int keySize = key.size() / 8;
+        return this.random;
+    }
 
-        byte[] decodedData;
+    /**
+     * Encrypt a data packet.
+     *
+     * @param key  They key to encrypt with.
+     * @param data The data to encrypt.
+     *
+     * @return The encrypted data.
+     */
+    public byte[] encrypt(final KeyInterface key, final byte[] data)
+        throws InvalidKeyException
+    {
+        byte[] generatedKey = new byte[32];
+        byte[] iv = new byte[16];
+        this.random().nextBytes(generatedKey);
+        this.random().nextBytes(iv);
+
+        byte[] keyAndIv = new byte[48];
+        System.arraycopy(generatedKey, 0, keyAndIv, 0, 32);
+        System.arraycopy(iv, 0, keyAndIv, 32, 16);
+
+        this.rsaCipher().init(true, key.bcKeyParameters());
+
+        byte[] encryptedKeyAndIv;
         try {
-            decodedData = this.base64UriCodec().decode(data);
-        } catch (DecodingFailedException e) {
-            throw new DecryptionFailedException(e);
-        }
-
-        this.rsaCipher().init(false, key.bcKeyParameters());
-
-        byte[] keyAndIv;
-        try {
-            keyAndIv = this.rsaCipher().processBlock(
-                Arrays.copyOfRange(decodedData, 0, keySize),
-                0,
-                keySize
-            );
+            encryptedKeyAndIv = this.rsaCipher().processBlock(keyAndIv, 0, 48);
         } catch (InvalidCipherTextException e) {
-            throw new DecryptionFailedException(e);
-        }
-
-        byte[] generatedKey = Arrays.copyOfRange(keyAndIv, 0, 32);
-
-        byte[] iv;
-        try {
-            iv = Arrays.copyOfRange(keyAndIv, 32, keyAndIv.length);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new DecryptionFailedException(e);
-        }
-
-        byte[] hashAndData = this.decryptAes(
-            generatedKey,
-            iv,
-            Arrays.copyOfRange(decodedData, keySize, decodedData.length)
-        );
-        byte[] verificationHash = Arrays.copyOfRange(hashAndData, 0, 20);
-
-        byte[] decrypted;
-        try {
-            decrypted = Arrays.copyOfRange(hashAndData, 20, hashAndData.length);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new DecryptionFailedException(e);
+            throw new RuntimeException(e);
         }
 
         byte[] hash = new byte[20];
         this.sha1Digest().reset();
-        this.sha1Digest().update(decrypted, 0, decrypted.length);
+        this.sha1Digest().update(data, 0, data.length);
         this.sha1Digest().doFinal(hash, 0);
 
-        if (!Arrays.equals(verificationHash, hash)) {
-            throw new DecryptionFailedException();
-        }
+        byte[] hashAndData = new byte[20 + data.length];
+        System.arraycopy(hash, 0, hashAndData, 0, 20);
+        System.arraycopy(data, 0, hashAndData, 20, data.length);
 
-        return decrypted;
+        byte[] encryptedData = this.encryptAes(generatedKey, iv, hashAndData);
+
+        int encryptedSize = encryptedKeyAndIv.length + encryptedData.length;
+        byte[] encrypted = new byte[encryptedSize];
+        System.arraycopy(
+            encryptedKeyAndIv,
+            0,
+            encrypted,
+            0,
+            encryptedKeyAndIv.length
+        );
+        System.arraycopy(
+            encryptedData,
+            0,
+            encrypted,
+            encryptedKeyAndIv.length,
+            encryptedData.length
+        );
+
+        return this.base64UriCodec().encode(encrypted);
     }
 
     /**
-     * Decrypt some data with AES and PKCS #7 padding.
+     * Encrypt some data with AES and PKCS #7 padding.
      *
      * @param key  The key to use.
      * @param iv   The initialization vector to use.
-     * @param data The data to decrypt.
+     * @param data The data to encrypt.
      *
      * @return The decrypted data.
-     * @throws DecryptionFailedException If the decryption failed.
      */
-    protected byte[] decryptAes(
+    protected byte[] encryptAes(
         final byte[] key,
         final byte[] iv,
         final byte[] data
-    )
-        throws DecryptionFailedException
-    {
+    ) {
         CipherParameters parameters = new ParametersWithIV(
             new KeyParameter(key),
             iv
         );
 
         this.aesCipher().reset();
-        this.aesCipher().init(false, parameters);
+        this.aesCipher().init(true, parameters);
 
         int outputSize = this.aesCipher().getOutputSize(data.length);
-        byte[] decrypted = new byte[outputSize];
+        byte[] encrypted = new byte[outputSize];
 
         int length = this.aesCipher().processBytes(
             data,
             0,
             data.length,
-            decrypted,
+            encrypted,
             0
         );
 
         try {
-            length += this.aesCipher().doFinal(decrypted, length);
+            length += this.aesCipher().doFinal(encrypted, length);
         } catch (InvalidCipherTextException e) {
-            throw new DecryptionFailedException(e);
+            throw new RuntimeException(e);
         } catch (DataLengthException e) {
-            throw new DecryptionFailedException(e);
+            throw new RuntimeException(e);
         }
 
-        return Arrays.copyOfRange(decrypted, 0, length);
+        return encrypted;
     }
 
     private CodecInterface base64UriCodec;
     private AsymmetricBlockCipher rsaCipher;
     private BufferedBlockCipher aesCipher;
     private Digest sha1Digest;
+    private SecureRandom random;
 }

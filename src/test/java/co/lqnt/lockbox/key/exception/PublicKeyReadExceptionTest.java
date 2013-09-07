@@ -20,7 +20,7 @@ public class PublicKeyReadExceptionTest
         Exception cause = new Exception();
         PublicKeyReadException exception = new PublicKeyReadException(cause);
 
-        Assert.assertEquals(exception.getMessage(), "Unable to read a PEM public key from the supplied data.");
+        Assert.assertEquals(exception.getMessage(), "Unable to read a public key from the supplied data.");
         Assert.assertSame(exception.getCause(), cause);
     }
 
@@ -29,7 +29,7 @@ public class PublicKeyReadExceptionTest
     {
         PublicKeyReadException exception = new PublicKeyReadException();
 
-        Assert.assertEquals(exception.getMessage(), "Unable to read a PEM public key from the supplied data.");
+        Assert.assertEquals(exception.getMessage(), "Unable to read a public key from the supplied data.");
         Assert.assertNull(exception.getCause());
     }
 }

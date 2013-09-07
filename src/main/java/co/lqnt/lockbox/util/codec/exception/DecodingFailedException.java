@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-package co.lqnt.lockbox.codec.exception;
+package co.lqnt.lockbox.util.codec.exception;
 
 /**
  * Decoding failed.

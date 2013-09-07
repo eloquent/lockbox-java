@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-package co.lqnt.lockbox.pem;
+package co.lqnt.lockbox.util;
 
 import java.io.InputStream;
 import org.bouncycastle.openssl.PEMParser;

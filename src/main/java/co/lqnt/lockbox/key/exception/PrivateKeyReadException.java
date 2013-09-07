@@ -10,27 +10,27 @@
 package co.lqnt.lockbox.key.exception;
 
 /**
- * Unable to read a PEM key pair from the supplied data.
+ * Unable to read a private key from the supplied data.
  */
-final public class KeyPairReadException extends Exception
+final public class PrivateKeyReadException extends Exception
 {
     /**
-     * Construct a new key pair read exception.
+     * Construct a new private key read exception.
      *
      * @param cause The cause.
      */
-    public KeyPairReadException(final Throwable cause)
+    public PrivateKeyReadException(final Throwable cause)
     {
         super(
-            "Unable to read a PEM key pair from the supplied data.",
+            "Unable to read a private key from the supplied data.",
             cause
         );
     }
 
     /**
-     * Construct a new key pair read exception.
+     * Construct a new private key read exception.
      */
-    public KeyPairReadException()
+    public PrivateKeyReadException()
     {
         this(null);
     }
