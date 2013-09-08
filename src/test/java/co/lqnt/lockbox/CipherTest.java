@@ -73,8 +73,8 @@ public class CipherTest
         Assert.assertSame(this.cipher.decryptionCipher().getClass(), DecryptionCipher.class);
     }
 
-    @DataProvider(name = "encryptedData")
-    public Object[][] encryptedData()
+    @DataProvider(name = "encryptionData")
+    public Object[][] encryptionData()
     {
         StringBuilder longData = new StringBuilder(8192);
         for (int i = 0; i < 8192; ++i) {
@@ -88,7 +88,7 @@ public class CipherTest
         };
     }
 
-    @Test(dataProvider = "encryptedData")
+    @Test(dataProvider = "encryptionData")
     public void testEncryptDecrypt(String data) throws Throwable
     {
         byte[] encrypted = this.cipher.encrypt(this.key, data.getBytes(Charset.forName("US-ASCII")));
@@ -97,7 +97,7 @@ public class CipherTest
         Assert.assertEquals(new String(decrypted, Charset.forName("US-ASCII")), data);
     }
 
-    @Test(dataProvider = "encryptedData")
+    @Test(dataProvider = "encryptionData")
     public void testEncryptPublic(String data) throws Throwable
     {
         byte[] encrypted = this.cipher.encrypt(this.key.publicKey(), data.getBytes(Charset.forName("US-ASCII")));
