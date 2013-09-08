@@ -16,10 +16,15 @@ public class SecureRandom implements SecureRandomInterface
 {
     /**
      * Construct a new secure random generator.
+     *
+     * Using this constructor will instantiate the JCE SecureRandom instance
+     * only when it is requested, which can improve performance, as
+     * instantiation of JCE SecureRandom instances (without a seed) can be a
+     * relatively costly operation.
      */
     public SecureRandom()
     {
-        this.jceSecureRandom = new java.security.SecureRandom();
+        this.jceSecureRandom = null;
     }
 
     /**
@@ -30,16 +35,6 @@ public class SecureRandom implements SecureRandomInterface
     public SecureRandom(java.security.SecureRandom jceSecureRandom)
     {
         this.jceSecureRandom = jceSecureRandom;
-    }
-
-    /**
-     * Get the internal JCE secure random generator.
-     *
-     * @return The internal random generator.
-     */
-    public java.security.SecureRandom jceSecureRandom()
-    {
-        return this.jceSecureRandom;
     }
 
     /**
@@ -55,6 +50,20 @@ public class SecureRandom implements SecureRandomInterface
         this.jceSecureRandom().nextBytes(random);
 
         return random;
+    }
+
+    /**
+     * Get the internal JCE secure random generator.
+     *
+     * @return The internal random generator.
+     */
+    public java.security.SecureRandom jceSecureRandom()
+    {
+        if (null == this.jceSecureRandom) {
+            this.jceSecureRandom = new java.security.SecureRandom();
+        }
+
+        return this.jceSecureRandom;
     }
 
     private java.security.SecureRandom jceSecureRandom;

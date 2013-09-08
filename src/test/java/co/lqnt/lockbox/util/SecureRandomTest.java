@@ -25,14 +25,17 @@ public class SecureRandomTest
     public void testConstructor()
     {
         Assert.assertSame(this.random.jceSecureRandom(), this.jceSecureRandom);
+        Assert.assertSame(this.random.jceSecureRandom(), this.jceSecureRandom);
     }
 
     @Test
     public void testConstructorDefaults()
     {
         this.random = new SecureRandom();
+        java.security.SecureRandom actualJceSecureRandom = this.random.jceSecureRandom();
 
-        Assert.assertTrue(this.random.jceSecureRandom() instanceof java.security.SecureRandom);
+        Assert.assertTrue(actualJceSecureRandom instanceof java.security.SecureRandom);
+        Assert.assertSame(this.random.jceSecureRandom(), actualJceSecureRandom);
     }
 
     @Test

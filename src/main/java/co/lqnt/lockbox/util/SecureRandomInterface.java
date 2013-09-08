@@ -22,4 +22,11 @@ public interface SecureRandomInterface
      * @return The random byte array
      */
     public byte[] generate(int size);
+
+    /**
+     * Get the internal JCE secure random generator.
+     *
+     * @return The internal random generator.
+     */
+    public java.security.SecureRandom jceSecureRandom();
 }

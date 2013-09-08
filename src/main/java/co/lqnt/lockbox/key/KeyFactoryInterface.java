@@ -20,6 +20,22 @@ import java.io.InputStream;
 interface KeyFactoryInterface
 {
     /**
+     * Generate a new private key.
+     *
+     * @return The private key.
+     */
+    public PrivateKey generatePrivateKey();
+
+    /**
+     * Generate a new private key.
+     *
+     * @param size The size of the key in bits.
+     *
+     * @return The private key.
+     */
+    public PrivateKey generatePrivateKey(final int size);
+
+    /**
      * Create a private key from a PEM formatted private key.
      *
      * @param input The PEM data to read.

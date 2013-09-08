@@ -13,15 +13,20 @@ import co.lqnt.lockbox.key.exception.PrivateKeyReadException;
 import co.lqnt.lockbox.key.exception.PublicKeyReadException;
 import co.lqnt.lockbox.util.BcKeyParametersFactory;
 import co.lqnt.lockbox.util.PemParserFactory;
+import co.lqnt.lockbox.util.SecureRandom;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
+import org.bouncycastle.crypto.AsymmetricCipherKeyPairGenerator;
+import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
@@ -47,10 +52,16 @@ public class KeyFactoryTest
         this.keyConverter = new JcaPEMKeyConverter();
         this.keyConverter.setProvider(provider);
 
+        this.keyGenerator = new RSAKeyPairGenerator();
+
+        this.random = new SecureRandom();
+
         this.factory = new KeyFactory(
             this.pemParserFactory,
             this.bcPublicKeyParametersFactory,
-            this.decryptorProviderBuilder
+            this.decryptorProviderBuilder,
+            this.keyGenerator,
+            this.random
         );
 
         this.privateKeyString =
@@ -236,6 +247,8 @@ public class KeyFactoryTest
         Assert.assertSame(this.factory.pemParserFactory(), this.pemParserFactory);
         Assert.assertSame(this.factory.bcKeyParametersFactory(), this.bcPublicKeyParametersFactory);
         Assert.assertSame(this.factory.decryptorProviderBuilder(), this.decryptorProviderBuilder);
+        Assert.assertSame(this.factory.keyGenerator(), this.keyGenerator);
+        Assert.assertSame(this.factory.random(), this.random);
     }
 
     @Test
@@ -246,6 +259,42 @@ public class KeyFactoryTest
         Assert.assertSame(this.factory.pemParserFactory().getClass(), PemParserFactory.class);
         Assert.assertSame(this.factory.bcKeyParametersFactory().getClass(), BcKeyParametersFactory.class);
         Assert.assertSame(this.factory.decryptorProviderBuilder().getClass(), JcePEMDecryptorProviderBuilder.class);
+        Assert.assertSame(this.factory.keyGenerator().getClass(), RSAKeyPairGenerator.class);
+        Assert.assertSame(this.factory.random().getClass(), SecureRandom.class);
+    }
+
+    @Test
+    public void testGeneratePrivateKey()
+    {
+        PrivateKey privateKey = this.factory.generatePrivateKey();
+
+        Assert.assertEquals(privateKey.publicExponent(), BigInteger.valueOf(65537));
+        Assert.assertEquals(privateKey.size(), 2048);
+    }
+
+    @Test
+    public void testGeneratePrivateKeyWithSize()
+    {
+        PrivateKey privateKey = this.factory.generatePrivateKey(4096);
+
+        Assert.assertEquals(privateKey.publicExponent(), BigInteger.valueOf(65537));
+        Assert.assertEquals(privateKey.size(), 4096);
+    }
+
+    @Test(expectedExceptions = RuntimeException.class)
+    public void testGeneratePrivateKeyFailure()
+    {
+        AsymmetricCipherKeyPairGenerator mockKeyGenerator = Mockito.mock(AsymmetricCipherKeyPairGenerator.class);
+        Mockito.when(mockKeyGenerator.generateKeyPair()).thenReturn(new AsymmetricCipherKeyPair(null, null));
+        this.factory = new KeyFactory(
+            this.pemParserFactory,
+            this.bcPublicKeyParametersFactory,
+            this.decryptorProviderBuilder,
+            mockKeyGenerator,
+            this.random
+        );
+
+        this.factory.generatePrivateKey();
     }
 
     @Test
@@ -369,7 +418,9 @@ public class KeyFactoryTest
         this.factory = new KeyFactory(
             this.pemParserFactory,
             mockKeyParametersFactory,
-            this.decryptorProviderBuilder
+            this.decryptorProviderBuilder,
+            this.keyGenerator,
+            this.random
         );
 
         this.factory.createPrivateKey(this.stringToInputStream(this.privateKeyString), "password");
@@ -384,7 +435,9 @@ public class KeyFactoryTest
         this.factory = new KeyFactory(
             this.pemParserFactory,
             mockKeyParametersFactory,
-            this.decryptorProviderBuilder
+            this.decryptorProviderBuilder,
+            this.keyGenerator,
+            this.random
         );
 
         this.factory.createPrivateKey(this.stringToInputStream(this.privateKeyStringNoPassword));
@@ -480,7 +533,9 @@ public class KeyFactoryTest
         this.factory = new KeyFactory(
             this.pemParserFactory,
             mockKeyParametersFactory,
-            this.decryptorProviderBuilder
+            this.decryptorProviderBuilder,
+            this.keyGenerator,
+            this.random
         );
 
         this.factory.createPublicKey(this.stringToInputStream(this.publicKeyString));
@@ -525,6 +580,8 @@ public class KeyFactoryTest
     private BcKeyParametersFactory bcPublicKeyParametersFactory;
     private JcePEMDecryptorProviderBuilder decryptorProviderBuilder;
     private JcaPEMKeyConverter keyConverter;
+    private RSAKeyPairGenerator keyGenerator;
+    private SecureRandom random;
     private String privateKeyString;
     private String publicKeyString;
     private String privateKeyStringNoPassword;
