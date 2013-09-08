@@ -26,7 +26,6 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
-import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMDecryptorProvider;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
@@ -45,14 +44,12 @@ public class KeyFactory implements KeyFactoryInterface
      */
     public KeyFactory()
     {
-        BouncyCastleProvider provider = new BouncyCastleProvider();
-
         this.pemParserFactory = new PemParserFactory();
         this.bcKeyParametersFactory = new BcKeyParametersFactory();
 
         this.decryptorProviderBuilder =
             new JcePEMDecryptorProviderBuilder();
-        this.decryptorProviderBuilder.setProvider(provider);
+        this.decryptorProviderBuilder.setProvider(new BouncyCastleProvider());
     }
 
     /**

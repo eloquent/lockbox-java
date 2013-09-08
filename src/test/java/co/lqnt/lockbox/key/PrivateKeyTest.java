@@ -12,19 +12,15 @@ package co.lqnt.lockbox.key;
 import co.lqnt.lockbox.util.PemWriterFactory;
 import co.lqnt.lockbox.util.PrivateKeyInformationFactory;
 import co.lqnt.lockbox.util.StringWriterFactory;
-import co.lqnt.lockbox.util.PublicKeyInformationFactory;
 import java.io.IOException;
 import java.io.StringWriter;
 import javax.xml.bind.DatatypeConverter;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
-import org.bouncycastle.asn1.pkcs.RSAPublicKey;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
-import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
@@ -271,6 +267,15 @@ public class PrivateKeyTest
     public void testToPem()
     {
         Assert.assertEquals(this.key.toPem(), this.keyString);
+    }
+
+    @Test
+    public void testToPemWithPassword() throws Throwable
+    {
+        String encryptedKey = this.key.toPem("password");
+        PrivateKey decryptedKey = this.factory.createPrivateKey(encryptedKey, "password");
+
+        Assert.assertEquals(decryptedKey.toPem(), this.keyString);
     }
 
     @Test(expectedExceptions = RuntimeException.class)

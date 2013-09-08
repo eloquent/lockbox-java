@@ -11,9 +11,10 @@ package co.lqnt.lockbox;
 
 import co.lqnt.lockbox.util.codec.Base64UriCodec;
 import co.lqnt.lockbox.util.codec.CodecInterface;
-import co.lqnt.lockbox.key.KeyInterface;
-import java.security.InvalidKeyException;
-import java.security.SecureRandom;
+import co.lqnt.lockbox.key.PrivateKeyInterface;
+import co.lqnt.lockbox.key.PublicKeyInterface;
+import co.lqnt.lockbox.util.SecureRandom;
+import co.lqnt.lockbox.util.SecureRandomInterface;
 import org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
@@ -33,8 +34,11 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 /**
  * The standard Lockbox encryption cipher.
  */
-public class EncryptionCipher
+public class EncryptionCipher implements EncryptionCipherInterface
 {
+    /**
+     * Construct a new encryption cipher.
+     */
     public EncryptionCipher()
     {
         this.base64UriCodec = new Base64UriCodec();
@@ -47,27 +51,75 @@ public class EncryptionCipher
         this.random = new SecureRandom();
     }
 
+    /**
+     * Construct a new encryption cipher.
+     *
+     * @param base64UriCodec The URI-safe Base64 codec to use.
+     * @param rsaCipher      The Bouncy Castle RSA cipher to use.
+     * @param aesCipher      The Bouncy Castle AES cipher to use.
+     * @param sha1Digest     The Bouncy Castle SHA-1 message digest to use.
+     * @param random         The secure random generator to use.
+     */
+    public EncryptionCipher(
+        CodecInterface base64UriCodec,
+        AsymmetricBlockCipher rsaCipher,
+        BufferedBlockCipher aesCipher,
+        Digest sha1Digest,
+        SecureRandomInterface random
+    ) {
+        this.base64UriCodec = base64UriCodec;
+        this.rsaCipher = rsaCipher;
+        this.aesCipher = aesCipher;
+        this.sha1Digest = sha1Digest;
+        this.random = random;
+    }
+
+    /**
+     * Get the URI-safe Base64 codec.
+     *
+     * @return The URI-safe Base64 codec.
+     */
     public CodecInterface base64UriCodec()
     {
         return this.base64UriCodec;
     }
 
+    /**
+     * Get the Bouncy Castle RSA cipher.
+     *
+     * @return The Bouncy Castle RSA cipher.
+     */
     public AsymmetricBlockCipher rsaCipher()
     {
         return this.rsaCipher;
     }
 
+    /**
+     * Get the Bouncy Castle AES cipher.
+     *
+     * @return The Bouncy Castle AES cipher.
+     */
     public BufferedBlockCipher aesCipher()
     {
         return this.aesCipher;
     }
 
+    /**
+     * Get the Bouncy Castle SHA-1 message digest.
+     *
+     * @return The Bouncy Castle SHA-1 message digest.
+     */
     public Digest sha1Digest()
     {
         return this.sha1Digest;
     }
 
-    public SecureRandom random()
+    /**
+     * Get the secure random generator.
+     *
+     * @return The secure random generator.
+     */
+    public SecureRandomInterface random()
     {
         return this.random;
     }
@@ -80,13 +132,10 @@ public class EncryptionCipher
      *
      * @return The encrypted data.
      */
-    public byte[] encrypt(final KeyInterface key, final byte[] data)
-        throws InvalidKeyException
+    public byte[] encrypt(final PublicKeyInterface key, final byte[] data)
     {
-        byte[] generatedKey = new byte[32];
-        byte[] iv = new byte[16];
-        this.random().nextBytes(generatedKey);
-        this.random().nextBytes(iv);
+        byte[] generatedKey = this.random().generate(32);
+        byte[] iv = this.random().generate(16);
 
         byte[] keyAndIv = new byte[48];
         System.arraycopy(generatedKey, 0, keyAndIv, 0, 32);
@@ -130,6 +179,19 @@ public class EncryptionCipher
         );
 
         return this.base64UriCodec().encode(encrypted);
+    }
+
+    /**
+     * Encrypt a data packet.
+     *
+     * @param key  They key to encrypt with.
+     * @param data The data to encrypt.
+     *
+     * @return The encrypted data.
+     */
+    public byte[] encrypt(final PrivateKeyInterface key, final byte[] data)
+    {
+        return this.encrypt(key.publicKey(), data);
     }
 
     /**
@@ -180,5 +242,5 @@ public class EncryptionCipher
     private AsymmetricBlockCipher rsaCipher;
     private BufferedBlockCipher aesCipher;
     private Digest sha1Digest;
-    private SecureRandom random;
+    private SecureRandomInterface random;
 }

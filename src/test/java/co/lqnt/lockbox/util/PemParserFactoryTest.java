@@ -14,7 +14,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.openssl.PEMParser;
-import org.junit.Assert;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class PemParserFactoryTest

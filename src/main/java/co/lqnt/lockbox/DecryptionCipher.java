@@ -34,8 +34,11 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 /**
  * The standard Lockbox decryption cipher.
  */
-public class DecryptionCipher
+public class DecryptionCipher implements DecryptionCipherInterface
 {
+    /**
+     * Construct a new decryption cipher.
+     */
     public DecryptionCipher()
     {
         this.base64UriCodec = new Base64UriCodec();
@@ -47,21 +50,61 @@ public class DecryptionCipher
         this.sha1Digest = new SHA1Digest();
     }
 
+    /**
+     * Construct a new decryption cipher.
+     *
+     * @param base64UriCodec The URI-safe Base64 codec to use.
+     * @param rsaCipher      The Bouncy Castle RSA cipher to use.
+     * @param aesCipher      The Bouncy Castle AES cipher to use.
+     * @param sha1Digest     The Bouncy Castle SHA-1 message digest to use.
+     */
+    public DecryptionCipher(
+        CodecInterface base64UriCodec,
+        AsymmetricBlockCipher rsaCipher,
+        BufferedBlockCipher aesCipher,
+        Digest sha1Digest
+    ) {
+        this.base64UriCodec = base64UriCodec;
+        this.rsaCipher = rsaCipher;
+        this.aesCipher = aesCipher;
+        this.sha1Digest = sha1Digest;
+    }
+
+    /**
+     * Get the URI-safe Base64 codec.
+     *
+     * @return The URI-safe Base64 codec.
+     */
     public CodecInterface base64UriCodec()
     {
         return this.base64UriCodec;
     }
 
+    /**
+     * Get the Bouncy Castle RSA cipher.
+     *
+     * @return The Bouncy Castle RSA cipher.
+     */
     public AsymmetricBlockCipher rsaCipher()
     {
         return this.rsaCipher;
     }
 
+    /**
+     * Get the Bouncy Castle AES cipher.
+     *
+     * @return The Bouncy Castle AES cipher.
+     */
     public BufferedBlockCipher aesCipher()
     {
         return this.aesCipher;
     }
 
+    /**
+     * Get the Bouncy Castle SHA-1 message digest.
+     *
+     * @return The Bouncy Castle SHA-1 message digest.
+     */
     public Digest sha1Digest()
     {
         return this.sha1Digest;
@@ -106,7 +149,7 @@ public class DecryptionCipher
         byte[] iv;
         try {
             iv = Arrays.copyOfRange(keyAndIv, 32, keyAndIv.length);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (IllegalArgumentException e) {
             throw new DecryptionFailedException(e);
         }
 
@@ -120,7 +163,7 @@ public class DecryptionCipher
         byte[] decrypted;
         try {
             decrypted = Arrays.copyOfRange(hashAndData, 20, hashAndData.length);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (IllegalArgumentException e) {
             throw new DecryptionFailedException(e);
         }
 
@@ -159,7 +202,12 @@ public class DecryptionCipher
         );
 
         this.aesCipher().reset();
-        this.aesCipher().init(false, parameters);
+
+        try {
+            this.aesCipher().init(false, parameters);
+        } catch (IllegalArgumentException e) {
+            throw new DecryptionFailedException(e);
+        }
 
         int outputSize = this.aesCipher().getOutputSize(data.length);
         byte[] decrypted = new byte[outputSize];

@@ -23,9 +23,11 @@ import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMEncryptor;
 import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.openssl.jcajce.JcePEMEncryptorBuilder;
 
 /**
  * Represents a Lockbox private key.
@@ -288,6 +290,28 @@ public class PrivateKey implements PrivateKeyInterface
     /**
      * Get this key as a PEM formatted string.
      *
+     * @param password A password to encrypt the PEM data with.
+     *
+     * @return The PEM formatted key.
+     */
+    public String toPem(final String password)
+    {
+        JcePEMEncryptorBuilder encryptorBuilder = new JcePEMEncryptorBuilder(
+            "DES-EDE3-CBC"
+        );
+        encryptorBuilder.setProvider(new BouncyCastleProvider());
+
+        return this.toPem(
+            password,
+            encryptorBuilder,
+            new StringWriterFactory(),
+            new PemWriterFactory()
+        );
+    }
+
+    /**
+     * Get this key as a PEM formatted string.
+     *
      * @param stringWriterFactory The string writer factory to use.
      * @param pemWriterFactory    The PEM writer factory to use.
      *
@@ -297,12 +321,40 @@ public class PrivateKey implements PrivateKeyInterface
         final StringWriterFactoryInterface stringWriterFactory,
         final PemWriterFactoryInterface pemWriterFactory
     ) {
+        return this.toPem(null, null, stringWriterFactory, pemWriterFactory);
+    }
+
+    /**
+     * Get this key as an encrypted PEM formatted string.
+     *
+     * @param password            A password to encrypt the PEM data with.
+     * @param encryptorBuilder    The encryptor builder to use.
+     * @param stringWriterFactory The string writer factory to use.
+     * @param pemWriterFactory    The PEM writer factory to use.
+     *
+     * @return The PEM formatted key.
+     */
+    public String toPem(
+        final String password,
+        final JcePEMEncryptorBuilder encryptorBuilder,
+        final StringWriterFactoryInterface stringWriterFactory,
+        final PemWriterFactoryInterface pemWriterFactory
+    ) {
+        PEMEncryptor encryptor = null;
+        if (null != password) {
+            encryptor = encryptorBuilder.build(password.toCharArray());
+        }
+
         StringWriter stringWriter = stringWriterFactory.create();
         PEMWriter pemWriter = pemWriterFactory.create(stringWriter);
 
         IOException error = null;
         try {
-            pemWriter.writeObject(this.bcPrivateKeyInfo());
+            if (null == encryptor) {
+                pemWriter.writeObject(this.bcPrivateKeyInfo());
+            } else {
+                pemWriter.writeObject(this.bcPrivateKeyInfo(), encryptor);
+            }
         } catch (IOException e) {
             error = e;
         }

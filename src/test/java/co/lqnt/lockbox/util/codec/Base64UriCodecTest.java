@@ -77,6 +77,7 @@ public class Base64UriCodecTest
     public Object[][] invalidData()
     {
         return new Object[][]{
+            {"foo:bar"},
             {"Zgo="},
             {"fn5+P18/"}
         };
