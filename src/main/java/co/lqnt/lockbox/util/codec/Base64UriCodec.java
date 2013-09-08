@@ -35,7 +35,7 @@ public class Base64UriCodec implements CodecInterface
             .replace("=", "")
             .getBytes(Charset.forName("US-ASCII"));
     }
-    
+
     /**
      * Encode the supplied data packet.
      *
@@ -75,15 +75,17 @@ public class Base64UriCodec implements CodecInterface
             throw new DecodingFailedException();
         }
 
-        String transformedData = data.replace('-', '+').replace('_', '/');
+        StringBuilder transformedData = new StringBuilder(
+            data.replace('-', '+').replace('_', '/')
+        );
 
         int remainder = transformedData.length() % 4;
         if (0 != remainder) {
             for (int i = 0; i < 4 - remainder; ++i) {
-                transformedData += "=";
+                transformedData.append('=');
             }
         }
 
-        return DatatypeConverter.parseBase64Binary(transformedData);
+        return DatatypeConverter.parseBase64Binary(transformedData.toString());
     }
 }

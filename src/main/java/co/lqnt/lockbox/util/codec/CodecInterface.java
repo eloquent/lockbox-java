@@ -11,6 +11,9 @@ package co.lqnt.lockbox.util.codec;
 
 import co.lqnt.lockbox.util.codec.exception.DecodingFailedException;
 
+/**
+ * The interface implemented by codecs.
+ */
 public interface CodecInterface
 {
     /**

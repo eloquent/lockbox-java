@@ -34,7 +34,7 @@ public class SecureRandomTest
         this.random = new SecureRandom();
         java.security.SecureRandom actualJceSecureRandom = this.random.jceSecureRandom();
 
-        Assert.assertTrue(actualJceSecureRandom instanceof java.security.SecureRandom);
+        Assert.assertNotNull(actualJceSecureRandom);
         Assert.assertSame(this.random.jceSecureRandom(), actualJceSecureRandom);
     }
 

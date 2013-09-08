@@ -15,6 +15,7 @@ import co.lqnt.lockbox.key.PrivateKeyInterface;
 import co.lqnt.lockbox.key.PublicKeyInterface;
 import co.lqnt.lockbox.util.SecureRandom;
 import co.lqnt.lockbox.util.SecureRandomInterface;
+import java.util.Arrays;
 import org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
@@ -235,7 +236,7 @@ public class EncryptionCipher implements EncryptionCipherInterface
             throw new RuntimeException(e);
         }
 
-        return encrypted;
+        return Arrays.copyOfRange(encrypted, 0, length);
     }
 
     private CodecInterface base64UriCodec;
