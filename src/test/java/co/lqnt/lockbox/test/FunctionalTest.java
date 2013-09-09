@@ -9,13 +9,20 @@
 
 package co.lqnt.lockbox.test;
 
+import co.lqnt.lockbox.BoundDecryptionCipher;
+import co.lqnt.lockbox.BoundEncryptionCipher;
 import co.lqnt.lockbox.Cipher;
 import co.lqnt.lockbox.DecryptionCipher;
 import co.lqnt.lockbox.EncryptionCipher;
+import co.lqnt.lockbox.exception.DecryptionFailedException;
 import co.lqnt.lockbox.key.KeyFactory;
 import co.lqnt.lockbox.key.PrivateKey;
+import co.lqnt.lockbox.key.PublicKey;
+import co.lqnt.lockbox.key.exception.PrivateKeyReadException;
 import co.lqnt.lockbox.util.SecureRandom;
 import co.lqnt.lockbox.util.codec.Base64UriCodec;
+import java.io.File;
+import java.net.URI;
 import java.nio.charset.Charset;
 import org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
@@ -40,6 +47,8 @@ public class FunctionalTest
         this.cipher = new Cipher(this.encryptionCipher, this.decryptionCipher);
 
         this.keyFactory = new KeyFactory();
+
+        this.exampleKeyFileUri = this.getClass().getClassLoader().getResource("pem/rsa-2048.private.pem").toURI();
     }
 
     @DataProvider(name = "specVectorData")
@@ -170,10 +179,7 @@ public class FunctionalTest
         PrivateKey privateKey = this.keyFactory.createPrivateKey(
             this.getClass().getClassLoader().getResourceAsStream(String.format("pem/rsa-%d-nopass.private.pem", bits))
         );
-        String actualEncrypted = new String(
-            this.encryptionCipher.encrypt(privateKey, data.getBytes(Charset.forName("US-ASCII"))),
-            Charset.forName("US-ASCII")
-        );
+        String actualEncrypted = this.encryptionCipher.encrypt(privateKey, data);
 
         Assert.assertEquals(actualEncrypted.substring(rsaLength), encrypted.substring(rsaLength));
     }
@@ -192,16 +198,140 @@ public class FunctionalTest
         PrivateKey privateKey = this.keyFactory.createPrivateKey(
             this.getClass().getClassLoader().getResourceAsStream(String.format("pem/rsa-%d-nopass.private.pem", bits))
         );
-        String decrypted = new String(
-            this.cipher.decrypt(privateKey, encrypted.getBytes(Charset.forName("US-ASCII"))),
-            Charset.forName("US-ASCII")
-        );
+        String decrypted = this.cipher.decrypt(privateKey, encrypted);
 
         Assert.assertEquals(decrypted, data);
+    }
+
+    @Test
+    public void testEncryptDecryptWithGeneratedKey() throws Throwable
+    {
+        PrivateKey privateKey = this.keyFactory.generatePrivateKey();
+        String encrypted = this.cipher.encrypt(privateKey, "foobar");
+        String decrypted = this.cipher.decrypt(privateKey, encrypted);
+
+        Assert.assertEquals(decrypted, "foobar");
+    }
+
+    @Test
+    public void testEncryptDecryptWithLargeGeneratedKey() throws Throwable
+    {
+        PrivateKey privateKey = this.keyFactory.generatePrivateKey(4096);
+        String encrypted = this.cipher.encrypt(privateKey, "foobar");
+        String decrypted = this.cipher.decrypt(privateKey, encrypted);
+
+        Assert.assertEquals(decrypted, "foobar");
+    }
+
+    @Test
+    public void testDocumentationSyntaxGeneratingKeys()
+    {
+        KeyFactory keyFactory = new KeyFactory();
+
+        PrivateKey privateKey = keyFactory.generatePrivateKey();
+        // System.out.println(privateKey.toString()); // outputs the key in PEM format
+
+        PublicKey publicKey = privateKey.publicKey();
+        // System.out.println(publicKey.toString()); // outputs the key in PEM format
+    }
+
+    @Test
+    public void testDocumentationSyntaxEncrypting()
+    {
+        String data = "Super secret data.";
+
+        KeyFactory keyFactory = new KeyFactory();
+        PrivateKey key;
+        try {
+            key = keyFactory.createPrivateKey(new File(this.exampleKeyFileUri), "password");
+        } catch (PrivateKeyReadException e) {
+            throw new RuntimeException("MISSION ABORT!", e); // this could be handled much better...
+        }
+
+        EncryptionCipher cipher = new EncryptionCipher();
+        String encrypted = cipher.encrypt(key, data);
+    }
+
+    @Test
+    public void testDocumentationSyntaxEncryptingMultiple()
+    {
+        String[] data = new String[] {
+            "Super secret data.",
+            "Extra secret data.",
+            "Mega secret data."
+        };
+
+        KeyFactory keyFactory = new KeyFactory();
+        PrivateKey key;
+        try {
+            key = keyFactory.createPrivateKey(new File(this.exampleKeyFileUri), "password");
+        } catch (PrivateKeyReadException e) {
+            throw new RuntimeException("MISSION ABORT!", e); // this could be handled much better...
+        }
+
+        BoundEncryptionCipher cipher = new BoundEncryptionCipher(key);
+
+        String[] encrypted = new String[data.length];
+        for (int i = 0; i < data.length; ++i) {
+            encrypted[i] = cipher.encrypt(data[i]);
+        }
+    }
+
+    @Test
+    public void testDocumentationSyntaxDecrypting()
+    {
+        String encrypted = "<some encrypted data>";
+
+        KeyFactory keyFactory = new KeyFactory();
+        PrivateKey key;
+        try {
+            key = keyFactory.createPrivateKey(new File(this.exampleKeyFileUri), "password");
+        } catch (PrivateKeyReadException e) {
+            throw new RuntimeException("MISSION ABORT!", e); // this could be handled much better...
+        }
+
+        DecryptionCipher cipher = new DecryptionCipher();
+
+        String data;
+        try {
+            data = cipher.decrypt(key, encrypted);
+        } catch (DecryptionFailedException e) {
+            // decryption failed
+        }
+    }
+
+    @Test
+    public void testDocumentationSyntaxDecryptingMultiple()
+    {
+        String[] encrypted = new String[] {
+            "<some encrypted data>",
+            "<more encrypted data>",
+            "<other encrypted data>"
+        };
+
+        KeyFactory keyFactory = new KeyFactory();
+        PrivateKey key;
+        try {
+            key = keyFactory.createPrivateKey(new File(this.exampleKeyFileUri), "password");
+        } catch (PrivateKeyReadException e) {
+            throw new RuntimeException("MISSION ABORT!", e); // this could be handled much better...
+        }
+
+        BoundDecryptionCipher cipher = new BoundDecryptionCipher(key);
+
+        String[] data = new String[encrypted.length];
+        for (int i = 0; i < encrypted.length; ++i) {
+            try {
+                data[i] = cipher.decrypt(encrypted[i]);
+            } catch (DecryptionFailedException e) {
+                // decryption failed
+            }
+        }
     }
 
     private EncryptionCipher encryptionCipher;
     private DecryptionCipher decryptionCipher;
     private Cipher cipher;
     private KeyFactory keyFactory;
+    private URI exampleKeyFileUri;
 }
