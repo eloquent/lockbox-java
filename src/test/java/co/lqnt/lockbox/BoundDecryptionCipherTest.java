@@ -70,6 +70,15 @@ public class BoundDecryptionCipherTest
         Assert.assertEquals(new String(decrypted, Charset.forName("US-ASCII")), data);
     }
 
+    @Test(dataProvider = "encryptionData")
+    public void testEncryptDecryptString(String data) throws Throwable
+    {
+        String encrypted = this.encryptionCipher.encrypt(this.key, data);
+        String decrypted = this.cipher.decrypt(encrypted);
+
+        Assert.assertEquals(decrypted, data);
+    }
+
     private KeyFactory keyFactory;
     private PrivateKey key;
     private DecryptionCipher decryptionCipher;

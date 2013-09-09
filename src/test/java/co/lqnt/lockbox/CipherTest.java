@@ -98,12 +98,30 @@ public class CipherTest
     }
 
     @Test(dataProvider = "encryptionData")
+    public void testEncryptDecryptString(String data) throws Throwable
+    {
+        String encrypted = this.cipher.encrypt(this.key, data);
+        String decrypted = this.cipher.decrypt(this.key, encrypted);
+
+        Assert.assertEquals(decrypted, data);
+    }
+
+    @Test(dataProvider = "encryptionData")
     public void testEncryptPublic(String data) throws Throwable
     {
         byte[] encrypted = this.cipher.encrypt(this.key.publicKey(), data.getBytes(Charset.forName("US-ASCII")));
         byte[] decrypted = this.cipher.decrypt(this.key, encrypted);
 
         Assert.assertEquals(new String(decrypted, Charset.forName("US-ASCII")), data);
+    }
+
+    @Test(dataProvider = "encryptionData")
+    public void testEncryptDecryptStringPublic(String data) throws Throwable
+    {
+        String encrypted = this.cipher.encrypt(this.key.publicKey(), data);
+        String decrypted = this.cipher.decrypt(this.key, encrypted);
+
+        Assert.assertEquals(decrypted, data);
     }
 
     @Test(expectedExceptions = RuntimeException.class)

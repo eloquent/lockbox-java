@@ -14,6 +14,7 @@ import co.lqnt.lockbox.util.codec.CodecInterface;
 import co.lqnt.lockbox.util.codec.exception.DecodingFailedException;
 import co.lqnt.lockbox.exception.DecryptionFailedException;
 import co.lqnt.lockbox.key.PrivateKeyInterface;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
@@ -48,6 +49,7 @@ public class DecryptionCipher implements DecryptionCipherInterface
             new PKCS7Padding()
         );
         this.sha1Digest = new SHA1Digest();
+        this.asciiCharset = Charset.forName("US-ASCII");
     }
 
     /**
@@ -68,6 +70,7 @@ public class DecryptionCipher implements DecryptionCipherInterface
         this.rsaCipher = rsaCipher;
         this.aesCipher = aesCipher;
         this.sha1Digest = sha1Digest;
+        this.asciiCharset = Charset.forName("US-ASCII");
     }
 
     /**
@@ -180,6 +183,24 @@ public class DecryptionCipher implements DecryptionCipherInterface
     }
 
     /**
+     * Decrypt a data packet.
+     *
+     * @param key  They key to decrypt with.
+     * @param data The data to decrypt.
+     *
+     * @return The decrypted data.
+     * @throws DecryptionFailedException If the decryption failed.
+     */
+    public String decrypt(final PrivateKeyInterface key, final String data)
+        throws DecryptionFailedException
+    {
+        return new String(
+            this.decrypt(key, data.getBytes(this.asciiCharset)),
+            this.asciiCharset
+        );
+    }
+
+    /**
      * Decrypt some data with AES and PKCS #7 padding.
      *
      * @param key  The key to use.
@@ -235,4 +256,5 @@ public class DecryptionCipher implements DecryptionCipherInterface
     private AsymmetricBlockCipher rsaCipher;
     private BufferedBlockCipher aesCipher;
     private Digest sha1Digest;
+    private Charset asciiCharset;
 }

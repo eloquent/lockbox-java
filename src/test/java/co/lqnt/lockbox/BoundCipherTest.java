@@ -84,6 +84,15 @@ public class BoundCipherTest
         Assert.assertEquals(new String(decrypted, Charset.forName("US-ASCII")), data);
     }
 
+    @Test(dataProvider = "encryptionData")
+    public void testEncryptDecryptString(String data) throws Throwable
+    {
+        String encrypted = this.cipher.encrypt(data);
+        String decrypted = this.cipher.decrypt(encrypted);
+
+        Assert.assertEquals(decrypted, data);
+    }
+
     private KeyFactory keyFactory;
     private PrivateKey privateKey;
     private PublicKey publicKey;

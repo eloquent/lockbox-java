@@ -24,4 +24,13 @@ public interface BoundDecryptionCipherInterface
      * @return The decrypted data.
      */
     public byte[] decrypt(final byte[] data) throws DecryptionFailedException;
+
+    /**
+     * Decrypt a data packet.
+     *
+     * @param data The data to decrypt.
+     *
+     * @return The decrypted data.
+     */
+    public String decrypt(final String data) throws DecryptionFailedException;
 }

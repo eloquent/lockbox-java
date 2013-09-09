@@ -35,5 +35,25 @@ public interface EncryptionCipherInterface
      *
      * @return The encrypted data.
      */
+    public String encrypt(final PublicKeyInterface key, final String data);
+
+    /**
+     * Encrypt a data packet.
+     *
+     * @param key  They key to encrypt with.
+     * @param data The data to encrypt.
+     *
+     * @return The encrypted data.
+     */
     public byte[] encrypt(final PrivateKeyInterface key, final byte[] data);
+
+    /**
+     * Encrypt a data packet.
+     *
+     * @param key  They key to encrypt with.
+     * @param data The data to encrypt.
+     *
+     * @return The encrypted data.
+     */
+    public String encrypt(final PrivateKeyInterface key, final String data);
 }

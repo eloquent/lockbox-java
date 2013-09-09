@@ -83,6 +83,18 @@ public class BoundEncryptionCipher implements BoundEncryptionCipherInterface
         return this.cipher().encrypt(this.key(), data);
     }
 
+    /**
+     * Encrypt a data packet.
+     *
+     * @param data The data to encrypt.
+     *
+     * @return The encrypted data.
+     */
+    public String encrypt(final String data)
+    {
+        return this.cipher().encrypt(this.key(), data);
+    }
+
     private PublicKeyInterface key;
     private EncryptionCipherInterface cipher;
 }

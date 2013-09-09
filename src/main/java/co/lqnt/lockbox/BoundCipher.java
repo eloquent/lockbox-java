@@ -119,6 +119,18 @@ public class BoundCipher implements BoundCipherInterface
     }
 
     /**
+     * Encrypt a data packet.
+     *
+     * @param data The data to encrypt.
+     *
+     * @return The encrypted data.
+     */
+    public String encrypt(final String data)
+    {
+        return this.encryptionCipher().encrypt(this.publicKey(), data);
+    }
+
+    /**
      * Decrypt a data packet.
      *
      * @param data The data to decrypt.
@@ -126,6 +138,18 @@ public class BoundCipher implements BoundCipherInterface
      * @return The decrypted data.
      */
     public byte[] decrypt(final byte[] data) throws DecryptionFailedException
+    {
+        return this.decryptionCipher().decrypt(this.privateKey(), data);
+    }
+
+    /**
+     * Decrypt a data packet.
+     *
+     * @param data The data to decrypt.
+     *
+     * @return The decrypted data.
+     */
+    public String decrypt(final String data) throws DecryptionFailedException
     {
         return this.decryptionCipher().decrypt(this.privateKey(), data);
     }

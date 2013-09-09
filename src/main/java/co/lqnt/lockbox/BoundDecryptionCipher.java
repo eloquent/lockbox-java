@@ -73,6 +73,18 @@ public class BoundDecryptionCipher implements BoundDecryptionCipherInterface
         return this.cipher().decrypt(this.key(), data);
     }
 
+    /**
+     * Decrypt a data packet.
+     *
+     * @param data The data to decrypt.
+     *
+     * @return The decrypted data.
+     */
+    public String decrypt(final String data) throws DecryptionFailedException
+    {
+        return this.cipher().decrypt(this.key(), data);
+    }
+
     private PrivateKeyInterface key;
     private DecryptionCipherInterface cipher;
 }

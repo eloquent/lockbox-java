@@ -15,6 +15,7 @@ import co.lqnt.lockbox.key.PrivateKeyInterface;
 import co.lqnt.lockbox.key.PublicKeyInterface;
 import co.lqnt.lockbox.util.SecureRandom;
 import co.lqnt.lockbox.util.SecureRandomInterface;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
@@ -50,6 +51,7 @@ public class EncryptionCipher implements EncryptionCipherInterface
         );
         this.sha1Digest = new SHA1Digest();
         this.random = new SecureRandom();
+        this.asciiCharset = Charset.forName("US-ASCII");
     }
 
     /**
@@ -73,6 +75,7 @@ public class EncryptionCipher implements EncryptionCipherInterface
         this.aesCipher = aesCipher;
         this.sha1Digest = sha1Digest;
         this.random = random;
+        this.asciiCharset = Charset.forName("US-ASCII");
     }
 
     /**
@@ -190,9 +193,41 @@ public class EncryptionCipher implements EncryptionCipherInterface
      *
      * @return The encrypted data.
      */
+    public String encrypt(final PublicKeyInterface key, final String data)
+    {
+        return new String(
+            this.encrypt(key, data.getBytes(this.asciiCharset)),
+            this.asciiCharset
+        );
+    }
+
+    /**
+     * Encrypt a data packet.
+     *
+     * @param key  They key to encrypt with.
+     * @param data The data to encrypt.
+     *
+     * @return The encrypted data.
+     */
     public byte[] encrypt(final PrivateKeyInterface key, final byte[] data)
     {
         return this.encrypt(key.publicKey(), data);
+    }
+
+    /**
+     * Encrypt a data packet.
+     *
+     * @param key  They key to encrypt with.
+     * @param data The data to encrypt.
+     *
+     * @return The encrypted data.
+     */
+    public String encrypt(final PrivateKeyInterface key, final String data)
+    {
+        return new String(
+            this.encrypt(key, data.getBytes(this.asciiCharset)),
+            this.asciiCharset
+        );
     }
 
     /**
@@ -244,4 +279,5 @@ public class EncryptionCipher implements EncryptionCipherInterface
     private BufferedBlockCipher aesCipher;
     private Digest sha1Digest;
     private SecureRandomInterface random;
+    private Charset asciiCharset;
 }

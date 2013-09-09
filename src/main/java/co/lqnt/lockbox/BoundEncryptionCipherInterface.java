@@ -22,4 +22,13 @@ public interface BoundEncryptionCipherInterface
      * @return The encrypted data.
      */
     public byte[] encrypt(final byte[] data);
+
+    /**
+     * Encrypt a data packet.
+     *
+     * @param data The data to encrypt.
+     *
+     * @return The encrypted data.
+     */
+    public String encrypt(final String data);
 }

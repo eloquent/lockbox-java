@@ -118,7 +118,33 @@ public class Cipher implements CipherInterface
      *
      * @return The encrypted data.
      */
+    public String encrypt(final PublicKeyInterface key, final String data)
+    {
+        return this.encryptionCipher().encrypt(key, data);
+    }
+
+    /**
+     * Encrypt a data packet.
+     *
+     * @param key  They key to encrypt with.
+     * @param data The data to encrypt.
+     *
+     * @return The encrypted data.
+     */
     public byte[] encrypt(final PrivateKeyInterface key, final byte[] data)
+    {
+        return this.encryptionCipher().encrypt(key, data);
+    }
+
+    /**
+     * Encrypt a data packet.
+     *
+     * @param key  They key to encrypt with.
+     * @param data The data to encrypt.
+     *
+     * @return The encrypted data.
+     */
+    public String encrypt(final PrivateKeyInterface key, final String data)
     {
         return this.encryptionCipher().encrypt(key, data);
     }
@@ -133,6 +159,21 @@ public class Cipher implements CipherInterface
      * @throws DecryptionFailedException If the decryption failed.
      */
     public byte[] decrypt(final PrivateKeyInterface key, final byte[] data)
+        throws DecryptionFailedException
+    {
+        return this.decryptionCipher().decrypt(key, data);
+    }
+
+    /**
+     * Decrypt a data packet.
+     *
+     * @param key  They key to decrypt with.
+     * @param data The data to decrypt.
+     *
+     * @return The decrypted data.
+     * @throws DecryptionFailedException If the decryption failed.
+     */
+    public String decrypt(final PrivateKeyInterface key, final String data)
         throws DecryptionFailedException
     {
         return this.decryptionCipher().decrypt(key, data);

@@ -28,4 +28,16 @@ public interface DecryptionCipherInterface
      */
     public byte[] decrypt(final PrivateKeyInterface key, final byte[] data)
         throws DecryptionFailedException;
+
+    /**
+     * Decrypt a data packet.
+     *
+     * @param key  They key to decrypt with.
+     * @param data The data to decrypt.
+     *
+     * @return The decrypted data.
+     * @throws DecryptionFailedException If the decryption failed.
+     */
+    public String decrypt(final PrivateKeyInterface key, final String data)
+        throws DecryptionFailedException;
 }
