@@ -1,15 +1,14 @@
 language: java
 jdk:
-    - oraclejdk7
     - openjdk7
     - openjdk6
-matrix:
-    allow_failures:
-        - jdk: openjdk7
+    - oraclejdk7
 before_install:
-    - sudo apt-get update -qq
-    - sudo apt-get upgrade -qq ca-certificates-java
+    - "sudo sed --in-place 's/security.provider.9/#security.provider.9/g' $JAVA_HOME/jre/lib/security/java.security"
+    - env
 install:
-    - mvn install -DskipTests=true --errors --batch-mode
+    - mvn install --define skipTests=true --errors --batch-mode
 script:
+    - mvn test --errors --batch-mode
+after_success:
     - mvn test jacoco:report coveralls:jacoco --errors --batch-mode
