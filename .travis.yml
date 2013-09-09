@@ -7,12 +7,10 @@ env:
   global:
     - LOCKBOX_PUBLISH_VERSION=openjdk7
 before_install:
-    - "sudo sed --in-place 's/security.provider.9/#security.provider.9/g' $JAVA_HOME/jre/lib/security/java.security"
+    - "if [ 'openjdk7' == $TRAVIS_JDK_VERSION ]; sudo sed --in-place 's/security.provider.9/#security.provider.9/g' $JAVA_HOME/jre/lib/security/java.security; fi"
 install:
     - mvn install --define skipTests=true --errors --batch-mode
 script:
     - mvn test --errors --batch-mode
 after_success:
-    - "if [ $TRAVIS_JDK_VERSION == $LOCKBOX_PUBLISH_VERSION ] ; then"
-    -     mvn test jacoco:report coveralls:jacoco --errors --batch-mode
-    - fi
+    - "if [ $TRAVIS_JDK_VERSION == $LOCKBOX_PUBLISH_VERSION ]; then mvn test jacoco:report coveralls:jacoco --errors --batch-mode; fi"
