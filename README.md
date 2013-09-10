@@ -53,7 +53,6 @@ either [Bouncy Castle] or [JCE]. Check the [PrivateKey] and [PublicKey] API
 documentation for more information.
 
 ```java
-import co.lqnt.lockbox.key.exception.PrivateKeyReadException;
 import co.lqnt.lockbox.key.KeyFactory;
 import co.lqnt.lockbox.key.PrivateKey;
 import co.lqnt.lockbox.key.PublicKey;
