@@ -29,7 +29,9 @@ import org.bouncycastle.crypto.AsymmetricCipherKeyPairGenerator;
 import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -45,9 +47,11 @@ public class KeyFactoryTest
         this.pemParserFactory = new PemParserFactory();
         this.bcPublicKeyParametersFactory = new BcKeyParametersFactory();
 
-        this.decryptorProviderBuilder =
-            new JcePEMDecryptorProviderBuilder();
-        this.decryptorProviderBuilder.setProvider(provider);
+        this.pemDecryptorProviderBuilder = new JcePEMDecryptorProviderBuilder();
+        this.pemDecryptorProviderBuilder.setProvider(provider);
+
+        this.pkcs8DecryptorProviderBuilder = new JceOpenSSLPKCS8DecryptorProviderBuilder();
+        this.pkcs8DecryptorProviderBuilder.setProvider(provider);
 
         this.keyConverter = new JcaPEMKeyConverter();
         this.keyConverter.setProvider(provider);
@@ -59,7 +63,8 @@ public class KeyFactoryTest
         this.factory = new KeyFactory(
             this.pemParserFactory,
             this.bcPublicKeyParametersFactory,
-            this.decryptorProviderBuilder,
+            this.pemDecryptorProviderBuilder,
+            this.pkcs8DecryptorProviderBuilder,
             this.keyGenerator,
             this.random
         );
@@ -142,6 +147,63 @@ public class KeyFactoryTest
             "+0ejS4eMyziaH7J52XX1rDFreinZZDoE571ameu0biuM6aT8P1pk85VIqHLlqRm/\n" +
             "vQIDAQAB\n" +
             "-----END PUBLIC KEY-----\n";
+        this.privateKeyStringPkcs8 = "-----BEGIN ENCRYPTED PRIVATE KEY-----\n" +
+            "MIIE6TAbBgkqhkiG9w0BBQMwDgQIv2lN8R4qMeUCAggABIIEyPIkq+bUvclc9c9b\n" +
+            "6WCfySC2k+rSe/ZXUhY6+YdhquWKE4or/k3OFDGMA0JjGZFCUn7wgrxdg9RQ1mzV\n" +
+            "aUqatTaSsv8H7yGj90MoVNlDvhBUfh3yRv5kHXwsAQNBivEMBzF0uxKGgCzMdgee\n" +
+            "+ieTc818psXtWsVWTvAreZOPGWhMuBRy8Ze+da+qtp7o3RWY/bMMBl6b9zRvzgJM\n" +
+            "PU7iyqYV9Rxvrfq9XIHeXkSBpsfokr044M8OOQQSbkCah68QZJz1VGxngaCfJWQ8\n" +
+            "9fW/XJOVjEgpaKYFP+CWLN9hQVSiz5th29/hQYCJuU5Xm66NdaYi1lv69zYnwiGU\n" +
+            "iDHgMHFfuVXYMcSy1RUKjIAnspqinloltm0BGgH9nC1ZN/04KSKWAOBHbqZTBcoz\n" +
+            "tI69GrNF/3x+Ss2vK08gMGuJbfxE5ECh/kUVjsWgD6H6aKxe+rluF5iCHSwETURg\n" +
+            "67j1eC7mzNAyHKygLnW1Fmnq07sEKGFq/ONUz5Cvlepf6WxwaAMX4NPjxfBHJkZG\n" +
+            "zmRiJiQdXnsjDTsBAgeFVZgM6X57RQyHJRnrDkikW/68b9pm8CDEMOo07wzJkgnw\n" +
+            "blwKeVfW4+bPwu6bjMzgWSNHaYD5OGLAOCtQ8FI4mS78WcL2edW6OhI3E6ZGM56i\n" +
+            "J5cCHzAAyn/uACgOpUS1O/ATUuzOs5ryFbGXA4GSeTiGPCGMO4cxnagTXD6BUFqC\n" +
+            "OYLa2+uR+SmLyuKjv9O9Osj7rqylad/mCpVXsh7crFVkF43gnvz3Fu7/nBV0j/uK\n" +
+            "BnKNkF3+gxz77wFWnH6o7oa4XxXlJ1S5ZgTXdj11hX9vricTeMWXoppKJS56RB0J\n" +
+            "WdQdD66pPl4w2S9j4aCIDwYk5H/QBL1QgTOO9SsxT0a7q0T9czJMWyQmo8Wo8vJx\n" +
+            "x6euGTpM7i3vKENtMjZLROa25XeC2n0RFGxLcfp8clSczG3iWMgicfwAnRqOvfIv\n" +
+            "5jp3yqFzH8RTshJXRvYDBgHKHPtal71ksCcf+SIxyjs6+uULTRLp7L/jR3/R4zHg\n" +
+            "KZDdVomizSWAjj+R2dmvvuq4IQtPzKd4XSlQA/5YVBjAGWSIGn/UcSsRyKWlIdcP\n" +
+            "QkeAMOWLEVa3/2js26DQlm5BLHNlrCO7uhNWH6yy8iFKSVzvCZWMjGaUCMWBUpz6\n" +
+            "5nTxLor2Oj3CoWNU0gvIJS/zolVwxBYGtvRIliRNijn/Qoh9rBxiufro3Ji4VRSW\n" +
+            "R69mrqB/4OlGveiAjH4iWPWsFQiz2tEqSiAuFgE6pCmZcxA5hLSoSpw+jbcEDrU3\n" +
+            "eYWbtKQqnfm28y6Ae74lvaWboVgK2/EEE4vTzk62iFnH2LPucXynlKNaSyG0goRC\n" +
+            "k82Z4PILJfha/pFjEocqEXfJ8noVzLZX30OxNjAQ0LhI779MyZA2shYoh0qc+86e\n" +
+            "ENU84OG21wHp4xwwxStbt/jbzCz67hjc/iqmvnjLdaooOVCDeUl0yYs81uvAIKvp\n" +
+            "j6LhbAFLemlaWVtkOqgQTs1dO1uTFCID21/pQUxnRxDRSEiyRq4a/XAD/FezeLQv\n" +
+            "OeQp2EYIQysr8XpbOaPYOW99uFIQCALmJ5a1JJfDDWvcR6crJkjI60B3NirZSR/p\n" +
+            "CdU3lo063CcRZy7m3A==\n" +
+            "-----END ENCRYPTED PRIVATE KEY-----\n";
+        this.privateKeyStringPkcs8NoPassword = "-----BEGIN PRIVATE KEY-----\n" +
+            "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDLyOyWN3HOyC9u\n" +
+            "gLK2aUfdDTe/fR89M18yqbPZifQZ22SpAfTX4f3LltZYJDJ4Y4BO8g+sQsZ4H2dG\n" +
+            "VB5pNvlWMKXVX09h4zpDfQ8rrjXV8l7GNgD9RtEb/0j8r4D1QF8m9SyMZVQzFlHy\n" +
+            "fyOaZLLwbZ6pcFs/p0RkWc7RXbvhNFMHdIsoPa19gFjAy1epP6tJsfU7KhLb0DTc\n" +
+            "VpSCRGTV6vaLeV3I0gby8wa/shqC6nr3IGu3zGjrUgWPvp2ShxujOnVjhIbPKORH\n" +
+            "+6RFIt77R6NLh4zLOJofsnnZdfWsMWt6KdlkOgTnvVqZ67RuK4zppPw/WmTzlUio\n" +
+            "cuWpGb+9AgMBAAECggEACWpbJAWjyH4PUve3Sh5LJ7d4n+xUCSvadijJGn/5O0ib\n" +
+            "ugNRILhcVY++j4v8mPtf7kXY24iqStqIlwND9HCJzKWqw9UHgepRwtSAYvBFpIDy\n" +
+            "SA4utYUUHEsLQEGLn8k9nDsvt7zmywV4+89MAdItQlaOQh3i2WoNCuXrXFkMWTdQ\n" +
+            "drByi9l5SnhECpQt4sNcBBNAlhcTx6s+OFBjS5JY5F7VLUgJojZqpuOYgcVTM+XP\n" +
+            "jkqVqTMvCfi2ht6Ip41oes/D74kxc1VKU+SEbE+WJdtlq5qgMdr+nrDeEO+vZmM4\n" +
+            "tTtAMeB2JZngRRbkBBF/tqIq0TbI09MYlBvK/1AfMQKBgQD9RCW56wAGn5Qm+8PN\n" +
+            "sSYOSKmAJsS7l8fIZvwLQU9kRPXKzbC7QMghphHiGJh62u/mKcfNecxKS5BIzM9r\n" +
+            "5LIFeCIacH0nb6wFfQf1vKrdC4yuJNINA8Cm3FmVgBdMRdFSw1gbf9UKILvlWNu5\n" +
+            "8cjtCaw5K1OKPrDXmByFOsG35wKBgQDN/AtqaIaaBVuUnXGv7zPBky/31zbaPwr4\n" +
+            "Kbg+hSFDojpdyCofIOPyYPrlTFBTdoTxHaa9tftdbWOul+VtXChGglL3PwXvuubq\n" +
+            "3fzJLdYmrPqTKhDS7hbabwPyD9ZZE6N4YUOWOumLASuSbMIas2FKTg71hNes1QaQ\n" +
+            "PkxOlU8GuwKBgGWZ2BScjLcbf4CgEW3L+jtStQTfCJ9FBXWEsuoE+kd8TqpcF+EW\n" +
+            "3PJ6v8PXIBxxBjpsWmY4zVakt64s060x4qTFC9FVfS+74eOVxAK1/EmO35Hg3Y8x\n" +
+            "CTEnRpzt9Oq5O38bNJZbkuhsN1SLcCJJN9S3w6pvkiTsf18N+6sK5jnTAoGBAMML\n" +
+            "/B9JVNN5aUujfmhy35ZX8l8DuhwVACUXFDCXTXVGo2/0PvZ05YO4kzsW9STjIGVU\n" +
+            "h3QyYxAHqhFEIepZDoYdl8QpOEzVtR0HEPvK3HKI70j01zN0Yc16u8i1eGmmr+8o\n" +
+            "YqBZrpWCiSjAtVglLWX33jBcFwHAQdPKOeVbepZLAoGBANmjS4wxZ69EGuI9Po4J\n" +
+            "0RjCc5k4y+Hot1cbbDILbBgxj7xc4zMOtk/MPeLjBBgJ8mDunKFW1y0HPY1Dwnzv\n" +
+            "zGbYRfNSkZojGMshdvVRWDDhddwzsuSMVponWIysxMsZJfz36BbcGDyHFLuSXFl/\n" +
+            "tmVVLMukDaOQreTm92BYZWG0\n" +
+            "-----END PRIVATE KEY-----\n";
         this.privateKeyStringWrongIv =
             "-----BEGIN RSA PRIVATE KEY-----\n" +
             "Proc-Type: 4,ENCRYPTED\n" +
@@ -246,7 +308,8 @@ public class KeyFactoryTest
     {
         Assert.assertSame(this.factory.pemParserFactory(), this.pemParserFactory);
         Assert.assertSame(this.factory.bcKeyParametersFactory(), this.bcPublicKeyParametersFactory);
-        Assert.assertSame(this.factory.decryptorProviderBuilder(), this.decryptorProviderBuilder);
+        Assert.assertSame(this.factory.pemDecryptorProviderBuilder(), this.pemDecryptorProviderBuilder);
+        Assert.assertSame(this.factory.pkcs8DecryptorProviderBuilder(), this.pkcs8DecryptorProviderBuilder);
         Assert.assertSame(this.factory.keyGenerator(), this.keyGenerator);
         Assert.assertSame(this.factory.random(), this.random);
     }
@@ -258,7 +321,11 @@ public class KeyFactoryTest
 
         Assert.assertSame(this.factory.pemParserFactory().getClass(), PemParserFactory.class);
         Assert.assertSame(this.factory.bcKeyParametersFactory().getClass(), BcKeyParametersFactory.class);
-        Assert.assertSame(this.factory.decryptorProviderBuilder().getClass(), JcePEMDecryptorProviderBuilder.class);
+        Assert.assertSame(this.factory.pemDecryptorProviderBuilder().getClass(), JcePEMDecryptorProviderBuilder.class);
+        Assert.assertSame(
+            this.factory.pkcs8DecryptorProviderBuilder().getClass(),
+            JceOpenSSLPKCS8DecryptorProviderBuilder.class
+        );
         Assert.assertSame(this.factory.keyGenerator().getClass(), RSAKeyPairGenerator.class);
         Assert.assertSame(this.factory.random().getClass(), SecureRandom.class);
     }
@@ -289,7 +356,8 @@ public class KeyFactoryTest
         this.factory = new KeyFactory(
             this.pemParserFactory,
             this.bcPublicKeyParametersFactory,
-            this.decryptorProviderBuilder,
+            this.pemDecryptorProviderBuilder,
+            this.pkcs8DecryptorProviderBuilder,
             mockKeyGenerator,
             this.random
         );
@@ -328,6 +396,14 @@ public class KeyFactoryTest
     }
 
     @Test
+    public void testCreatePrivateKeyWithPasswordPkcs8() throws Throwable
+    {
+        PrivateKey privateKey = this.factory.createPrivateKey(this.privateKeyStringPkcs8, "password");
+
+        Assert.assertEquals(privateKey.publicKey().toString(), this.publicKeyString);
+    }
+
+    @Test
     public void testCreatePrivateKeyWithPasswordFile() throws Throwable
     {
         File input = new File(this.getClass().getClassLoader().getResource("pem/rsa-2048.private.pem").toURI());
@@ -360,6 +436,14 @@ public class KeyFactoryTest
     public void testCreatePrivateKeyNoPasswordString() throws Throwable
     {
         PrivateKey privateKey = this.factory.createPrivateKey(this.privateKeyStringNoPassword);
+
+        Assert.assertEquals(privateKey.publicKey().toString(), this.publicKeyStringNoPassword);
+    }
+
+    @Test
+    public void testCreatePrivateKeyNoPasswordPkcs8() throws Throwable
+    {
+        PrivateKey privateKey = this.factory.createPrivateKey(this.privateKeyStringPkcs8NoPassword);
 
         Assert.assertEquals(privateKey.publicKey().toString(), this.publicKeyStringNoPassword);
     }
@@ -418,7 +502,8 @@ public class KeyFactoryTest
         this.factory = new KeyFactory(
             this.pemParserFactory,
             mockKeyParametersFactory,
-            this.decryptorProviderBuilder,
+            this.pemDecryptorProviderBuilder,
+            this.pkcs8DecryptorProviderBuilder,
             this.keyGenerator,
             this.random
         );
@@ -435,7 +520,8 @@ public class KeyFactoryTest
         this.factory = new KeyFactory(
             this.pemParserFactory,
             mockKeyParametersFactory,
-            this.decryptorProviderBuilder,
+            this.pemDecryptorProviderBuilder,
+            this.pkcs8DecryptorProviderBuilder,
             this.keyGenerator,
             this.random
         );
@@ -453,6 +539,37 @@ public class KeyFactoryTest
     public void testCreatePrivateKeyNoPasswordFailureNotRsaKey() throws Throwable
     {
         this.factory.createPrivateKey(this.stringToInputStream(this.privateKeyStringNonRsaNoPassword));
+    }
+
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyWithPasswordFailureWrongPassword() throws Throwable
+    {
+        this.factory.createPrivateKey(this.stringToInputStream(this.privateKeyString), "foobar");
+    }
+
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyWithPasswordFailureWrongPasswordPkcs8() throws Throwable
+    {
+        this.factory.createPrivateKey(this.stringToInputStream(this.privateKeyStringPkcs8), "foobar");
+    }
+
+    @Test(expectedExceptions = PrivateKeyReadException.class)
+    public void testCreatePrivateKeyWithPasswordFailureKeyPkcs8OperatorCreation() throws Throwable
+    {
+        JceOpenSSLPKCS8DecryptorProviderBuilder mockPkcs8DecryptorProviderBuilder =
+            Mockito.mock(JceOpenSSLPKCS8DecryptorProviderBuilder.class);
+        Mockito.when(mockPkcs8DecryptorProviderBuilder.build("password".toCharArray()))
+            .thenThrow(new OperatorCreationException(""));
+        this.factory = new KeyFactory(
+            this.pemParserFactory,
+            this.bcPublicKeyParametersFactory,
+            this.pemDecryptorProviderBuilder,
+            mockPkcs8DecryptorProviderBuilder,
+            this.keyGenerator,
+            this.random
+        );
+
+        this.factory.createPrivateKey(this.stringToInputStream(this.privateKeyStringPkcs8), "password");
     }
 
     @Test(expectedExceptions = PrivateKeyReadException.class)
@@ -533,7 +650,8 @@ public class KeyFactoryTest
         this.factory = new KeyFactory(
             this.pemParserFactory,
             mockKeyParametersFactory,
-            this.decryptorProviderBuilder,
+            this.pemDecryptorProviderBuilder,
+            this.pkcs8DecryptorProviderBuilder,
             this.keyGenerator,
             this.random
         );
@@ -578,7 +696,8 @@ public class KeyFactoryTest
     private KeyFactory factory;
     private PemParserFactory pemParserFactory;
     private BcKeyParametersFactory bcPublicKeyParametersFactory;
-    private JcePEMDecryptorProviderBuilder decryptorProviderBuilder;
+    private JcePEMDecryptorProviderBuilder pemDecryptorProviderBuilder;
+    private JceOpenSSLPKCS8DecryptorProviderBuilder pkcs8DecryptorProviderBuilder;
     private JcaPEMKeyConverter keyConverter;
     private RSAKeyPairGenerator keyGenerator;
     private SecureRandom random;
@@ -586,6 +705,8 @@ public class KeyFactoryTest
     private String publicKeyString;
     private String privateKeyStringNoPassword;
     private String publicKeyStringNoPassword;
+    private String privateKeyStringPkcs8;
+    private String privateKeyStringPkcs8NoPassword;
     private String privateKeyStringWrongIv;
     private String privateKeyStringNonRsa;
     private String privateKeyStringNonRsaNoPassword;

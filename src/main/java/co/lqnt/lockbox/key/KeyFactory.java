@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.AsymmetricCipherKeyPairGenerator;
 import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
@@ -38,7 +39,12 @@ import org.bouncycastle.openssl.PEMEncryptedKeyPair;
 import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
+import org.bouncycastle.operator.InputDecryptorProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
+import org.bouncycastle.pkcs.PKCSException;
 
 /**
  * Creates encryption keys.
@@ -50,11 +56,18 @@ public class KeyFactory implements KeyFactoryInterface
      */
     public KeyFactory()
     {
+        BouncyCastleProvider provider = new BouncyCastleProvider();
+
         this.pemParserFactory = new PemParserFactory();
         this.bcKeyParametersFactory = new BcKeyParametersFactory();
-        this.decryptorProviderBuilder =
+
+        this.pemDecryptorProviderBuilder =
             new JcePEMDecryptorProviderBuilder();
-        this.decryptorProviderBuilder.setProvider(new BouncyCastleProvider());
+        this.pemDecryptorProviderBuilder.setProvider(provider);
+        this.pkcs8DecryptorProviderBuilder =
+            new JceOpenSSLPKCS8DecryptorProviderBuilder();
+        this.pkcs8DecryptorProviderBuilder.setProvider(provider);
+
         this.keyGenerator = new RSAKeyPairGenerator();
         this.random = new SecureRandom();
     }
@@ -62,22 +75,26 @@ public class KeyFactory implements KeyFactoryInterface
     /**
      * Construct a new key factory.
      *
-     * @param pemParserFactory             The PEM parser factory to use.
-     * @param bcPublicKeyParametersFactory The public key parameters factory to use.
-     * @param decryptorProviderBuilder     The decryptor provider builder to use.
-     * @param keyGenerator                 The key generator to use.
-     * @param random                       The secure random generator to use.
+     * @param pemParserFactory              The PEM parser factory to use.
+     * @param bcPublicKeyParametersFactory  The public key parameters factory to use.
+     * @param pemDecryptorProviderBuilder   The PEM decryptor provider builder to use.
+     * @param pkcs8DecryptorProviderBuilder The PKCS #8 decryptor provider builder to use.
+     * @param keyGenerator                  The key generator to use.
+     * @param random                        The secure random generator to use.
      */
     public KeyFactory(
         final PemParserFactoryInterface pemParserFactory,
         final BcKeyParametersFactoryInterface bcPublicKeyParametersFactory,
-        final JcePEMDecryptorProviderBuilder decryptorProviderBuilder,
+        final JcePEMDecryptorProviderBuilder pemDecryptorProviderBuilder,
+        final JceOpenSSLPKCS8DecryptorProviderBuilder
+            pkcs8DecryptorProviderBuilder,
         final AsymmetricCipherKeyPairGenerator keyGenerator,
         final SecureRandomInterface random
     ) {
         this.pemParserFactory = pemParserFactory;
         this.bcKeyParametersFactory = bcPublicKeyParametersFactory;
-        this.decryptorProviderBuilder = decryptorProviderBuilder;
+        this.pemDecryptorProviderBuilder = pemDecryptorProviderBuilder;
+        this.pkcs8DecryptorProviderBuilder = pkcs8DecryptorProviderBuilder;
         this.keyGenerator = keyGenerator;
         this.random = random;
     }
@@ -103,13 +120,24 @@ public class KeyFactory implements KeyFactoryInterface
     }
 
     /**
-     * Get the decryptor provider builder.
+     * Get the PEM decryptor provider builder.
      *
-     * @return The decryptor provider builder.
+     * @return The PEM decryptor provider builder.
      */
-    public JcePEMDecryptorProviderBuilder decryptorProviderBuilder()
+    public JcePEMDecryptorProviderBuilder pemDecryptorProviderBuilder()
     {
-        return this.decryptorProviderBuilder;
+        return this.pemDecryptorProviderBuilder;
+    }
+
+    /**
+     * Get the PKCS #8 decryptor provider builder.
+     *
+     * @return The PKCS #8 decryptor provider builder.
+     */
+    public JceOpenSSLPKCS8DecryptorProviderBuilder
+        pkcs8DecryptorProviderBuilder()
+    {
+        return this.pkcs8DecryptorProviderBuilder;
     }
 
     /**
@@ -203,14 +231,15 @@ public class KeyFactory implements KeyFactoryInterface
             throw new PrivateKeyReadException(e);
         }
 
-        PEMKeyPair pemKeyPair;
         if (pemObject instanceof PEMKeyPair) {
-            pemKeyPair = (PEMKeyPair) pemObject;
-        } else {
-            throw new PrivateKeyReadException();
+            return this.convertPrivateKey(
+                ((PEMKeyPair) pemObject).getPrivateKeyInfo()
+            );
+        } else if (pemObject instanceof PrivateKeyInfo) {
+            return this.convertPrivateKey((PrivateKeyInfo) pemObject);
         }
 
-        return this.convertPrivateKey(pemKeyPair);
+        throw new PrivateKeyReadException();
     }
 
     /**
@@ -290,24 +319,19 @@ public class KeyFactory implements KeyFactoryInterface
             throw new PrivateKeyReadException(e);
         }
 
-        PEMEncryptedKeyPair encryptedKeyPair;
         if (pemObject instanceof PEMEncryptedKeyPair) {
-            encryptedKeyPair = (PEMEncryptedKeyPair) pemObject;
-        } else {
-            throw new PrivateKeyReadException();
+            return this.decryptPemKeyPair(
+                (PEMEncryptedKeyPair) pemObject,
+                password
+            );
+        } else if (pemObject instanceof PKCS8EncryptedPrivateKeyInfo) {
+            return this.decryptPkcs8PrivateKey(
+                (PKCS8EncryptedPrivateKeyInfo) pemObject,
+                password
+            );
         }
 
-        PEMDecryptorProvider decryptorProvider = this.decryptorProviderBuilder()
-            .build(password.toCharArray());
-
-        PEMKeyPair pemKeyPair;
-        try {
-            pemKeyPair = encryptedKeyPair.decryptKeyPair(decryptorProvider);
-        } catch (IOException e) {
-            throw new PrivateKeyReadException(e);
-        }
-
-        return this.convertPrivateKey(pemKeyPair);
+        throw new PrivateKeyReadException();
     }
 
     /**
@@ -502,20 +526,83 @@ public class KeyFactory implements KeyFactoryInterface
     }
 
     /**
-     * Convert a PEM key pair to a Lockbox private key.
+     * Decrypts an encrypted PEM key pair.
      *
-     * @param pemKeyPair The PEM key pair.
+     * @param encryptedKeyPair The key pair to decrypt.
+     * @param password         The password to use.
+     *
+     * @return The decrypted private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
+     */
+    protected PrivateKey decryptPemKeyPair(
+        PEMEncryptedKeyPair encryptedKeyPair,
+        String password
+    )
+        throws PrivateKeyReadException
+    {
+        PEMDecryptorProvider decryptorProvider =
+            this.pemDecryptorProviderBuilder().build(password.toCharArray());
+
+        PEMKeyPair pemKeyPair;
+        try {
+            pemKeyPair = encryptedKeyPair.decryptKeyPair(decryptorProvider);
+        } catch (IOException e) {
+            throw new PrivateKeyReadException(e);
+        }
+
+        return this.convertPrivateKey(pemKeyPair.getPrivateKeyInfo());
+    }
+
+    /**
+     * Decrypts an encrypted PKCS #8 private key.
+     *
+     * @param encryptedPrivateKey The encrypted private key information.
+     * @param password            The password to use.
+     *
+     * @return The decrypted private key.
+     * @throws PrivateKeyReadException If reading of the private key fails.
+     */
+    protected PrivateKey decryptPkcs8PrivateKey(
+        PKCS8EncryptedPrivateKeyInfo encryptedPrivateKey,
+        String password
+    )
+        throws PrivateKeyReadException
+    {
+        InputDecryptorProvider decryptorProvider;
+        try {
+            decryptorProvider = this.pkcs8DecryptorProviderBuilder()
+                .build(password.toCharArray());
+        } catch (OperatorCreationException e) {
+            throw new PrivateKeyReadException(e);
+        }
+
+        PrivateKeyInfo privateKeyInfo;
+        try {
+            privateKeyInfo = encryptedPrivateKey.decryptPrivateKeyInfo(
+                decryptorProvider
+            );
+        } catch (PKCSException e) {
+            throw new PrivateKeyReadException(e);
+        }
+
+        return this.convertPrivateKey(privateKeyInfo);
+    }
+
+    /**
+     * Convert Bouncy Castle private key info to a Lockbox private key.
+     *
+     * @param keyInformation The private key information.
      *
      * @return The private key.
      * @throws PrivateKeyReadException If reading of the private key fails.
      */
-    protected PrivateKey convertPrivateKey(final PEMKeyPair pemKeyPair)
+    protected PrivateKey convertPrivateKey(final PrivateKeyInfo keyInformation)
         throws PrivateKeyReadException
     {
         AsymmetricKeyParameter keyParameter;
         try {
             keyParameter = this.bcKeyParametersFactory()
-                .createPrivateKeyParameters(pemKeyPair.getPrivateKeyInfo());
+                .createPrivateKeyParameters(keyInformation);
         } catch (IOException e) {
             throw new PrivateKeyReadException(e);
         }
@@ -562,6 +649,8 @@ public class KeyFactory implements KeyFactoryInterface
     private AsymmetricCipherKeyPairGenerator keyGenerator;
     private PemParserFactoryInterface pemParserFactory;
     private BcKeyParametersFactoryInterface bcKeyParametersFactory;
-    private JcePEMDecryptorProviderBuilder decryptorProviderBuilder;
+    private JcePEMDecryptorProviderBuilder pemDecryptorProviderBuilder;
+    private JceOpenSSLPKCS8DecryptorProviderBuilder
+        pkcs8DecryptorProviderBuilder;
     private SecureRandomInterface random;
 }
