@@ -62,10 +62,11 @@ import co.lqnt.lockbox.key.PublicKey;
 KeyFactory keyFactory = new KeyFactory();
 
 PrivateKey privateKey = keyFactory.generatePrivateKey();
-System.out.println(privateKey.toString()); // outputs the key in PEM format
+System.out.println(privateKey.toPem()); // outputs the key in PEM format
+System.out.println(privateKey.toPem("password")); // outputs the key in encrypted PEM format
 
 PublicKey publicKey = privateKey.publicKey();
-System.out.println(publicKey.toString()); // outputs the key in PEM format
+System.out.println(publicKey.toPem()); // outputs the key in PEM format
 
 // ...
 ```
