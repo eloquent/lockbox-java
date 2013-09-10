@@ -57,17 +57,17 @@ public class PublicKeyTest
             "G6M6dWOEhs8o5Ef7pEUi3vtHo0uHjMs4" +
             "mh+yedl19awxa3op2WQ6BOe9WpnrtG4r" +
             "jOmk/D9aZPOVSKhy5akZv70=";
-        this.expectedExponent = "AQAB";
+        this.expectedPublicExponent = "AQAB";
     }
 
     @Test
     public void testConstructor()
     {
         String modulus = DatatypeConverter.printBase64Binary(this.key.modulus().toByteArray());
-        String exponent = DatatypeConverter.printBase64Binary(this.key.exponent().toByteArray());
+        String publicExponent = DatatypeConverter.printBase64Binary(this.key.publicExponent().toByteArray());
 
         Assert.assertEquals(modulus, this.expectedModulus);
-        Assert.assertEquals(exponent, this.expectedExponent);
+        Assert.assertEquals(publicExponent, this.expectedPublicExponent);
     }
 
     @Test
@@ -81,10 +81,10 @@ public class PublicKeyTest
     {
         RSAKeyParameters bcPublicKeyParameters = this.key.bcPublicKeyParameters();
         String modulus = DatatypeConverter.printBase64Binary(bcPublicKeyParameters.getModulus().toByteArray());
-        String exponent = DatatypeConverter.printBase64Binary(bcPublicKeyParameters.getExponent().toByteArray());
+        String publicExponent = DatatypeConverter.printBase64Binary(bcPublicKeyParameters.getExponent().toByteArray());
 
         Assert.assertEquals(modulus, this.expectedModulus);
-        Assert.assertEquals(exponent, this.expectedExponent);
+        Assert.assertEquals(publicExponent, this.expectedPublicExponent);
     }
 
     @Test
@@ -92,10 +92,10 @@ public class PublicKeyTest
     {
         RSAKeyParameters bcKeyParameters = (RSAKeyParameters) this.key.bcKeyParameters();
         String modulus = DatatypeConverter.printBase64Binary(bcKeyParameters.getModulus().toByteArray());
-        String exponent = DatatypeConverter.printBase64Binary(bcKeyParameters.getExponent().toByteArray());
+        String publicExponent = DatatypeConverter.printBase64Binary(bcKeyParameters.getExponent().toByteArray());
 
         Assert.assertEquals(modulus, this.expectedModulus);
-        Assert.assertEquals(exponent, this.expectedExponent);
+        Assert.assertEquals(publicExponent, this.expectedPublicExponent);
     }
 
     @Test
@@ -103,10 +103,10 @@ public class PublicKeyTest
     {
         RSAPublicKey bcPublicKey = this.key.bcPublicKey();
         String modulus = DatatypeConverter.printBase64Binary(bcPublicKey.getModulus().toByteArray());
-        String exponent = DatatypeConverter.printBase64Binary(bcPublicKey.getPublicExponent().toByteArray());
+        String publicExponent = DatatypeConverter.printBase64Binary(bcPublicKey.getPublicExponent().toByteArray());
 
         Assert.assertEquals(modulus, this.expectedModulus);
-        Assert.assertEquals(exponent, this.expectedExponent);
+        Assert.assertEquals(publicExponent, this.expectedPublicExponent);
     }
 
     @Test
@@ -116,10 +116,10 @@ public class PublicKeyTest
         AsymmetricKeyParameter bcKeyParameters = PublicKeyFactory.createKey(bcPublicKeyInfo);
         RSAKeyParameters bcPublicKeyParameters = (RSAKeyParameters) bcKeyParameters;
         String modulus = DatatypeConverter.printBase64Binary(bcPublicKeyParameters.getModulus().toByteArray());
-        String exponent = DatatypeConverter.printBase64Binary(bcPublicKeyParameters.getExponent().toByteArray());
+        String publicExponent = DatatypeConverter.printBase64Binary(bcPublicKeyParameters.getExponent().toByteArray());
 
         Assert.assertEquals(modulus, this.expectedModulus);
-        Assert.assertEquals(exponent, this.expectedExponent);
+        Assert.assertEquals(publicExponent, this.expectedPublicExponent);
     }
 
     @Test(expectedExceptions = RuntimeException.class)
@@ -273,5 +273,5 @@ public class PublicKeyTest
     private String keyString;
     private PublicKey key;
     private String expectedModulus;
-    private String expectedExponent;
+    private String expectedPublicExponent;
 }

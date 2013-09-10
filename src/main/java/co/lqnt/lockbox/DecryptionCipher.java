@@ -156,19 +156,28 @@ public class DecryptionCipher implements DecryptionCipherInterface
             throw new DecryptionFailedException(e);
         }
 
-        byte[] hashAndData = this.decryptAes(
+        byte[] dataAndHash = this.decryptAes(
             generatedKey,
             iv,
             Arrays.copyOfRange(decodedData, keySize, decodedData.length)
         );
-        byte[] verificationHash = Arrays.copyOfRange(hashAndData, 0, 20);
 
         byte[] decrypted;
         try {
-            decrypted = Arrays.copyOfRange(hashAndData, 20, hashAndData.length);
+            decrypted = Arrays.copyOfRange(
+                dataAndHash,
+                0,
+                dataAndHash.length - 20
+            );
         } catch (IllegalArgumentException e) {
             throw new DecryptionFailedException(e);
         }
+
+        byte[] verificationHash = Arrays.copyOfRange(
+            dataAndHash,
+            decrypted.length,
+            dataAndHash.length
+        );
 
         byte[] hash = new byte[20];
         this.sha1Digest().reset();

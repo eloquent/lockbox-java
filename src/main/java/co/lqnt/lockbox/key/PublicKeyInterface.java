@@ -9,7 +9,6 @@
 
 package co.lqnt.lockbox.key;
 
-import java.math.BigInteger;
 import org.bouncycastle.asn1.pkcs.RSAPublicKey;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
@@ -19,20 +18,6 @@ import org.bouncycastle.crypto.params.RSAKeyParameters;
  */
 public interface PublicKeyInterface extends KeyInterface
 {
-    /**
-     * Get the modulus.
-     *
-     * @return The modulus.
-     */
-    public BigInteger modulus();
-
-    /**
-     * Get the exponent.
-     *
-     * @return The exponent.
-     */
-    public BigInteger exponent();
-
     /**
      * Get the Bouncy Castle RSA public key parameters.
      *
@@ -60,11 +45,4 @@ public interface PublicKeyInterface extends KeyInterface
      * @return The JCE public key.
      */
     public java.security.PublicKey jcePublicKey();
-
-    /**
-     * Get this key as a PEM formatted string.
-     *
-     * @return The PEM formatted key.
-     */
-    public String toPem();
 }

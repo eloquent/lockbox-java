@@ -9,8 +9,7 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.util.PemWriterFactoryInterface;
-import co.lqnt.lockbox.util.StringWriterFactoryInterface;
+import java.math.BigInteger;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 
 public interface KeyInterface
@@ -21,6 +20,20 @@ public interface KeyInterface
      * @return The key size.
      */
     public int size();
+
+    /**
+     * Get the modulus.
+     *
+     * @return The modulus.
+     */
+    public BigInteger modulus();
+
+    /**
+     * Get the public exponent.
+     *
+     * @return The public exponent.
+     */
+    public BigInteger publicExponent();
 
     /**
      * Get the generic Bouncy Castle asymmetric key parameters.
@@ -35,17 +48,4 @@ public interface KeyInterface
      * @return The PEM formatted key.
      */
     public String toPem();
-
-    /**
-     * Get this key as a PEM formatted string.
-     *
-     * @param stringWriterFactory The string writer factory to use.
-     * @param pemWriterFactory    The PEM writer factory to use.
-     *
-     * @return The PEM formatted key.
-     */
-    public String toPem(
-        final StringWriterFactoryInterface stringWriterFactory,
-        final PemWriterFactoryInterface pemWriterFactory
-    );
 }

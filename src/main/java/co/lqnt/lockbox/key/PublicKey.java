@@ -35,13 +35,13 @@ public class PublicKey implements PublicKeyInterface
     /**
      * Construct a new Lockbox public key.
      *
-     * @param modulus The modulus.
-     * @param exponent The exponent.
+     * @param modulus        The modulus.
+     * @param publicExponent The public exponent.
      */
-    public PublicKey(final BigInteger modulus, final BigInteger exponent)
+    public PublicKey(final BigInteger modulus, final BigInteger publicExponent)
     {
         this.modulus = modulus;
-        this.exponent = exponent;
+        this.publicExponent = publicExponent;
     }
 
     /**
@@ -55,13 +55,13 @@ public class PublicKey implements PublicKeyInterface
     }
 
     /**
-     * Get the exponent.
+     * Get the public exponent.
      *
-     * @return The exponent.
+     * @return The public exponent.
      */
-    public BigInteger exponent()
+    public BigInteger publicExponent()
     {
-        return this.exponent;
+        return this.publicExponent;
     }
 
     /**
@@ -91,7 +91,11 @@ public class PublicKey implements PublicKeyInterface
      */
     public RSAKeyParameters bcPublicKeyParameters()
     {
-        return new RSAKeyParameters(false, this.modulus(), this.exponent());
+        return new RSAKeyParameters(
+            false,
+            this.modulus(),
+            this.publicExponent()
+        );
     }
 
     /**
@@ -101,7 +105,7 @@ public class PublicKey implements PublicKeyInterface
      */
     public RSAPublicKey bcPublicKey()
     {
-        return new RSAPublicKey(this.modulus(), this.exponent());
+        return new RSAPublicKey(this.modulus(), this.publicExponent());
     }
 
     /**
@@ -234,5 +238,5 @@ public class PublicKey implements PublicKeyInterface
     }
 
     private BigInteger modulus;
-    private BigInteger exponent;
+    private BigInteger publicExponent;
 }

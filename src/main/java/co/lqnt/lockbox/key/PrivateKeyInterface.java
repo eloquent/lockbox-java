@@ -20,20 +20,6 @@ import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
 public interface PrivateKeyInterface extends KeyInterface
 {
     /**
-     * Get the modulus.
-     *
-     * @return The modulus.
-     */
-    public BigInteger modulus();
-
-    /**
-     * Get the public exponent.
-     *
-     * @return The public exponent.
-     */
-    public BigInteger publicExponent();
-
-    /**
      * Get the private exponent.
      *
      * @return The private exponent.
@@ -109,11 +95,4 @@ public interface PrivateKeyInterface extends KeyInterface
      * @return The JCE private key.
      */
     public java.security.PrivateKey jcePrivateKey();
-
-    /**
-     * Get this key as a PEM formatted string.
-     *
-     * @return The PEM formatted key.
-     */
-    public String toPem();
 }

@@ -159,11 +159,11 @@ public class EncryptionCipher implements EncryptionCipherInterface
         this.sha1Digest().update(data, 0, data.length);
         this.sha1Digest().doFinal(hash, 0);
 
-        byte[] hashAndData = new byte[20 + data.length];
-        System.arraycopy(hash, 0, hashAndData, 0, 20);
-        System.arraycopy(data, 0, hashAndData, 20, data.length);
+        byte[] dataAndHash = new byte[20 + data.length];
+        System.arraycopy(data, 0, dataAndHash, 0, data.length);
+        System.arraycopy(hash, 0, dataAndHash, data.length, 20);
 
-        byte[] encryptedData = this.encryptAes(generatedKey, iv, hashAndData);
+        byte[] encryptedData = this.encryptAes(generatedKey, iv, dataAndHash);
 
         int encryptedSize = encryptedKeyAndIv.length + encryptedData.length;
         byte[] encrypted = new byte[encryptedSize];
