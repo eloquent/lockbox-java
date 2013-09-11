@@ -10,5 +10,5 @@ env:
     - secure: nn8cGhLEc5aHWu3rtlxy/6O83+PaiWzPVtBNCz/CJC0c9TDFJ1Dmysicx8Mf+H6iAu8wqhWg4P3tTARtm+Za34UKyXBql7RFf0FI2NjjElzSSLuY2COIp5To1emufNarHWPINwXMpLBPwnNanMX8xpCOiOhXLzjwQcnBlY9ODvA=
 before_install: ./.travis.before-install
 install: mvn install --define skipTests=true --errors --batch-mode
-script: mvn test --errors --batch-mode
+script: ./.travis.script
 after_success: ./.travis.after-success
