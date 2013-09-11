@@ -8,8 +8,6 @@ then
     if [ $TRAVIS_BRANCH == $LOCKBOX_PUBLISH_BRANCH ] && [ "true" == $TRAVIS_SECURE_ENV_VARS ]
     then
         mvn javadoc:javadoc
-        sudo apt-get install -qq php55
-        wget http://icecavestudios.github.io/woodhouse/woodhouse
-        php ./woodhouse publish --auth-token $WOODHOUSE_TOKEN $TRAVIS_REPO_SLUG target/site/apidocs:artifacts/documentation/api
+        ./woodhouse publish --auth-token $WOODHOUSE_TOKEN $TRAVIS_REPO_SLUG target/site/apidocs:artifacts/documentation/api
     fi
 fi

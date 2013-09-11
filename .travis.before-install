@@ -6,3 +6,11 @@ if [ "openjdk7" == $TRAVIS_JDK_VERSION ]
 then
     sudo sed --in-place 's/security.provider.9/#security.provider.9/g' $JAVA_HOME/jre/lib/security/java.security
 fi
+
+# install the tools required to publish build artifacts
+if [ $TRAVIS_JDK_VERSION == $LOCKBOX_PUBLISH_VERSION ] && [ $TRAVIS_BRANCH == $LOCKBOX_PUBLISH_BRANCH ] && [ "true" == $TRAVIS_SECURE_ENV_VARS ]
+then
+    sudo apt-get install -qq php5
+    wget http://icecavestudios.github.io/woodhouse/woodhouse
+    chmod +x ./woodhouse
+fi
