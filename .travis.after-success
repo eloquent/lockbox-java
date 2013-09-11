@@ -1,0 +1,14 @@
+#/bin/sh
+
+# publish Coveralls data and API documentation
+if [ $TRAVIS_JDK_VERSION == $LOCKBOX_PUBLISH_VERSION ]
+then
+    mvn test jacoco:report coveralls:jacoco --errors --batch-mode
+
+    if [ $TRAVIS_BRANCH == $LOCKBOX_PUBLISH_BRANCH ] && [ "true" == $TRAVIS_SECURE_ENV_VARS ]
+    then
+        mvn javadoc:javadoc
+        wget http://icecavestudios.github.io/woodhouse/woodhouse
+        php ./woodhouse publish --auth-token $WOODHOUSE_TOKEN $TRAVIS_REPO_SLUG target/site/apidocs:artifacts/documentation/api
+    fi
+fi

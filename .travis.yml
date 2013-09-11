@@ -1,16 +1,14 @@
 language: java
 jdk:
-    - openjdk7
-    - openjdk6
-    - oraclejdk7
+  - openjdk7
+  - openjdk6
+  - oraclejdk7
 env:
   global:
     - LOCKBOX_PUBLISH_VERSION=openjdk7
-before_install:
-    - "if [ 'openjdk7' == $TRAVIS_JDK_VERSION ]; then sudo sed --in-place 's/security.provider.9/#security.provider.9/g' $JAVA_HOME/jre/lib/security/java.security; fi"
-install:
-    - mvn install --define skipTests=true --errors --batch-mode
-script:
-    - mvn test --errors --batch-mode
-after_success:
-    - "if [ $TRAVIS_JDK_VERSION == $LOCKBOX_PUBLISH_VERSION ]; then mvn test jacoco:report coveralls:jacoco --errors --batch-mode; fi"
+    - LOCKBOX_PUBLISH_BRANCH=master
+    - secure: nn8cGhLEc5aHWu3rtlxy/6O83+PaiWzPVtBNCz/CJC0c9TDFJ1Dmysicx8Mf+H6iAu8wqhWg4P3tTARtm+Za34UKyXBql7RFf0FI2NjjElzSSLuY2COIp5To1emufNarHWPINwXMpLBPwnNanMX8xpCOiOhXLzjwQcnBlY9ODvA=
+before_install: ./.travis.before-install
+install: mvn install --define skipTests=true --errors --batch-mode
+script: mvn test --errors --batch-mode
+after_success: ./.travis.after-success

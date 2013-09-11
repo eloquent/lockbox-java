@@ -1,0 +1,8 @@
+#/bin/sh
+
+# fix for bug in OpenJDK 7 preventing publishing to Coveralls
+# see https://bugs.launchpad.net/ubuntu/+source/openjdk-7/+bug/1006776
+if [ "openjdk7" == $TRAVIS_JDK_VERSION ]
+then
+    sudo sed --in-place 's/security.provider.9/#security.provider.9/g' $JAVA_HOME/jre/lib/security/java.security
+fi
