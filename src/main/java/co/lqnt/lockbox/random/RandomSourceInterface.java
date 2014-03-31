@@ -7,12 +7,12 @@
  * that was distributed with this source code.
  */
 
-package co.lqnt.lockbox.util;
+package co.lqnt.lockbox.random;
 
 /**
- * The interface implemented by secure random generators.
+ * The interface implemented by random data sources.
  */
-public interface SecureRandomInterface
+public interface RandomSourceInterface
 {
     /**
      * Generate a random byte array.
@@ -22,11 +22,4 @@ public interface SecureRandomInterface
      * @return The random byte array
      */
     public byte[] generate(int size);
-
-    /**
-     * Get the internal JCE secure random generator.
-     *
-     * @return The internal random generator.
-     */
-    public java.security.SecureRandom jceSecureRandom();
 }

@@ -9,41 +9,64 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.util.SecureRandom;
-import co.lqnt.lockbox.util.SecureRandomInterface;
-
 /**
  * Creates encryption keys.
  */
 public class KeyFactory implements KeyFactoryInterface
 {
     /**
-     * Construct a new key factory.
+     * Create a new key from existing key data.
+     * 
+     * @param encryptionSecret     The encryption secret.
+     * @param authenticationSecret The authentication secret.
+     * 
+     * @return The key.
      */
-    public KeyFactory()
-    {
-        this.random = new SecureRandom();
+    public KeyInterface createKey(
+        final byte[] encryptionSecret,
+        final byte[] authenticationSecret
+    ) {
+        return new Key(encryptionSecret, authenticationSecret);
     }
-
+    
     /**
-     * Construct a new key factory.
-     *
-     * @param random The secure random generator to use.
+     * Create a new key from existing key data.
+     * 
+     * @param encryptionSecret     The encryption secret.
+     * @param authenticationSecret The authentication secret.
+     * @param name                 The name.
+     * 
+     * @return The key.
      */
-    public KeyFactory(final SecureRandomInterface random)
-    {
-        this.random = random;
+    public KeyInterface createKey(
+        final byte[] encryptionSecret,
+        final byte[] authenticationSecret,
+        final String name
+    ) {
+        return new Key(encryptionSecret, authenticationSecret, name);
     }
-
+    
     /**
-     * Get the secure random generator.
-     *
-     * @return The secure random generator.
+     * Create a new key from existing key data.
+     * 
+     * @param encryptionSecret     The encryption secret.
+     * @param authenticationSecret The authentication secret.
+     * @param name                 The name.
+     * @param description          The description.
+     * 
+     * @return The key.
      */
-    public SecureRandomInterface random()
-    {
-        return this.random;
+    public KeyInterface createKey(
+        final byte[] encryptionSecret,
+        final byte[] authenticationSecret,
+        final String name,
+        final String description
+    ) {
+        return new Key(
+            encryptionSecret,
+            authenticationSecret,
+            name,
+            description
+        );
     }
-
-    private SecureRandomInterface random;
 }

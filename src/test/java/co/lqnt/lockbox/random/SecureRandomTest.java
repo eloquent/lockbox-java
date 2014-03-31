@@ -7,7 +7,7 @@
  * that was distributed with this source code.
  */
 
-package co.lqnt.lockbox.util;
+package co.lqnt.lockbox.random;
 
 import java.nio.charset.Charset;
 import org.testng.Assert;
@@ -46,6 +46,6 @@ public class SecureRandomTest
         Assert.assertEquals(data.length, 16);
     }
 
-    private java.security.SecureRandom jceSecureRandom;
+    final private java.security.SecureRandom jceSecureRandom;
     private SecureRandom random;
 }

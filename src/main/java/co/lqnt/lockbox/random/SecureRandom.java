@@ -7,12 +7,12 @@
  * that was distributed with this source code.
  */
 
-package co.lqnt.lockbox.util;
+package co.lqnt.lockbox.random;
 
 /**
  * Generates secure random data.
  */
-public class SecureRandom implements SecureRandomInterface
+public class SecureRandom implements RandomSourceInterface
 {
     /**
      * Construct a new secure random generator.
@@ -38,6 +38,20 @@ public class SecureRandom implements SecureRandomInterface
     }
 
     /**
+     * Get the internal JCE secure random generator.
+     *
+     * @return The internal random generator.
+     */
+    public java.security.SecureRandom jceSecureRandom()
+    {
+        if (null == this.jceSecureRandom) {
+            this.jceSecureRandom = new java.security.SecureRandom();
+        }
+
+        return this.jceSecureRandom;
+    }
+
+    /**
      * Generate a random byte array.
      *
      * @param size The size of the random data to generate.
@@ -50,20 +64,6 @@ public class SecureRandom implements SecureRandomInterface
         this.jceSecureRandom().nextBytes(random);
 
         return random;
-    }
-
-    /**
-     * Get the internal JCE secure random generator.
-     *
-     * @return The internal random generator.
-     */
-    public java.security.SecureRandom jceSecureRandom()
-    {
-        if (null == this.jceSecureRandom) {
-            this.jceSecureRandom = new java.security.SecureRandom();
-        }
-
-        return this.jceSecureRandom;
     }
 
     private java.security.SecureRandom jceSecureRandom;
