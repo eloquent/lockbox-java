@@ -12,9 +12,6 @@ package co.lqnt.lockbox.exception;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-/**
- * Decryption failed.
- */
 public class DecryptionFailedExceptionTest
 {
     @Test

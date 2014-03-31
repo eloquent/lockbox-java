@@ -9,6 +9,64 @@
 
 package co.lqnt.lockbox.key;
 
+/**
+ * The interface implemented by encryption keys.
+ */
 public interface KeyInterface
 {
+    /**
+     * Get the encryption secret.
+     *
+     * @return The encryption secret.
+     */
+    public byte[] encryptionSecret();
+
+    /**
+     * Get the size of the encryption secret in bytes.
+     *
+     * @return The size of the encryption secret in bytes.
+     */
+    public int encryptionSecretBytes();
+
+    /**
+     * Get the size of the encryption secret in bits.
+     *
+     * @return The size of the encryption secret in bits.
+     */
+    public int encryptionSecretBits();
+
+    /**
+     * Get the authentication secret.
+     *
+     * @return The authentication secret.
+     */
+    public byte[] authenticationSecret();
+
+    /**
+     * Get the size of the authentication secret in bytes.
+     *
+     * @return The size of the authentication secret in bytes.
+     */
+    public int authenticationSecretBytes();
+
+    /**
+     * Get the size of the authentication secret in bits.
+     *
+     * @return The size of the authentication secret in bits.
+     */
+    public int authenticationSecretBits();
+
+    /**
+     * Get the name.
+     *
+     * @return The name, or null if the key has no name.
+     */
+    public String name();
+
+    /**
+     * Get the description.
+     *
+     * @return The description, or null if the key has no description.
+     */
+    public String description();
 }
