@@ -15,11 +15,25 @@ package co.lqnt.lockbox.key;
 public class KeyFactory implements KeyFactoryInterface
 {
     /**
+     * Get the static instance of this factory.
+     *
+     * @return The static factory.
+     */
+    static public KeyFactory instance()
+    {
+        if (null == KeyFactory.instance) {
+            KeyFactory.instance = new KeyFactory();
+        }
+
+        return KeyFactory.instance;
+    }
+
+    /**
      * Create a new key from existing key data.
-     * 
+     *
      * @param encryptionSecret     The encryption secret.
      * @param authenticationSecret The authentication secret.
-     * 
+     *
      * @return The key.
      */
     public KeyInterface createKey(
@@ -28,14 +42,14 @@ public class KeyFactory implements KeyFactoryInterface
     ) {
         return new Key(encryptionSecret, authenticationSecret);
     }
-    
+
     /**
      * Create a new key from existing key data.
-     * 
+     *
      * @param encryptionSecret     The encryption secret.
      * @param authenticationSecret The authentication secret.
      * @param name                 The name.
-     * 
+     *
      * @return The key.
      */
     public KeyInterface createKey(
@@ -45,15 +59,15 @@ public class KeyFactory implements KeyFactoryInterface
     ) {
         return new Key(encryptionSecret, authenticationSecret, name);
     }
-    
+
     /**
      * Create a new key from existing key data.
-     * 
+     *
      * @param encryptionSecret     The encryption secret.
      * @param authenticationSecret The authentication secret.
      * @param name                 The name.
      * @param description          The description.
-     * 
+     *
      * @return The key.
      */
     public KeyInterface createKey(
@@ -69,4 +83,6 @@ public class KeyFactory implements KeyFactoryInterface
             description
         );
     }
+
+    static private KeyFactory instance;
 }

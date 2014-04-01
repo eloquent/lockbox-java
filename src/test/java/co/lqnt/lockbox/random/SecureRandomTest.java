@@ -39,11 +39,19 @@ public class SecureRandomTest
     }
 
     @Test
-    public void testGenerate() throws Throwable
+    public void testGenerate()
     {
         byte[] data = this.random.generate(16);
 
         Assert.assertEquals(data.length, 16);
+    }
+
+    @Test
+    public void testInstance()
+    {
+        SecureRandom instance = SecureRandom.instance();
+
+        Assert.assertSame(SecureRandom.instance(), instance);
     }
 
     final private java.security.SecureRandom jceSecureRandom;

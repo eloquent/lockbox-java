@@ -26,7 +26,7 @@ public class KeyFactoryTest
     public void testCreateKey()
     {
         KeyInterface key = this.factory.createKey(this.encryptionSecret, this.authenticationSecret, "name", "description");
-        
+
         Assert.assertEquals(key.encryptionSecret(), this.encryptionSecret);
         Assert.assertEquals(key.authenticationSecret(), this.authenticationSecret);
         Assert.assertSame(key.name(), "name");
@@ -37,7 +37,7 @@ public class KeyFactoryTest
     public void testCreateKeyNoDescription()
     {
         KeyInterface key = this.factory.createKey(this.encryptionSecret, this.authenticationSecret, "name");
-        
+
         Assert.assertEquals(key.encryptionSecret(), this.encryptionSecret);
         Assert.assertEquals(key.authenticationSecret(), this.authenticationSecret);
         Assert.assertSame(key.name(), "name");
@@ -48,13 +48,21 @@ public class KeyFactoryTest
     public void testCreateKeyNoNameOrDescription()
     {
         KeyInterface key = this.factory.createKey(this.encryptionSecret, this.authenticationSecret);
-        
+
         Assert.assertEquals(key.encryptionSecret(), this.encryptionSecret);
         Assert.assertEquals(key.authenticationSecret(), this.authenticationSecret);
         Assert.assertNull(key.name());
         Assert.assertNull(key.description());
     }
-    
+
+    @Test
+    public void testInstance()
+    {
+        KeyFactory instance = KeyFactory.instance();
+
+        Assert.assertSame(KeyFactory.instance(), instance);
+    }
+
     final private KeyFactory factory;
     final private byte[] encryptionSecret;
     final private byte[] authenticationSecret;

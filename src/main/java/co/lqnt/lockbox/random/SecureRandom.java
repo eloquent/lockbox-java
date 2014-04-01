@@ -15,6 +15,20 @@ package co.lqnt.lockbox.random;
 public class SecureRandom implements RandomSourceInterface
 {
     /**
+     * Get the static instance of this random source.
+     *
+     * @return The static random source.
+     */
+    static public SecureRandom instance()
+    {
+        if (null == SecureRandom.instance) {
+            SecureRandom.instance = new SecureRandom();
+        }
+
+        return SecureRandom.instance;
+    }
+
+    /**
      * Construct a new secure random generator.
      *
      * Using this constructor will instantiate the JCE SecureRandom instance
@@ -66,5 +80,6 @@ public class SecureRandom implements RandomSourceInterface
         return random;
     }
 
+    static private SecureRandom instance;
     private java.security.SecureRandom jceSecureRandom;
 }
