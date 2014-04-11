@@ -15,7 +15,7 @@ import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
 /**
  * The interface implemented by encryption key factories.
  */
-interface KeyFactoryInterface
+public interface KeyFactoryInterface
 {
     /**
      * Create a new key from existing key data.

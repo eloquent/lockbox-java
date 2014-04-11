@@ -21,7 +21,10 @@ public class InvalidEncryptionSecretSizeExceptionTest
         InvalidEncryptionSecretSizeException exception = new InvalidEncryptionSecretSizeException(111, cause);
 
         Assert.assertEquals(111, exception.size());
-        Assert.assertEquals(exception.getMessage(), "Invalid encryption secret size 111.");
+        Assert.assertEquals(
+            exception.getMessage(),
+            "Invalid encryption secret size 111. Encryption secret must be 128, 192, or 256 bits."
+        );
         Assert.assertSame(exception.getCause(), cause);
     }
 
@@ -31,7 +34,10 @@ public class InvalidEncryptionSecretSizeExceptionTest
         InvalidEncryptionSecretSizeException exception = new InvalidEncryptionSecretSizeException(111);
 
         Assert.assertEquals(111, exception.size());
-        Assert.assertEquals(exception.getMessage(), "Invalid encryption secret size 111.");
+        Assert.assertEquals(
+            exception.getMessage(),
+            "Invalid encryption secret size 111. Encryption secret must be 128, 192, or 256 bits."
+        );
         Assert.assertNull(exception.getCause());
     }
 }

@@ -17,7 +17,7 @@ import co.lqnt.lockbox.random.SecureRandom;
 /**
  * The interface implemented by encryption key generators.
  */
-class KeyGenerator implements KeyGeneratorInterface
+public class KeyGenerator implements KeyGeneratorInterface
 {
     /**
      * Get the static instance of this generator.

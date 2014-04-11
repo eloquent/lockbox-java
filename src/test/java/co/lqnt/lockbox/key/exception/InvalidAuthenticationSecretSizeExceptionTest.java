@@ -21,7 +21,10 @@ public class InvalidAuthenticationSecretSizeExceptionTest
         InvalidAuthenticationSecretSizeException exception = new InvalidAuthenticationSecretSizeException(111, cause);
 
         Assert.assertEquals(111, exception.size());
-        Assert.assertEquals(exception.getMessage(), "Invalid authentication secret size 111.");
+        Assert.assertEquals(
+            exception.getMessage(),
+            "Invalid authentication secret size 111. Authentication secret must be 224, 256, 384, or 512 bits."
+        );
         Assert.assertSame(exception.getCause(), cause);
     }
 
@@ -31,7 +34,10 @@ public class InvalidAuthenticationSecretSizeExceptionTest
         InvalidAuthenticationSecretSizeException exception = new InvalidAuthenticationSecretSizeException(111);
 
         Assert.assertEquals(111, exception.size());
-        Assert.assertEquals(exception.getMessage(), "Invalid authentication secret size 111.");
+        Assert.assertEquals(
+            exception.getMessage(),
+            "Invalid authentication secret size 111. Authentication secret must be 224, 256, 384, or 512 bits."
+        );
         Assert.assertNull(exception.getCause());
     }
 }

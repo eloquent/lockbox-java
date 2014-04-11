@@ -15,7 +15,7 @@ import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
 /**
  * The interface implemented by encryption key generators.
  */
-interface KeyGeneratorInterface
+public interface KeyGeneratorInterface
 {
     /**
      * Generate a new key.

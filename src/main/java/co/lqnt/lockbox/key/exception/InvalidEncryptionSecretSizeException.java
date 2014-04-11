@@ -17,7 +17,7 @@ final public class InvalidEncryptionSecretSizeException extends Exception
     /**
      * Construct a new invalid encryption secret size exception.
      *
-     * @param size  The invalid secret size.
+     * @param size The invalid secret size.
      */
     public InvalidEncryptionSecretSizeException(final int size)
     {
@@ -34,7 +34,14 @@ final public class InvalidEncryptionSecretSizeException extends Exception
         final int size,
         final Throwable cause
     ) {
-        super(String.format("Invalid encryption secret size %d.", size), cause);
+        super(
+            String.format(
+                "Invalid encryption secret size %d. " +
+                "Encryption secret must be 128, 192, or 256 bits.",
+                size
+            ),
+            cause
+        );
 
         this.size = size;
     }
