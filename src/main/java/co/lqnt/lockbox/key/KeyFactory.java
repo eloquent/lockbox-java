@@ -9,6 +9,9 @@
 
 package co.lqnt.lockbox.key;
 
+import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
+
 /**
  * Creates encryption keys.
  */
@@ -35,11 +38,16 @@ public class KeyFactory implements KeyFactoryInterface
      * @param authenticationSecret The authentication secret.
      *
      * @return The key.
+     * @throws InvalidEncryptionSecretSizeException     If the encryption secret is an invalid size.
+     * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
      */
     public KeyInterface createKey(
         final byte[] encryptionSecret,
         final byte[] authenticationSecret
-    ) {
+    ) throws
+        InvalidEncryptionSecretSizeException,
+        InvalidAuthenticationSecretSizeException
+    {
         return new Key(encryptionSecret, authenticationSecret);
     }
 
@@ -51,12 +59,17 @@ public class KeyFactory implements KeyFactoryInterface
      * @param name                 The name.
      *
      * @return The key.
+     * @throws InvalidEncryptionSecretSizeException     If the encryption secret is an invalid size.
+     * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
      */
     public KeyInterface createKey(
         final byte[] encryptionSecret,
         final byte[] authenticationSecret,
         final String name
-    ) {
+    ) throws
+        InvalidEncryptionSecretSizeException,
+        InvalidAuthenticationSecretSizeException
+    {
         return new Key(encryptionSecret, authenticationSecret, name);
     }
 
@@ -69,13 +82,18 @@ public class KeyFactory implements KeyFactoryInterface
      * @param description          The description.
      *
      * @return The key.
+     * @throws InvalidEncryptionSecretSizeException     If the encryption secret is an invalid size.
+     * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
      */
     public KeyInterface createKey(
         final byte[] encryptionSecret,
         final byte[] authenticationSecret,
         final String name,
         final String description
-    ) {
+    ) throws
+        InvalidEncryptionSecretSizeException,
+        InvalidAuthenticationSecretSizeException
+    {
         return new Key(
             encryptionSecret,
             authenticationSecret,

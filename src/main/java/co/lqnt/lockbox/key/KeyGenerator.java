@@ -83,10 +83,7 @@ class KeyGenerator implements KeyGeneratorInterface
      */
     public KeyInterface generateKey()
     {
-        return this.factory().createKey(
-            this.randomSource().generate(256),
-            this.randomSource().generate(256)
-        );
+        return this.generateKey(null, null);
     }
 
     /**
@@ -98,11 +95,7 @@ class KeyGenerator implements KeyGeneratorInterface
      */
     public KeyInterface generateKey(final String name)
     {
-        return this.factory().createKey(
-            this.randomSource().generate(256),
-            this.randomSource().generate(256),
-            name
-        );
+        return this.generateKey(name, null);
     }
 
     /**
@@ -117,11 +110,40 @@ class KeyGenerator implements KeyGeneratorInterface
         final String name,
         final String description
     ) {
-        return this.factory().createKey(
-            this.randomSource().generate(256),
-            this.randomSource().generate(256),
-            name,
-            description
+        KeyInterface key;
+        try {
+            key = this.generateKey(name, description, 256, 256);
+        } catch (InvalidEncryptionSecretSizeException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidAuthenticationSecretSizeException e) {
+            throw new RuntimeException(e);
+        }
+
+        return key;
+    }
+
+    /**
+     * Generate a new key.
+     *
+     * @param encryptionSecretBits The size of the encryption secret in bits.
+     * @param authenticationSecretBits The size of the authentication secret in bits.
+     *
+     * @return The generated key.
+     * @throws InvalidEncryptionSecretSizeException     If the requested encryption secret size is invalid.
+     * @throws InvalidAuthenticationSecretSizeException If the requested authentication secret size is invalid.
+     */
+    public KeyInterface generateKey(
+        final int encryptionSecretBits,
+        final int authenticationSecretBits
+    ) throws
+        InvalidEncryptionSecretSizeException,
+        InvalidAuthenticationSecretSizeException
+    {
+        return this.generateKey(
+            null,
+            null,
+            encryptionSecretBits,
+            authenticationSecretBits
         );
     }
 

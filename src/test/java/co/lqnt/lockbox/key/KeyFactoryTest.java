@@ -23,29 +23,29 @@ public class KeyFactoryTest
     }
 
     @Test
-    public void testCreateKey()
+    public void testCreateKey() throws Throwable
     {
         KeyInterface key = this.factory.createKey(this.encryptionSecret, this.authenticationSecret, "name", "description");
 
         Assert.assertEquals(key.encryptionSecret(), this.encryptionSecret);
         Assert.assertEquals(key.authenticationSecret(), this.authenticationSecret);
-        Assert.assertSame(key.name(), "name");
-        Assert.assertSame(key.description(), "description");
+        Assert.assertEquals(key.name(), "name");
+        Assert.assertEquals(key.description(), "description");
     }
 
     @Test
-    public void testCreateKeyNoDescription()
+    public void testCreateKeyNoDescription() throws Throwable
     {
         KeyInterface key = this.factory.createKey(this.encryptionSecret, this.authenticationSecret, "name");
 
         Assert.assertEquals(key.encryptionSecret(), this.encryptionSecret);
         Assert.assertEquals(key.authenticationSecret(), this.authenticationSecret);
-        Assert.assertSame(key.name(), "name");
+        Assert.assertEquals(key.name(), "name");
         Assert.assertNull(key.description());
     }
 
     @Test
-    public void testCreateKeyNoNameOrDescription()
+    public void testCreateKeyNoNameOrDescription() throws Throwable
     {
         KeyInterface key = this.factory.createKey(this.encryptionSecret, this.authenticationSecret);
 

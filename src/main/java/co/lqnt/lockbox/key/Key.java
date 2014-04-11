@@ -9,6 +9,8 @@
 
 package co.lqnt.lockbox.key;
 
+import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
 import java.util.Arrays;
 
 /**
@@ -18,64 +20,101 @@ public class Key implements KeyInterface
 {
     /**
      * Construct a new key.
-     * 
+     *
      * @param encryptionSecret     The encryption secret.
      * @param authenticationSecret The authentication secret.
+     *
+     * @throws InvalidEncryptionSecretSizeException     If the encryption secret is an invalid size.
+     * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
      */
     public Key(
         final byte[] encryptionSecret,
         final byte[] authenticationSecret
-    ) {
-        this.encryptionSecret =
-            Arrays.copyOf(encryptionSecret, encryptionSecret.length);
-        this.authenticationSecret =
-            Arrays.copyOf(authenticationSecret, authenticationSecret.length);
-        this.name = null;
-        this.description = null;
+    ) throws
+        InvalidEncryptionSecretSizeException,
+        InvalidAuthenticationSecretSizeException
+    {
+        this(encryptionSecret, authenticationSecret, null, null);
     }
-    
+
     /**
      * Construct a new key.
-     * 
+     *
      * @param encryptionSecret     The encryption secret.
      * @param authenticationSecret The authentication secret.
      * @param name                 The name.
+     *
+     * @throws InvalidEncryptionSecretSizeException     If the encryption secret is an invalid size.
+     * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
      */
     public Key(
         final byte[] encryptionSecret,
         final byte[] authenticationSecret,
         final String name
-    ) {
-        this.encryptionSecret =
-            Arrays.copyOf(encryptionSecret, encryptionSecret.length);
-        this.authenticationSecret =
-            Arrays.copyOf(authenticationSecret, authenticationSecret.length);
-        this.name = name;
-        this.description = null;
+    ) throws
+        InvalidEncryptionSecretSizeException,
+        InvalidAuthenticationSecretSizeException
+    {
+        this(encryptionSecret, authenticationSecret, name, null);
     }
-    
+
     /**
      * Construct a new key.
-     * 
+     *
      * @param encryptionSecret     The encryption secret.
      * @param authenticationSecret The authentication secret.
      * @param name                 The name.
      * @param description          The description.
+     *
+     * @throws InvalidEncryptionSecretSizeException     If the encryption secret is an invalid size.
+     * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
      */
     public Key(
         final byte[] encryptionSecret,
         final byte[] authenticationSecret,
         final String name,
         final String description
-    ) {
+    ) throws
+        InvalidEncryptionSecretSizeException,
+        InvalidAuthenticationSecretSizeException
+    {
+        switch (encryptionSecret.length) {
+            case 32:
+            case 24:
+            case 16:
+                break;
+
+            default:
+                throw new InvalidEncryptionSecretSizeException(
+                    encryptionSecret.length * 8
+                );
+        }
+
+        switch (authenticationSecret.length) {
+            case 64:
+            case 48:
+            case 32:
+            case 28:
+                break;
+
+            default:
+                throw new InvalidAuthenticationSecretSizeException(
+                    authenticationSecret.length * 8
+                );
+        }
+
         this.encryptionSecret =
             Arrays.copyOf(encryptionSecret, encryptionSecret.length);
+        this.encryptionSecretBytes = encryptionSecret.length;
+        this.encryptionSecretBits = encryptionSecret.length * 8;
         this.authenticationSecret =
             Arrays.copyOf(authenticationSecret, authenticationSecret.length);
+        this.authenticationSecretBytes = authenticationSecret.length;
+        this.authenticationSecretBits = authenticationSecret.length * 8;
         this.name = name;
         this.description = description;
     }
-    
+
     /**
      * Get the encryption secret.
      *
@@ -94,7 +133,7 @@ public class Key implements KeyInterface
      */
     public int encryptionSecretBytes()
     {
-        return this.encryptionSecret.length;
+        return this.encryptionSecretBytes;
     }
 
     /**
@@ -104,7 +143,7 @@ public class Key implements KeyInterface
      */
     public int encryptionSecretBits()
     {
-        return this.encryptionSecret.length * 8;
+        return this.encryptionSecretBits;
     }
 
     /**
@@ -127,7 +166,7 @@ public class Key implements KeyInterface
      */
     public int authenticationSecretBytes()
     {
-        return this.authenticationSecret.length;
+        return this.authenticationSecretBytes;
     }
 
     /**
@@ -137,7 +176,7 @@ public class Key implements KeyInterface
      */
     public int authenticationSecretBits()
     {
-        return this.authenticationSecret.length * 8;
+        return this.authenticationSecretBits;
     }
 
     /**
@@ -159,9 +198,13 @@ public class Key implements KeyInterface
     {
         return this.description;
     }
-    
+
     final private byte[] encryptionSecret;
+    final private int encryptionSecretBytes;
+    final private int encryptionSecretBits;
     final private byte[] authenticationSecret;
+    final private int authenticationSecretBytes;
+    final private int authenticationSecretBits;
     final private String name;
     final private String description;
 }

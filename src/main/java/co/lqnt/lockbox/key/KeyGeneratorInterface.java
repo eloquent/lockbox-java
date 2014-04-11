@@ -49,6 +49,23 @@ interface KeyGeneratorInterface
     /**
      * Generate a new key.
      *
+     * @param encryptionSecretBits The size of the encryption secret in bits.
+     * @param authenticationSecretBits The size of the authentication secret in bits.
+     *
+     * @return The generated key.
+     * @throws InvalidEncryptionSecretSizeException     If the requested encryption secret size is invalid.
+     * @throws InvalidAuthenticationSecretSizeException If the requested authentication secret size is invalid.
+     */
+    public KeyInterface generateKey(
+        final int encryptionSecretBits,
+        final int authenticationSecretBits
+    ) throws
+        InvalidEncryptionSecretSizeException,
+        InvalidAuthenticationSecretSizeException;
+
+    /**
+     * Generate a new key.
+     *
      * @param name The name.
      * @param description The description.
      * @param encryptionSecretBits The size of the encryption secret in bits.
