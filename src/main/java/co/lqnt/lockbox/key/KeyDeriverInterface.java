@@ -11,6 +11,7 @@ package co.lqnt.lockbox.key;
 
 import co.lqnt.lockbox.key.exception.InvalidIterationsException;
 import co.lqnt.lockbox.key.exception.InvalidSaltSizeException;
+import co.lqnt.lockbox.util.ErasableDataInterface;
 
 /**
  * The interface implemented by encryption key derivers.
@@ -31,7 +32,7 @@ public interface KeyDeriverInterface
      * @throws InvalidSaltSizeException   If the salt size is invalid.
      */
     public KeyInterface deriveKeyFromPassword(
-        byte[] password,
+        ErasableDataInterface password,
         int iterations,
         byte[] salt,
         String name,

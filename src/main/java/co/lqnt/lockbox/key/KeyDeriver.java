@@ -15,6 +15,7 @@ import co.lqnt.lockbox.key.exception.InvalidIterationsException;
 import co.lqnt.lockbox.key.exception.InvalidSaltSizeException;
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
+import co.lqnt.lockbox.util.ErasableDataInterface;
 import java.util.Arrays;
 import org.bouncycastle.crypto.PBEParametersGenerator;
 import org.bouncycastle.crypto.digests.SHA512Digest;
@@ -112,7 +113,7 @@ public class KeyDeriver implements KeyDeriverInterface
      * @throws InvalidSaltSizeException   If the salt size is invalid.
      */
     public KeyInterface deriveKeyFromPassword(
-        byte[] password,
+        ErasableDataInterface password,
         int iterations,
         byte[] salt,
         String name,
@@ -128,7 +129,7 @@ public class KeyDeriver implements KeyDeriverInterface
             throw new InvalidSaltSizeException(salt.length);
         }
 
-        this.pbeParametersGenerator().init(password, salt, iterations);
+        this.pbeParametersGenerator().init(password.bytes(), salt, iterations);
         KeyParameter keyParameter = (KeyParameter) this.pbeParametersGenerator()
             .generateDerivedMacParameters(512);
 

@@ -11,6 +11,7 @@ package co.lqnt.lockbox.key;
 
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
+import co.lqnt.lockbox.util.ErasableData;
 import com.google.common.io.BaseEncoding;
 import java.nio.charset.Charset;
 import org.bouncycastle.crypto.PBEParametersGenerator;
@@ -83,7 +84,7 @@ public class KeyDeriverTest
     ) throws Throwable
     {
         KeyInterface key = this.deriver.deriveKeyFromPassword(
-            password.getBytes(Charset.forName("US-ASCII")),
+            new ErasableData(password.toCharArray()),
             iterations,
             salt,
             "name",
