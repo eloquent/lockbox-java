@@ -29,8 +29,8 @@ public class KeyFactoryTest
 
         Assert.assertEquals(key.encryptionSecret(), this.encryptionSecret);
         Assert.assertEquals(key.authenticationSecret(), this.authenticationSecret);
-        Assert.assertEquals(key.name(), "name");
-        Assert.assertEquals(key.description(), "description");
+        Assert.assertEquals(key.name().get(), "name");
+        Assert.assertEquals(key.description().get(), "description");
     }
 
     @Test
@@ -40,8 +40,8 @@ public class KeyFactoryTest
 
         Assert.assertEquals(key.encryptionSecret(), this.encryptionSecret);
         Assert.assertEquals(key.authenticationSecret(), this.authenticationSecret);
-        Assert.assertEquals(key.name(), "name");
-        Assert.assertNull(key.description());
+        Assert.assertEquals(key.name().get(), "name");
+        Assert.assertFalse(key.description().isPresent());
     }
 
     @Test
@@ -51,8 +51,8 @@ public class KeyFactoryTest
 
         Assert.assertEquals(key.encryptionSecret(), this.encryptionSecret);
         Assert.assertEquals(key.authenticationSecret(), this.authenticationSecret);
-        Assert.assertNull(key.name());
-        Assert.assertNull(key.description());
+        Assert.assertFalse(key.name().isPresent());
+        Assert.assertFalse(key.description().isPresent());
     }
 
     @Test

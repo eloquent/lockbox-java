@@ -101,8 +101,8 @@ public class KeyGeneratorTest
 
         Assert.assertEquals(key.encryptionSecret(), encryptionSecret);
         Assert.assertEquals(key.authenticationSecret(), authenticationSecret);
-        Assert.assertEquals(key.name(), "name");
-        Assert.assertEquals(key.description(), "description");
+        Assert.assertEquals(key.name().get(), "name");
+        Assert.assertEquals(key.description().get(), "description");
     }
 
     @Test
@@ -112,8 +112,8 @@ public class KeyGeneratorTest
 
         Assert.assertEquals(key.encryptionSecret(), this.bytes32);
         Assert.assertEquals(key.authenticationSecret(), this.bytes32);
-        Assert.assertEquals(key.name(), "name");
-        Assert.assertEquals(key.description(), "description");
+        Assert.assertEquals(key.name().get(), "name");
+        Assert.assertEquals(key.description().get(), "description");
     }
 
     @Test
@@ -123,8 +123,8 @@ public class KeyGeneratorTest
 
         Assert.assertEquals(key.encryptionSecret(), this.bytes32);
         Assert.assertEquals(key.authenticationSecret(), this.bytes32);
-        Assert.assertEquals(key.name(), "name");
-        Assert.assertNull(key.description());
+        Assert.assertEquals(key.name().get(), "name");
+        Assert.assertFalse(key.description().isPresent());
     }
 
     @Test
@@ -134,8 +134,8 @@ public class KeyGeneratorTest
 
         Assert.assertEquals(key.encryptionSecret(), this.bytes32);
         Assert.assertEquals(key.authenticationSecret(), this.bytes32);
-        Assert.assertNull(key.name());
-        Assert.assertNull(key.description());
+        Assert.assertFalse(key.name().isPresent());
+        Assert.assertFalse(key.description().isPresent());
     }
 
     @Test
@@ -145,8 +145,8 @@ public class KeyGeneratorTest
 
         Assert.assertEquals(key.encryptionSecret(), this.bytes16);
         Assert.assertEquals(key.authenticationSecret(), this.bytes28);
-        Assert.assertNull(key.name());
-        Assert.assertNull(key.description());
+        Assert.assertFalse(key.name().isPresent());
+        Assert.assertFalse(key.description().isPresent());
     }
 
     @Test(expectedExceptions = InvalidEncryptionSecretSizeException.class)
