@@ -23,6 +23,76 @@ public interface KeyDeriverInterface
      *
      * @param password    The password.
      * @param iterations  The number of hash iterations to use.
+     *
+     * @return The derived key.
+     * @throws InvalidIterationsException If the number of iterations is invalid.
+     */
+    public DerivedKeyDataInterface deriveKeyFromPassword(
+        final ErasableDataInterface password,
+        final int iterations
+    ) throws
+        InvalidIterationsException;
+
+    /**
+     * Derive a key from a password.
+     *
+     * @param password    The password.
+     * @param iterations  The number of hash iterations to use.
+     * @param name        The name.
+     *
+     * @return The derived key.
+     * @throws InvalidIterationsException If the number of iterations is invalid.
+     */
+    public DerivedKeyDataInterface deriveKeyFromPassword(
+        final ErasableDataInterface password,
+        final int iterations,
+        final String name
+    ) throws
+        InvalidIterationsException;
+
+    /**
+     * Derive a key from a password.
+     *
+     * @param password    The password.
+     * @param iterations  The number of hash iterations to use.
+     * @param name        The name.
+     * @param description The description.
+     *
+     * @return The derived key.
+     * @throws InvalidIterationsException If the number of iterations is invalid.
+     */
+    public DerivedKeyDataInterface deriveKeyFromPassword(
+        final ErasableDataInterface password,
+        final int iterations,
+        final String name,
+        final String description
+    ) throws
+        InvalidIterationsException;
+
+    /**
+     * Derive a key from a password.
+     *
+     * @param password    The password.
+     * @param iterations  The number of hash iterations to use.
+     * @param salt        The salt to use.
+     *
+     * @return The derived key.
+     * @throws InvalidIterationsException If the number of iterations is invalid.
+     * @throws InvalidSaltSizeException   If the salt size is invalid.
+     */
+    public KeyInterface deriveKeyFromPassword(
+        final ErasableDataInterface password,
+        final int iterations,
+        final byte[] salt
+    ) throws
+        InvalidIterationsException,
+        InvalidSaltSizeException;
+
+    /**
+     * Derive a key from a password.
+     *
+     * @param password    The password.
+     * @param iterations  The number of hash iterations to use.
      * @param salt        The salt to use.
      * @param name        The name.
      * @param description The description.
@@ -32,11 +102,11 @@ public interface KeyDeriverInterface
      * @throws InvalidSaltSizeException   If the salt size is invalid.
      */
     public KeyInterface deriveKeyFromPassword(
-        ErasableDataInterface password,
-        int iterations,
-        byte[] salt,
-        String name,
-        String description
+        final ErasableDataInterface password,
+        final int iterations,
+        final byte[] salt,
+        final String name,
+        final String description
     ) throws
         InvalidIterationsException,
         InvalidSaltSizeException;
