@@ -9,6 +9,8 @@
 
 package co.lqnt.lockbox.key;
 
+import com.google.common.base.Optional;
+
 /**
  * The interface implemented by encryption keys.
  */
@@ -59,14 +61,14 @@ public interface KeyInterface
     /**
      * Get the name.
      *
-     * @return The name, or null if the key has no name.
+     * @return The name.
      */
-    public String name();
+    public Optional<String> name();
 
     /**
      * Get the description.
      *
-     * @return The description, or null if the key has no description.
+     * @return The description.
      */
-    public String description();
+    public Optional<String> description();
 }

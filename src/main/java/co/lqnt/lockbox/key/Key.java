@@ -11,6 +11,7 @@ package co.lqnt.lockbox.key;
 
 import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
 import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
+import com.google.common.base.Optional;
 import java.util.Arrays;
 
 /**
@@ -111,8 +112,8 @@ public class Key implements KeyInterface
             Arrays.copyOf(authenticationSecret, authenticationSecret.length);
         this.authenticationSecretBytes = authenticationSecret.length;
         this.authenticationSecretBits = authenticationSecret.length * 8;
-        this.name = name;
-        this.description = description;
+        this.name = Optional.fromNullable(name);
+        this.description = Optional.fromNullable(description);
     }
 
     /**
@@ -182,9 +183,9 @@ public class Key implements KeyInterface
     /**
      * Get the name.
      *
-     * @return The name, or null if the key has no name.
+     * @return The name.
      */
-    public String name()
+    public Optional<String> name()
     {
         return this.name;
     }
@@ -192,9 +193,9 @@ public class Key implements KeyInterface
     /**
      * Get the description.
      *
-     * @return The description, or null if the key has no description.
+     * @return The description.
      */
-    public String description()
+    public Optional<String> description()
     {
         return this.description;
     }
@@ -205,6 +206,6 @@ public class Key implements KeyInterface
     final private byte[] authenticationSecret;
     final private int authenticationSecretBytes;
     final private int authenticationSecretBits;
-    final private String name;
-    final private String description;
+    final private Optional<String> name;
+    final private Optional<String> description;
 }

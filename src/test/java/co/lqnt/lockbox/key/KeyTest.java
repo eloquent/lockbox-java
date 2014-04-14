@@ -64,8 +64,8 @@ public class KeyTest
         Assert.assertEquals(this.key.authenticationSecret(), authenticationSecret);
         Assert.assertEquals(this.key.authenticationSecretBytes(), authenticationSecretBits / 8);
         Assert.assertEquals(this.key.authenticationSecretBits(), authenticationSecretBits);
-        Assert.assertEquals(this.key.name(), "name");
-        Assert.assertEquals(this.key.description(), "description");
+        Assert.assertEquals(this.key.name().get(), "name");
+        Assert.assertEquals(this.key.description().get(), "description");
     }
 
     @Test
@@ -79,8 +79,8 @@ public class KeyTest
         Assert.assertEquals(this.key.authenticationSecret(), this.bytes28);
         Assert.assertEquals(this.key.authenticationSecretBytes(), 28);
         Assert.assertEquals(this.key.authenticationSecretBits(), 224);
-        Assert.assertEquals(this.key.name(), "name");
-        Assert.assertNull(this.key.description());
+        Assert.assertEquals(this.key.name().get(), "name");
+        Assert.assertFalse(this.key.description().isPresent());
     }
 
     @Test
@@ -94,8 +94,8 @@ public class KeyTest
         Assert.assertEquals(this.key.authenticationSecret(), this.bytes28);
         Assert.assertEquals(this.key.authenticationSecretBytes(), 28);
         Assert.assertEquals(this.key.authenticationSecretBits(), 224);
-        Assert.assertNull(this.key.name());
-        Assert.assertNull(this.key.description());
+        Assert.assertFalse(this.key.name().isPresent());
+        Assert.assertFalse(this.key.description().isPresent());
     }
 
     @Test(expectedExceptions = InvalidEncryptionSecretSizeException.class)
