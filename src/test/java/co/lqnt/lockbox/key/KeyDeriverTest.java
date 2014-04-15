@@ -72,12 +72,13 @@ public class KeyDeriverTest
     public Object[][] keyDerivationData()
     {
         return new Object[][]{
-            {"",       1000,   this.bytes64, "2k1fkksUHSjVMxOMNkPBihtocgu1ziAI4CVRFfC7ClM", "lNXoGLA83xvvlAUuHCQEw9OcsUloYygz2Oq4PFRMUh4"},
-            {"foo",    1000,   this.bytes64, "9eWWednk0FFnvE_NXA0uElPqBvSRDxTNNfKjj8j-w74", "H8-n0cCupLeoCYckdGFWlwWc8GAl_XvBokZMgWbhB1U"},
-            {"foobar", 1000,   this.bytes64, "gvP8UROn7oLyZpbguWlDryCE82uANmVHdp4cV1ZKNik", "shiABRhWtR0nKk6uO_efWMf6yk7iZ8OnD9PjIdYJxVQ"},
-            {"foobar", 10000,  this.bytes64, "ZYRW2br9KSzOY4KKpoEGHMXzT4PYa_CP5qPdqSkZKXI", "Bq2Yqmr9iwi89x-DV5MUIMUmvEAXgYNhuLR0dt10jv0"},
-            {"foobar", 100000, this.bytes64, "Zbz3tZJjWJDGwMmer1aY1TNBW3uscUCziUpIpAF9sXw", "pS5s8iWZBHwzf_hIIm4SMsR9dTHo2yfl2WHpa1Fp6wc"},
-            {"foobar", 1,      this.bytes64, "nrmJyhdG9gAbFrTidwKwg5xeKBFF11wkMkJVbVsWG6A", "cclAcqBRCzX8VMT-DkiNzHiH4emz6GT_iVVpIB84ccw"},
+            {"",                      1000,   this.bytes64, "2k1fkksUHSjVMxOMNkPBihtocgu1ziAI4CVRFfC7ClM", "lNXoGLA83xvvlAUuHCQEw9OcsUloYygz2Oq4PFRMUh4"},
+            {"foo",                   1000,   this.bytes64, "9eWWednk0FFnvE_NXA0uElPqBvSRDxTNNfKjj8j-w74", "H8-n0cCupLeoCYckdGFWlwWc8GAl_XvBokZMgWbhB1U"},
+            {"foobar",                1000,   this.bytes64, "gvP8UROn7oLyZpbguWlDryCE82uANmVHdp4cV1ZKNik", "shiABRhWtR0nKk6uO_efWMf6yk7iZ8OnD9PjIdYJxVQ"},
+            {"foobar",                10000,  this.bytes64, "ZYRW2br9KSzOY4KKpoEGHMXzT4PYa_CP5qPdqSkZKXI", "Bq2Yqmr9iwi89x-DV5MUIMUmvEAXgYNhuLR0dt10jv0"},
+            {"foobar",                100000, this.bytes64, "Zbz3tZJjWJDGwMmer1aY1TNBW3uscUCziUpIpAF9sXw", "pS5s8iWZBHwzf_hIIm4SMsR9dTHo2yfl2WHpa1Fp6wc"},
+            {"foobar",                1,      this.bytes64, "nrmJyhdG9gAbFrTidwKwg5xeKBFF11wkMkJVbVsWG6A", "cclAcqBRCzX8VMT-DkiNzHiH4emz6GT_iVVpIB84ccw"},
+            {"f\u00F6\u00F6b\u00E4r", 1000,   this.bytes64, "kJcrKAvpBNxM5N3uIrBXjwznaAWAWkaqyhd_btIaC1Q", "QKLqZ8Rsrm-WOWxRQwRQ2bSmKkeN00IF_C8MFSYp0Qs"},
         };
     }
 
