@@ -9,6 +9,8 @@
 
 package co.lqnt.lockbox.random;
 
+import java.util.List;
+
 /**
  * The interface implemented by random data sources.
  */
@@ -21,5 +23,5 @@ public interface RandomSourceInterface
      *
      * @return The random byte array
      */
-    public byte[] generate(int size);
+    public List<Byte> generate(int size);
 }

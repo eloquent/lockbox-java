@@ -47,7 +47,7 @@ public class KeyDeriverTest
         this.factory = new KeyFactory();
         this.deriver = new KeyDeriver(this.factory, this.pbeParametersGenerator, this.randomSource);
 
-        Mockito.when(this.randomSource.generate(64)).thenReturn(Bytes.toArray(this.bytes64));
+        Mockito.when(this.randomSource.generate(64)).thenReturn(this.bytes64);
     }
 
     @Test
@@ -202,7 +202,7 @@ public class KeyDeriverTest
     public void testDeriveKeyFromPasswordFailureGeneratedSaltSize() throws Throwable
     {
         Mockito.when(this.randomSource.generate(64))
-            .thenReturn("1234567890123456".getBytes(Charset.forName("US-ASCII")));
+            .thenReturn(Bytes.asList("1234567890123456".getBytes(Charset.forName("US-ASCII"))));
 
         this.deriver.deriveKeyFromPassword(Chars.asList("foobar".toCharArray()), 10);
     }

@@ -9,6 +9,9 @@
 
 package co.lqnt.lockbox.random;
 
+import com.google.common.primitives.Bytes;
+import java.util.List;
+
 /**
  * Generates secure random data.
  */
@@ -72,12 +75,12 @@ public class SecureRandom implements RandomSourceInterface
      *
      * @return The random byte array
      */
-    public byte[] generate(int size)
+    public List<Byte> generate(int size)
     {
         byte[] random = new byte[size];
         this.jceSecureRandom().nextBytes(random);
 
-        return random;
+        return Bytes.asList(random);
     }
 
     static private SecureRandom instance;

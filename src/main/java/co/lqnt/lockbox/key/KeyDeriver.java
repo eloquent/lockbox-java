@@ -158,7 +158,7 @@ public class KeyDeriver implements KeyDeriverInterface
     ) throws
         InvalidIterationsException
     {
-        List<Byte> salt = Bytes.asList(this.randomSource().generate(64));
+        List<Byte> salt = this.randomSource().generate(64);
 
         DerivedKeyData keyData;
         try {

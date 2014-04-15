@@ -10,6 +10,7 @@
 package co.lqnt.lockbox.random;
 
 import java.nio.charset.Charset;
+import java.util.List;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -41,9 +42,9 @@ public class SecureRandomTest
     @Test
     public void testGenerate()
     {
-        byte[] data = this.random.generate(16);
+        List<Byte> data = this.random.generate(16);
 
-        Assert.assertEquals(data.length, 16);
+        Assert.assertEquals(data.size(), 16);
     }
 
     @Test

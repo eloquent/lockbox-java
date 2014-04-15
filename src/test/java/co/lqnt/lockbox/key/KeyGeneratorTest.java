@@ -39,12 +39,12 @@ public class KeyGeneratorTest
             "1234567890123456789012345678901234567890123456789012345678901234".getBytes(Charset.forName("US-ASCII"))
         );
 
-        Mockito.when(this.randomSource.generate(16)).thenReturn(Bytes.toArray(this.bytes16));
-        Mockito.when(this.randomSource.generate(24)).thenReturn(Bytes.toArray(this.bytes24));
-        Mockito.when(this.randomSource.generate(28)).thenReturn(Bytes.toArray(this.bytes28));
-        Mockito.when(this.randomSource.generate(32)).thenReturn(Bytes.toArray(this.bytes32));
-        Mockito.when(this.randomSource.generate(48)).thenReturn(Bytes.toArray(this.bytes48));
-        Mockito.when(this.randomSource.generate(64)).thenReturn(Bytes.toArray(this.bytes64));
+        Mockito.when(this.randomSource.generate(16)).thenReturn(this.bytes16);
+        Mockito.when(this.randomSource.generate(24)).thenReturn(this.bytes24);
+        Mockito.when(this.randomSource.generate(28)).thenReturn(this.bytes28);
+        Mockito.when(this.randomSource.generate(32)).thenReturn(this.bytes32);
+        Mockito.when(this.randomSource.generate(48)).thenReturn(this.bytes48);
+        Mockito.when(this.randomSource.generate(64)).thenReturn(this.bytes64);
     }
 
     @BeforeMethod

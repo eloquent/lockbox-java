@@ -195,12 +195,8 @@ public class KeyGenerator implements KeyGeneratorInterface
         }
 
         return this.factory().createKey(
-            Bytes.asList(
-                this.randomSource().generate(encryptionSecretBits / 8)
-            ),
-            Bytes.asList(
-                this.randomSource().generate(authenticationSecretBits / 8)
-            ),
+            this.randomSource().generate(encryptionSecretBits / 8),
+            this.randomSource().generate(authenticationSecretBits / 8),
             name,
             description
         );
