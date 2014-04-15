@@ -9,6 +9,10 @@
 
 package co.lqnt.lockbox.key;
 
+import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidIterationsException;
+import co.lqnt.lockbox.key.exception.InvalidSaltSizeException;
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
 import com.google.common.io.BaseEncoding;
@@ -35,8 +39,6 @@ public class KeyDeriverTest
         this.bytes64 = Bytes.asList(
             "1234567890123456789012345678901234567890123456789012345678901234".getBytes(Charset.forName("US-ASCII"))
         );
-
-        Mockito.when(this.randomSource.generate(64)).thenReturn(Bytes.toArray(this.bytes64));
     }
 
     @BeforeMethod
@@ -44,6 +46,8 @@ public class KeyDeriverTest
     {
         this.factory = new KeyFactory();
         this.deriver = new KeyDeriver(this.factory, this.pbeParametersGenerator, this.randomSource);
+
+        Mockito.when(this.randomSource.generate(64)).thenReturn(Bytes.toArray(this.bytes64));
     }
 
     @Test
@@ -79,11 +83,11 @@ public class KeyDeriverTest
 
     @Test(dataProvider = "keyDerivationData")
     public void testDeriveKeyFromPassword(
-        String password,
-        int iterations,
-        List<Byte> salt,
-        String encryptionSecret,
-        String authenticationSecret
+        final String password,
+        final int iterations,
+        final List<Byte> salt,
+        final String encryptionSecret,
+        final String authenticationSecret
     ) throws Throwable
     {
         List<Character> passwordChars = Chars.asList(password.toCharArray());
@@ -100,6 +104,145 @@ public class KeyDeriverTest
         Assert.assertEquals(key.name().get(), "name");
         Assert.assertEquals(key.description().get(), "description");
         Assert.assertEquals(passwordChars, Chars.asList(password.toCharArray()));
+    }
+
+    @Test
+    public void testDeriveKeyFromPasswordWithPasswordIterationsAndSalt() throws Throwable
+    {
+        List<Character> passwordChars = Chars.asList("foobar".toCharArray());
+        KeyInterface key = this.deriver.deriveKeyFromPassword(passwordChars, 10, this.bytes64);
+
+        Assert.assertEquals(
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(key.encryptionSecret())),
+            "pcVNTpc-PE-kn5dDsuK6UDMQXXJmAQpOygkGavbvTXE"
+        );
+        Assert.assertEquals(
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(key.authenticationSecret())),
+            "1HoCzL6MzfPLCUXIkCdNrQT4v7vpjltxDGbT2qTLqZk"
+        );
+        Assert.assertFalse(key.name().isPresent());
+        Assert.assertFalse(key.description().isPresent());
+        Assert.assertEquals(passwordChars, Chars.asList("foobar".toCharArray()));
+    }
+
+    @Test
+    public void testDeriveKeyFromPasswordWithPasswordAndIterations() throws Throwable
+    {
+        List<Character> passwordChars = Chars.asList("foobar".toCharArray());
+        DerivedKeyDataInterface keyData = this.deriver.deriveKeyFromPassword(passwordChars, 10);
+
+        Assert.assertEquals(
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().encryptionSecret())),
+            "pcVNTpc-PE-kn5dDsuK6UDMQXXJmAQpOygkGavbvTXE"
+        );
+        Assert.assertEquals(
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().authenticationSecret())),
+            "1HoCzL6MzfPLCUXIkCdNrQT4v7vpjltxDGbT2qTLqZk"
+        );
+        Assert.assertFalse(keyData.key().name().isPresent());
+        Assert.assertFalse(keyData.key().description().isPresent());
+        Assert.assertEquals(passwordChars, Chars.asList("foobar".toCharArray()));
+    }
+
+    @Test
+    public void testDeriveKeyFromPasswordWithPasswordIterationsAndName() throws Throwable
+    {
+        List<Character> passwordChars = Chars.asList("foobar".toCharArray());
+        DerivedKeyDataInterface keyData = this.deriver.deriveKeyFromPassword(passwordChars, 10, "name");
+
+        Assert.assertEquals(
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().encryptionSecret())),
+            "pcVNTpc-PE-kn5dDsuK6UDMQXXJmAQpOygkGavbvTXE"
+        );
+        Assert.assertEquals(
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().authenticationSecret())),
+            "1HoCzL6MzfPLCUXIkCdNrQT4v7vpjltxDGbT2qTLqZk"
+        );
+        Assert.assertEquals(keyData.key().name().get(), "name");
+        Assert.assertFalse(keyData.key().description().isPresent());
+        Assert.assertEquals(passwordChars, Chars.asList("foobar".toCharArray()));
+    }
+
+    @Test
+    public void testDeriveKeyFromPasswordWithPasswordIterationsNameAndDescription() throws Throwable
+    {
+        List<Character> passwordChars = Chars.asList("foobar".toCharArray());
+        DerivedKeyDataInterface keyData = this.deriver.deriveKeyFromPassword(passwordChars, 10, "name", "description");
+
+        Assert.assertEquals(
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().encryptionSecret())),
+            "pcVNTpc-PE-kn5dDsuK6UDMQXXJmAQpOygkGavbvTXE"
+        );
+        Assert.assertEquals(
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().authenticationSecret())),
+            "1HoCzL6MzfPLCUXIkCdNrQT4v7vpjltxDGbT2qTLqZk"
+        );
+        Assert.assertEquals(keyData.key().name().get(), "name");
+        Assert.assertEquals(keyData.key().description().get(), "description");
+        Assert.assertEquals(passwordChars, Chars.asList("foobar".toCharArray()));
+    }
+
+    @Test(expectedExceptions = InvalidIterationsException.class)
+    public void testDeriveKeyFromPasswordFailureInvalidIterations() throws Throwable
+    {
+        this.deriver.deriveKeyFromPassword(Chars.asList("foobar".toCharArray()), 0);
+    }
+
+    @Test(expectedExceptions = InvalidSaltSizeException.class)
+    public void testDeriveKeyFromPasswordFailureSaltSize() throws Throwable
+    {
+        this.deriver.deriveKeyFromPassword(
+            Chars.asList("foobar".toCharArray()),
+            10,
+            Bytes.asList("1234567890123456".getBytes(Charset.forName("US-ASCII")))
+        );
+    }
+
+    @Test(expectedExceptions = RuntimeException.class)
+    public void testDeriveKeyFromPasswordFailureGeneratedSaltSize() throws Throwable
+    {
+        Mockito.when(this.randomSource.generate(64))
+            .thenReturn("1234567890123456".getBytes(Charset.forName("US-ASCII")));
+
+        this.deriver.deriveKeyFromPassword(Chars.asList("foobar".toCharArray()), 10);
+    }
+
+    @Test(expectedExceptions = RuntimeException.class)
+    public void testDeriveKeyFromPasswordFailureEncryptionSecretSize() throws Throwable
+    {
+        this.factory = Mockito.mock(KeyFactoryInterface.class);
+        this.deriver = new KeyDeriver(this.factory, this.pbeParametersGenerator, this.randomSource);
+        Mockito
+            .when(
+                this.factory.createKey(
+                    Mockito.anyListOf(Byte.class),
+                    Mockito.anyListOf(Byte.class),
+                    Mockito.anyString(),
+                    Mockito.anyString()
+                )
+            )
+            .thenThrow(new InvalidEncryptionSecretSizeException(111));
+
+        this.deriver.deriveKeyFromPassword(Chars.asList("foobar".toCharArray()), 10);
+    }
+
+    @Test(expectedExceptions = RuntimeException.class)
+    public void testDeriveKeyFromPasswordFailureAuthenticationSecretSize() throws Throwable
+    {
+        this.factory = Mockito.mock(KeyFactoryInterface.class);
+        this.deriver = new KeyDeriver(this.factory, this.pbeParametersGenerator, this.randomSource);
+        Mockito
+            .when(
+                this.factory.createKey(
+                    Mockito.anyListOf(Byte.class),
+                    Mockito.anyListOf(Byte.class),
+                    Mockito.anyString(),
+                    Mockito.anyString()
+                )
+            )
+            .thenThrow(new InvalidAuthenticationSecretSizeException(111));
+
+        this.deriver.deriveKeyFromPassword(Chars.asList("foobar".toCharArray()), 10);
     }
 
     @Test

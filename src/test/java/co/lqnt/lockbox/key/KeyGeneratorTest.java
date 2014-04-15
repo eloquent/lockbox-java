@@ -91,10 +91,10 @@ public class KeyGeneratorTest
 
     @Test(dataProvider = "generatedKeyData")
     public void testGenerateKey(
-        List<Byte> encryptionSecret,
-        int encryptionSecretBits,
-        List<Byte> authenticationSecret,
-        int authenticationSecretBits
+        final List<Byte> encryptionSecret,
+        final int encryptionSecretBits,
+        final List<Byte> authenticationSecret,
+        final int authenticationSecretBits
     ) throws Throwable
     {
         KeyInterface key = this.generator.generateKey(

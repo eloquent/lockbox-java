@@ -55,10 +55,10 @@ public class KeyTest
 
     @Test(dataProvider = "validEncryptionSecretData")
     public void testConstructor(
-        List<Byte> encryptionSecret,
-        int encryptionSecretBits,
-        List<Byte> authenticationSecret,
-        int authenticationSecretBits
+        final List<Byte> encryptionSecret,
+        final int encryptionSecretBits,
+        final List<Byte> authenticationSecret,
+        final int authenticationSecretBits
     ) throws Throwable
     {
         this.key = new Key(encryptionSecret, authenticationSecret, "name", "description");
