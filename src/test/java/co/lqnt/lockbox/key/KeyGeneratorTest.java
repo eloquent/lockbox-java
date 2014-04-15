@@ -13,7 +13,9 @@ import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
 import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
+import com.google.common.primitives.Bytes;
 import java.nio.charset.Charset;
+import java.util.List;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -26,20 +28,23 @@ public class KeyGeneratorTest
     {
         this.randomSource = Mockito.mock(RandomSourceInterface.class);
 
-        this.bytes16 = "1234567890123456".getBytes(Charset.forName("US-ASCII"));
-        this.bytes24 = "123456789012345678901234".getBytes(Charset.forName("US-ASCII"));
-        this.bytes28 = "1234567890123456789012345678".getBytes(Charset.forName("US-ASCII"));
-        this.bytes32 = "12345678901234567890123456789012".getBytes(Charset.forName("US-ASCII"));
-        this.bytes48 = "123456789012345678901234567890123456789012345678".getBytes(Charset.forName("US-ASCII"));
-        this.bytes64 = "1234567890123456789012345678901234567890123456789012345678901234"
-            .getBytes(Charset.forName("US-ASCII"));
+        this.bytes16 = Bytes.asList("1234567890123456".getBytes(Charset.forName("US-ASCII")));
+        this.bytes24 = Bytes.asList("123456789012345678901234".getBytes(Charset.forName("US-ASCII")));
+        this.bytes28 = Bytes.asList("1234567890123456789012345678".getBytes(Charset.forName("US-ASCII")));
+        this.bytes32 = Bytes.asList("12345678901234567890123456789012".getBytes(Charset.forName("US-ASCII")));
+        this.bytes48 = Bytes.asList(
+            "123456789012345678901234567890123456789012345678".getBytes(Charset.forName("US-ASCII"))
+        );
+        this.bytes64 = Bytes.asList(
+            "1234567890123456789012345678901234567890123456789012345678901234".getBytes(Charset.forName("US-ASCII"))
+        );
 
-        Mockito.when(this.randomSource.generate(16)).thenReturn(this.bytes16);
-        Mockito.when(this.randomSource.generate(24)).thenReturn(this.bytes24);
-        Mockito.when(this.randomSource.generate(28)).thenReturn(this.bytes28);
-        Mockito.when(this.randomSource.generate(32)).thenReturn(this.bytes32);
-        Mockito.when(this.randomSource.generate(48)).thenReturn(this.bytes48);
-        Mockito.when(this.randomSource.generate(64)).thenReturn(this.bytes64);
+        Mockito.when(this.randomSource.generate(16)).thenReturn(Bytes.toArray(this.bytes16));
+        Mockito.when(this.randomSource.generate(24)).thenReturn(Bytes.toArray(this.bytes24));
+        Mockito.when(this.randomSource.generate(28)).thenReturn(Bytes.toArray(this.bytes28));
+        Mockito.when(this.randomSource.generate(32)).thenReturn(Bytes.toArray(this.bytes32));
+        Mockito.when(this.randomSource.generate(48)).thenReturn(Bytes.toArray(this.bytes48));
+        Mockito.when(this.randomSource.generate(64)).thenReturn(Bytes.toArray(this.bytes64));
     }
 
     @BeforeMethod
@@ -86,9 +91,9 @@ public class KeyGeneratorTest
 
     @Test(dataProvider = "generatedKeyData")
     public void testGenerateKey(
-        byte[] encryptionSecret,
+        List<Byte> encryptionSecret,
         int encryptionSecretBits,
-        byte[] authenticationSecret,
+        List<Byte> authenticationSecret,
         int authenticationSecretBits
     ) throws Throwable
     {
@@ -194,10 +199,10 @@ public class KeyGeneratorTest
     private KeyGenerator generator;
     private KeyFactoryInterface factory;
     final private RandomSourceInterface randomSource;
-    final private byte[] bytes16;
-    final private byte[] bytes24;
-    final private byte[] bytes28;
-    final private byte[] bytes32;
-    final private byte[] bytes48;
-    final private byte[] bytes64;
+    final private List<Byte> bytes16;
+    final private List<Byte> bytes24;
+    final private List<Byte> bytes28;
+    final private List<Byte> bytes32;
+    final private List<Byte> bytes48;
+    final private List<Byte> bytes64;
 }

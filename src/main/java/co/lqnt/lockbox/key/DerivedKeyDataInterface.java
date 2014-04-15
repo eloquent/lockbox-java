@@ -9,6 +9,8 @@
 
 package co.lqnt.lockbox.key;
 
+import java.util.List;
+
 /**
  * The interface implemented by derived key data structures.
  */
@@ -26,5 +28,5 @@ public interface DerivedKeyDataInterface
      *
      * @return The salt.
      */
-    public byte[] salt();
+    public List<Byte> salt();
 }

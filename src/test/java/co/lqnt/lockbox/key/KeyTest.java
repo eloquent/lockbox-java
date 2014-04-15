@@ -11,7 +11,9 @@ package co.lqnt.lockbox.key;
 
 import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
 import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
+import com.google.common.primitives.Bytes;
 import java.nio.charset.Charset;
+import java.util.List;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -20,13 +22,16 @@ public class KeyTest
 {
     public KeyTest()
     {
-        this.bytes16 = "1234567890123456".getBytes(Charset.forName("US-ASCII"));
-        this.bytes24 = "123456789012345678901234".getBytes(Charset.forName("US-ASCII"));
-        this.bytes28 = "1234567890123456789012345678".getBytes(Charset.forName("US-ASCII"));
-        this.bytes32 = "12345678901234567890123456789012".getBytes(Charset.forName("US-ASCII"));
-        this.bytes48 = "123456789012345678901234567890123456789012345678".getBytes(Charset.forName("US-ASCII"));
-        this.bytes64 = "1234567890123456789012345678901234567890123456789012345678901234"
-            .getBytes(Charset.forName("US-ASCII"));
+        this.bytes16 = Bytes.asList("1234567890123456".getBytes(Charset.forName("US-ASCII")));
+        this.bytes24 = Bytes.asList("123456789012345678901234".getBytes(Charset.forName("US-ASCII")));
+        this.bytes28 = Bytes.asList("1234567890123456789012345678".getBytes(Charset.forName("US-ASCII")));
+        this.bytes32 = Bytes.asList("12345678901234567890123456789012".getBytes(Charset.forName("US-ASCII")));
+        this.bytes48 = Bytes.asList(
+            "123456789012345678901234567890123456789012345678".getBytes(Charset.forName("US-ASCII"))
+        );
+        this.bytes64 = Bytes.asList(
+            "1234567890123456789012345678901234567890123456789012345678901234".getBytes(Charset.forName("US-ASCII"))
+        );
     }
 
     @DataProvider(name = "validEncryptionSecretData")
@@ -50,9 +55,9 @@ public class KeyTest
 
     @Test(dataProvider = "validEncryptionSecretData")
     public void testConstructor(
-        byte[] encryptionSecret,
+        List<Byte> encryptionSecret,
         int encryptionSecretBits,
-        byte[] authenticationSecret,
+        List<Byte> authenticationSecret,
         int authenticationSecretBits
     ) throws Throwable
     {
@@ -101,20 +106,20 @@ public class KeyTest
     @Test(expectedExceptions = InvalidEncryptionSecretSizeException.class)
     public void testConstructorFailureInvalidEncryptionSecretSize() throws Throwable
     {
-        new Key("foo".getBytes(Charset.forName("US-ASCII")), this.bytes28);
+        new Key(Bytes.asList("foo".getBytes(Charset.forName("US-ASCII"))), this.bytes28);
     }
 
     @Test(expectedExceptions = InvalidAuthenticationSecretSizeException.class)
     public void testConstructorFailureInvalidAuthenticationSecretSize() throws Throwable
     {
-        new Key(this.bytes16, "foo".getBytes(Charset.forName("US-ASCII")));
+        new Key(this.bytes16, Bytes.asList("foo".getBytes(Charset.forName("US-ASCII"))));
     }
 
     private Key key;
-    final private byte[] bytes16;
-    final private byte[] bytes24;
-    final private byte[] bytes28;
-    final private byte[] bytes32;
-    final private byte[] bytes48;
-    final private byte[] bytes64;
+    final private List<Byte> bytes16;
+    final private List<Byte> bytes24;
+    final private List<Byte> bytes28;
+    final private List<Byte> bytes32;
+    final private List<Byte> bytes48;
+    final private List<Byte> bytes64;
 }

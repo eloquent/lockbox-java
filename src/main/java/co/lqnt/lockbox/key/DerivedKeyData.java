@@ -9,7 +9,8 @@
 
 package co.lqnt.lockbox.key;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents a derived key and the salt used in the derivation.
@@ -22,10 +23,10 @@ public class DerivedKeyData implements DerivedKeyDataInterface
      * @param key  The key.
      * @param salt The salt used to derive the key.
      */
-    public DerivedKeyData(final KeyInterface key, final byte[] salt)
+    public DerivedKeyData(final KeyInterface key, final List<Byte> salt)
     {
         this.key = key;
-        this.salt = Arrays.copyOf(salt, salt.length);
+        this.salt = new ArrayList<Byte>(salt);
     }
 
     /**
@@ -43,11 +44,11 @@ public class DerivedKeyData implements DerivedKeyDataInterface
      *
      * @return The salt.
      */
-    public byte[] salt()
+    public List<Byte> salt()
     {
-        return Arrays.copyOf(this.salt, this.salt.length);
+        return new ArrayList<Byte>(this.salt);
     }
 
     final private KeyInterface key;
-    final private byte[] salt;
+    final private List<Byte> salt;
 }

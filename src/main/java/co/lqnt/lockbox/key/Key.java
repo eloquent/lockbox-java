@@ -12,7 +12,8 @@ package co.lqnt.lockbox.key;
 import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
 import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
 import com.google.common.base.Optional;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents an encryption key.
@@ -29,8 +30,8 @@ public class Key implements KeyInterface
      * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
      */
     public Key(
-        final byte[] encryptionSecret,
-        final byte[] authenticationSecret
+        final List<Byte> encryptionSecret,
+        final List<Byte> authenticationSecret
     ) throws
         InvalidEncryptionSecretSizeException,
         InvalidAuthenticationSecretSizeException
@@ -49,8 +50,8 @@ public class Key implements KeyInterface
      * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
      */
     public Key(
-        final byte[] encryptionSecret,
-        final byte[] authenticationSecret,
+        final List<Byte> encryptionSecret,
+        final List<Byte> authenticationSecret,
         final String name
     ) throws
         InvalidEncryptionSecretSizeException,
@@ -71,15 +72,15 @@ public class Key implements KeyInterface
      * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
      */
     public Key(
-        final byte[] encryptionSecret,
-        final byte[] authenticationSecret,
+        final List<Byte> encryptionSecret,
+        final List<Byte> authenticationSecret,
         final String name,
         final String description
     ) throws
         InvalidEncryptionSecretSizeException,
         InvalidAuthenticationSecretSizeException
     {
-        switch (encryptionSecret.length) {
+        switch (encryptionSecret.size()) {
             case 32:
             case 24:
             case 16:
@@ -87,11 +88,11 @@ public class Key implements KeyInterface
 
             default:
                 throw new InvalidEncryptionSecretSizeException(
-                    encryptionSecret.length * 8
+                    encryptionSecret.size() * 8
                 );
         }
 
-        switch (authenticationSecret.length) {
+        switch (authenticationSecret.size()) {
             case 64:
             case 48:
             case 32:
@@ -100,18 +101,16 @@ public class Key implements KeyInterface
 
             default:
                 throw new InvalidAuthenticationSecretSizeException(
-                    authenticationSecret.length * 8
+                    authenticationSecret.size() * 8
                 );
         }
 
-        this.encryptionSecret =
-            Arrays.copyOf(encryptionSecret, encryptionSecret.length);
-        this.encryptionSecretBytes = encryptionSecret.length;
-        this.encryptionSecretBits = encryptionSecret.length * 8;
-        this.authenticationSecret =
-            Arrays.copyOf(authenticationSecret, authenticationSecret.length);
-        this.authenticationSecretBytes = authenticationSecret.length;
-        this.authenticationSecretBits = authenticationSecret.length * 8;
+        this.encryptionSecret = new ArrayList<Byte>(encryptionSecret);
+        this.encryptionSecretBytes = encryptionSecret.size();
+        this.encryptionSecretBits = encryptionSecret.size() * 8;
+        this.authenticationSecret = new ArrayList<Byte>(authenticationSecret);
+        this.authenticationSecretBytes = authenticationSecret.size();
+        this.authenticationSecretBits = authenticationSecret.size() * 8;
         this.name = Optional.fromNullable(name);
         this.description = Optional.fromNullable(description);
     }
@@ -121,10 +120,9 @@ public class Key implements KeyInterface
      *
      * @return The encryption secret.
      */
-    public byte[] encryptionSecret()
+    public List<Byte> encryptionSecret()
     {
-        return Arrays
-            .copyOf(this.encryptionSecret, this.encryptionSecret.length);
+        return new ArrayList<Byte>(this.encryptionSecret);
     }
 
     /**
@@ -152,12 +150,9 @@ public class Key implements KeyInterface
      *
      * @return The authentication secret.
      */
-    public byte[] authenticationSecret()
+    public List<Byte> authenticationSecret()
     {
-        return Arrays.copyOf(
-            this.authenticationSecret,
-            this.authenticationSecret.length
-        );
+        return new ArrayList<Byte>(this.authenticationSecret);
     }
 
     /**
@@ -200,10 +195,10 @@ public class Key implements KeyInterface
         return this.description;
     }
 
-    final private byte[] encryptionSecret;
+    final private List<Byte> encryptionSecret;
     final private int encryptionSecretBytes;
     final private int encryptionSecretBits;
-    final private byte[] authenticationSecret;
+    final private List<Byte> authenticationSecret;
     final private int authenticationSecretBytes;
     final private int authenticationSecretBits;
     final private Optional<String> name;

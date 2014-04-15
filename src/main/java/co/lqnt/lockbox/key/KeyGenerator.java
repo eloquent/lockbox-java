@@ -13,6 +13,7 @@ import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
 import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
+import com.google.common.primitives.Bytes;
 
 /**
  * The interface implemented by encryption key generators.
@@ -49,8 +50,8 @@ public class KeyGenerator implements KeyGeneratorInterface
      * @param randomSource The random source to use.
      */
     public KeyGenerator(
-        KeyFactoryInterface factory,
-        RandomSourceInterface randomSource
+        final KeyFactoryInterface factory,
+        final RandomSourceInterface randomSource
     ) {
         this.factory = factory;
         this.randomSource = randomSource;
@@ -194,8 +195,12 @@ public class KeyGenerator implements KeyGeneratorInterface
         }
 
         return this.factory().createKey(
-            this.randomSource().generate(encryptionSecretBits / 8),
-            this.randomSource().generate(authenticationSecretBits / 8),
+            Bytes.asList(
+                this.randomSource().generate(encryptionSecretBits / 8)
+            ),
+            Bytes.asList(
+                this.randomSource().generate(authenticationSecretBits / 8)
+            ),
             name,
             description
         );

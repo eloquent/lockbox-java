@@ -11,7 +11,7 @@ package co.lqnt.lockbox.key;
 
 import co.lqnt.lockbox.key.exception.InvalidIterationsException;
 import co.lqnt.lockbox.key.exception.InvalidSaltSizeException;
-import co.lqnt.lockbox.util.ErasableDataInterface;
+import java.util.List;
 
 /**
  * The interface implemented by encryption key derivers.
@@ -28,7 +28,7 @@ public interface KeyDeriverInterface
      * @throws InvalidIterationsException If the number of iterations is invalid.
      */
     public DerivedKeyDataInterface deriveKeyFromPassword(
-        final ErasableDataInterface password,
+        final List<Character> password,
         final int iterations
     ) throws
         InvalidIterationsException;
@@ -44,7 +44,7 @@ public interface KeyDeriverInterface
      * @throws InvalidIterationsException If the number of iterations is invalid.
      */
     public DerivedKeyDataInterface deriveKeyFromPassword(
-        final ErasableDataInterface password,
+        final List<Character> password,
         final int iterations,
         final String name
     ) throws
@@ -62,7 +62,7 @@ public interface KeyDeriverInterface
      * @throws InvalidIterationsException If the number of iterations is invalid.
      */
     public DerivedKeyDataInterface deriveKeyFromPassword(
-        final ErasableDataInterface password,
+        final List<Character> password,
         final int iterations,
         final String name,
         final String description
@@ -81,9 +81,9 @@ public interface KeyDeriverInterface
      * @throws InvalidSaltSizeException   If the salt size is invalid.
      */
     public KeyInterface deriveKeyFromPassword(
-        final ErasableDataInterface password,
+        final List<Character> password,
         final int iterations,
-        final byte[] salt
+        final List<Byte> salt
     ) throws
         InvalidIterationsException,
         InvalidSaltSizeException;
@@ -102,9 +102,9 @@ public interface KeyDeriverInterface
      * @throws InvalidSaltSizeException   If the salt size is invalid.
      */
     public KeyInterface deriveKeyFromPassword(
-        final ErasableDataInterface password,
+        final List<Character> password,
         final int iterations,
-        final byte[] salt,
+        final List<Byte> salt,
         final String name,
         final String description
     ) throws

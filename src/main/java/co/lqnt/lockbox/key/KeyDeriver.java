@@ -15,8 +15,10 @@ import co.lqnt.lockbox.key.exception.InvalidIterationsException;
 import co.lqnt.lockbox.key.exception.InvalidSaltSizeException;
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
-import co.lqnt.lockbox.util.ErasableDataInterface;
+import com.google.common.primitives.Bytes;
+import com.google.common.primitives.Chars;
 import java.util.Arrays;
+import java.util.List;
 import org.bouncycastle.crypto.PBEParametersGenerator;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
@@ -109,7 +111,7 @@ public class KeyDeriver implements KeyDeriverInterface
      * @throws InvalidIterationsException If the number of iterations is invalid.
      */
     public DerivedKeyDataInterface deriveKeyFromPassword(
-        final ErasableDataInterface password,
+        final List<Character> password,
         final int iterations
     ) throws
         InvalidIterationsException
@@ -128,7 +130,7 @@ public class KeyDeriver implements KeyDeriverInterface
      * @throws InvalidIterationsException If the number of iterations is invalid.
      */
     public DerivedKeyDataInterface deriveKeyFromPassword(
-        final ErasableDataInterface password,
+        final List<Character> password,
         final int iterations,
         final String name
     ) throws
@@ -149,14 +151,14 @@ public class KeyDeriver implements KeyDeriverInterface
      * @throws InvalidIterationsException If the number of iterations is invalid.
      */
     public DerivedKeyDataInterface deriveKeyFromPassword(
-        final ErasableDataInterface password,
+        final List<Character> password,
         final int iterations,
         final String name,
         final String description
     ) throws
         InvalidIterationsException
     {
-        byte[] salt = this.randomSource().generate(64);
+        List<Byte> salt = Bytes.asList(this.randomSource().generate(64));
 
         DerivedKeyData keyData;
         try {
@@ -189,9 +191,9 @@ public class KeyDeriver implements KeyDeriverInterface
      * @throws InvalidSaltSizeException   If the salt size is invalid.
      */
     public KeyInterface deriveKeyFromPassword(
-        final ErasableDataInterface password,
+        final List<Character> password,
         final int iterations,
-        final byte[] salt
+        final List<Byte> salt
     ) throws
         InvalidIterationsException,
         InvalidSaltSizeException
@@ -219,9 +221,9 @@ public class KeyDeriver implements KeyDeriverInterface
      * @throws InvalidSaltSizeException   If the salt size is invalid.
      */
     public KeyInterface deriveKeyFromPassword(
-        final ErasableDataInterface password,
+        final List<Character> password,
         final int iterations,
-        final byte[] salt,
+        final List<Byte> salt,
         final String name,
         final String description
     ) throws
@@ -231,19 +233,27 @@ public class KeyDeriver implements KeyDeriverInterface
         if (iterations < 1) {
             throw new InvalidIterationsException(iterations);
         }
-        if (64 != salt.length) {
-            throw new InvalidSaltSizeException(salt.length);
+        if (64 != salt.size()) {
+            throw new InvalidSaltSizeException(salt.size());
         }
 
-        this.pbeParametersGenerator().init(password.bytes(), salt, iterations);
+        char[] passwordChars = Chars.toArray(password);
+        byte[] passwordBytes = PBEParametersGenerator
+            .PKCS5PasswordToUTF8Bytes(passwordChars);
+
+        this.pbeParametersGenerator()
+            .init(passwordBytes, Bytes.toArray(salt), iterations);
         KeyParameter keyParameter = (KeyParameter) this.pbeParametersGenerator()
             .generateDerivedMacParameters(512);
+
+        Arrays.fill(passwordChars, '\u0000');
+        Arrays.fill(passwordBytes, (byte) 0);
 
         KeyInterface key;
         try {
             key = this.factory().createKey(
-                Arrays.copyOfRange(keyParameter.getKey(), 0, 32),
-                Arrays.copyOfRange(keyParameter.getKey(), 32, 64),
+                Bytes.asList(Arrays.copyOfRange(keyParameter.getKey(), 0, 32)),
+                Bytes.asList(Arrays.copyOfRange(keyParameter.getKey(), 32, 64)),
                 name,
                 description
             );

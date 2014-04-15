@@ -11,6 +11,7 @@ package co.lqnt.lockbox.key;
 
 import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
 import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
+import java.util.List;
 
 /**
  * Creates encryption keys.
@@ -42,8 +43,8 @@ public class KeyFactory implements KeyFactoryInterface
      * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
      */
     public KeyInterface createKey(
-        final byte[] encryptionSecret,
-        final byte[] authenticationSecret
+        final List<Byte> encryptionSecret,
+        final List<Byte> authenticationSecret
     ) throws
         InvalidEncryptionSecretSizeException,
         InvalidAuthenticationSecretSizeException
@@ -63,8 +64,8 @@ public class KeyFactory implements KeyFactoryInterface
      * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
      */
     public KeyInterface createKey(
-        final byte[] encryptionSecret,
-        final byte[] authenticationSecret,
+        final List<Byte> encryptionSecret,
+        final List<Byte> authenticationSecret,
         final String name
     ) throws
         InvalidEncryptionSecretSizeException,
@@ -86,8 +87,8 @@ public class KeyFactory implements KeyFactoryInterface
      * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
      */
     public KeyInterface createKey(
-        final byte[] encryptionSecret,
-        final byte[] authenticationSecret,
+        final List<Byte> encryptionSecret,
+        final List<Byte> authenticationSecret,
         final String name,
         final String description
     ) throws

@@ -11,9 +11,11 @@ package co.lqnt.lockbox.key;
 
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
-import co.lqnt.lockbox.util.ErasableData;
 import com.google.common.io.BaseEncoding;
+import com.google.common.primitives.Bytes;
+import com.google.common.primitives.Chars;
 import java.nio.charset.Charset;
+import java.util.List;
 import org.bouncycastle.crypto.PBEParametersGenerator;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
@@ -30,10 +32,11 @@ public class KeyDeriverTest
         this.pbeParametersGenerator = new PKCS5S2ParametersGenerator(new SHA512Digest());
         this.randomSource = Mockito.mock(RandomSourceInterface.class);
 
-        this.bytes64 = "1234567890123456789012345678901234567890123456789012345678901234"
-            .getBytes(Charset.forName("US-ASCII"));
+        this.bytes64 = Bytes.asList(
+            "1234567890123456789012345678901234567890123456789012345678901234".getBytes(Charset.forName("US-ASCII"))
+        );
 
-        Mockito.when(this.randomSource.generate(64)).thenReturn(this.bytes64);
+        Mockito.when(this.randomSource.generate(64)).thenReturn(Bytes.toArray(this.bytes64));
     }
 
     @BeforeMethod
@@ -78,29 +81,25 @@ public class KeyDeriverTest
     public void testDeriveKeyFromPassword(
         String password,
         int iterations,
-        byte[] salt,
+        List<Byte> salt,
         String encryptionSecret,
         String authenticationSecret
     ) throws Throwable
     {
-        KeyInterface key = this.deriver.deriveKeyFromPassword(
-            new ErasableData(password.toCharArray()),
-            iterations,
-            salt,
-            "name",
-            "description"
-        );
+        List<Character> passwordChars = Chars.asList(password.toCharArray());
+        KeyInterface key = this.deriver.deriveKeyFromPassword(passwordChars, iterations, salt, "name", "description");
 
         Assert.assertEquals(
-            BaseEncoding.base64Url().omitPadding().encode(key.encryptionSecret()),
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(key.encryptionSecret())),
             encryptionSecret
         );
         Assert.assertEquals(
-            BaseEncoding.base64Url().omitPadding().encode(key.authenticationSecret()),
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(key.authenticationSecret())),
             authenticationSecret
         );
         Assert.assertEquals(key.name().get(), "name");
         Assert.assertEquals(key.description().get(), "description");
+        Assert.assertEquals(passwordChars, Chars.asList(password.toCharArray()));
     }
 
     @Test
@@ -115,5 +114,5 @@ public class KeyDeriverTest
     private KeyFactoryInterface factory;
     final private PBEParametersGenerator pbeParametersGenerator;
     final private RandomSourceInterface randomSource;
-    final private byte[] bytes64;
+    final private List<Byte> bytes64;
 }

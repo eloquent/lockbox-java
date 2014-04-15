@@ -9,7 +9,9 @@
 
 package co.lqnt.lockbox.key;
 
+import com.google.common.primitives.Bytes;
 import java.nio.charset.Charset;
+import java.util.List;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -17,18 +19,19 @@ public class KeyFactoryTest
 {
     public KeyFactoryTest()
     {
-        this.encryptionSecret = "1234567890123456".getBytes(Charset.forName("US-ASCII"));
-        this.authenticationSecret = "1234567890123456789012345678".getBytes(Charset.forName("US-ASCII"));
         this.factory = new KeyFactory();
+
+        this.bytes16 = Bytes.asList("1234567890123456".getBytes(Charset.forName("US-ASCII")));
+        this.bytes28 = Bytes.asList("1234567890123456789012345678".getBytes(Charset.forName("US-ASCII")));
     }
 
     @Test
     public void testCreateKey() throws Throwable
     {
-        KeyInterface key = this.factory.createKey(this.encryptionSecret, this.authenticationSecret, "name", "description");
+        KeyInterface key = this.factory.createKey(this.bytes16, this.bytes28, "name", "description");
 
-        Assert.assertEquals(key.encryptionSecret(), this.encryptionSecret);
-        Assert.assertEquals(key.authenticationSecret(), this.authenticationSecret);
+        Assert.assertEquals(key.encryptionSecret(), this.bytes16);
+        Assert.assertEquals(key.authenticationSecret(), this.bytes28);
         Assert.assertEquals(key.name().get(), "name");
         Assert.assertEquals(key.description().get(), "description");
     }
@@ -36,10 +39,10 @@ public class KeyFactoryTest
     @Test
     public void testCreateKeyNoDescription() throws Throwable
     {
-        KeyInterface key = this.factory.createKey(this.encryptionSecret, this.authenticationSecret, "name");
+        KeyInterface key = this.factory.createKey(this.bytes16, this.bytes28, "name");
 
-        Assert.assertEquals(key.encryptionSecret(), this.encryptionSecret);
-        Assert.assertEquals(key.authenticationSecret(), this.authenticationSecret);
+        Assert.assertEquals(key.encryptionSecret(), this.bytes16);
+        Assert.assertEquals(key.authenticationSecret(), this.bytes28);
         Assert.assertEquals(key.name().get(), "name");
         Assert.assertFalse(key.description().isPresent());
     }
@@ -47,10 +50,10 @@ public class KeyFactoryTest
     @Test
     public void testCreateKeyNoNameOrDescription() throws Throwable
     {
-        KeyInterface key = this.factory.createKey(this.encryptionSecret, this.authenticationSecret);
+        KeyInterface key = this.factory.createKey(this.bytes16, this.bytes28);
 
-        Assert.assertEquals(key.encryptionSecret(), this.encryptionSecret);
-        Assert.assertEquals(key.authenticationSecret(), this.authenticationSecret);
+        Assert.assertEquals(key.encryptionSecret(), this.bytes16);
+        Assert.assertEquals(key.authenticationSecret(), this.bytes28);
         Assert.assertFalse(key.name().isPresent());
         Assert.assertFalse(key.description().isPresent());
     }
@@ -64,6 +67,6 @@ public class KeyFactoryTest
     }
 
     final private KeyFactory factory;
-    final private byte[] encryptionSecret;
-    final private byte[] authenticationSecret;
+    final private List<Byte> bytes16;
+    final private List<Byte> bytes28;
 }

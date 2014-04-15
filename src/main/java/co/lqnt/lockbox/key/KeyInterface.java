@@ -10,6 +10,7 @@
 package co.lqnt.lockbox.key;
 
 import com.google.common.base.Optional;
+import java.util.List;
 
 /**
  * The interface implemented by encryption keys.
@@ -21,7 +22,7 @@ public interface KeyInterface
      *
      * @return The encryption secret.
      */
-    public byte[] encryptionSecret();
+    public List<Byte> encryptionSecret();
 
     /**
      * Get the size of the encryption secret in bytes.
@@ -42,7 +43,7 @@ public interface KeyInterface
      *
      * @return The authentication secret.
      */
-    public byte[] authenticationSecret();
+    public List<Byte> authenticationSecret();
 
     /**
      * Get the size of the authentication secret in bytes.
