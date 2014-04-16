@@ -9,6 +9,7 @@
 
 package co.lqnt.lockbox.stream;
 
+import co.lqnt.lockbox.cipher.LockboxKeyCipher;
 import co.lqnt.lockbox.key.Key;
 import co.lqnt.lockbox.key.KeyInterface;
 import co.lqnt.lockbox.random.RandomSourceInterface;
@@ -16,16 +17,8 @@ import co.lqnt.lockbox.random.SecureRandom;
 import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.Bytes;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
-import org.bouncycastle.crypto.Mac;
-import org.bouncycastle.crypto.digests.SHA224Digest;
-import org.bouncycastle.crypto.engines.AESEngine;
-import org.bouncycastle.crypto.macs.HMac;
-import org.bouncycastle.crypto.modes.CBCBlockCipher;
-import org.bouncycastle.crypto.paddings.PKCS7Padding;
-import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.util.Arrays;
 import org.mockito.Mockito;
 import org.testng.Assert;
@@ -38,12 +31,7 @@ public class EncryptStreamTest
     public EncryptStreamTest() throws Throwable
     {
         this.randomSource = Mockito.mock(RandomSourceInterface.class);
-        this.cipher = new PaddedBufferedBlockCipher(
-            new CBCBlockCipher(new AESEngine()),
-            new PKCS7Padding()
-        );
-        this.blockMac = new HMac(new SHA224Digest());
-        this.finalMac = new HMac(new SHA224Digest());
+        this.cipher = new LockboxKeyCipher();
 
         this.bytes16 = Bytes.asList("1234567890123456".getBytes(Charset.forName("US-ASCII")));
         this.bytes28 = Bytes.asList("1234567890123456789012345678".getBytes(Charset.forName("US-ASCII")));
@@ -56,14 +44,7 @@ public class EncryptStreamTest
     public void setUp()
     {
         this.out = new ByteArrayOutputStream();
-        this.stream = new EncryptStream(
-            this.out,
-            this.key,
-            this.randomSource,
-            this.cipher,
-            this.blockMac,
-            this.finalMac
-        );
+        this.stream = new EncryptStream(this.out, this.key, this.randomSource, this.cipher);
     }
 
     @AfterMethod
@@ -71,7 +52,7 @@ public class EncryptStreamTest
     {
         try {
             this.stream.close();
-        } catch (IOException e) {}
+        } catch (Throwable e) {}
     }
 
     @Test
@@ -81,8 +62,6 @@ public class EncryptStreamTest
         Assert.assertSame(this.stream.key(), this.key);
         Assert.assertSame(this.stream.randomSource(), this.randomSource);
         Assert.assertSame(this.stream.cipher(), this.cipher);
-        Assert.assertSame(this.stream.blockMac(), this.blockMac);
-        Assert.assertSame(this.stream.finalMac(), this.finalMac);
     }
 
     @Test
@@ -91,20 +70,19 @@ public class EncryptStreamTest
         this.stream = new EncryptStream(this.out, this.key);
 
         Assert.assertSame(this.stream.randomSource().getClass(), SecureRandom.class);
-        Assert.assertSame(this.stream.cipher().getClass(), PaddedBufferedBlockCipher.class);
-        Assert.assertSame(this.stream.blockMac().getClass(), HMac.class);
-        Assert.assertSame(this.stream.finalMac().getClass(), HMac.class);
+        Assert.assertSame(this.stream.cipher().getClass(), LockboxKeyCipher.class);
     }
 
     @Test
     public void testStream() throws Throwable
     {
-        this.stream.write("foo".getBytes(Charset.forName("UTF-8")), 0, 3);
-        this.stream.write("bar".getBytes(Charset.forName("UTF-8")), 0, 3);
-        this.stream.write("baz".getBytes(Charset.forName("UTF-8")), 0, 3);
-        this.stream.write("qux".getBytes(Charset.forName("UTF-8")), 0, 3);
-        this.stream.write("dooms".getBytes(Charset.forName("UTF-8")), 0, 3);
-        this.stream.write("plat".getBytes(Charset.forName("UTF-8")), 0, 3);
+        byte[] input = "foobarbazquxdoomsplat".getBytes(Charset.forName("UTF-8"));
+        this.stream.write(input, 0, 3);
+        this.stream.write(input, 3, 3);
+        this.stream.write(input, 6, 3);
+        this.stream.write(input, 9, 3);
+        this.stream.write(input, 12, 5);
+        this.stream.write(input, 17, 4);
         this.stream.close();
 
         EncryptStreamTest.assertCiphertext(
@@ -116,8 +94,9 @@ public class EncryptStreamTest
     @Test
     public void testStreamWithExactBlockSizes() throws Throwable
     {
-        this.stream.write("foobarbazquxdoom".getBytes(Charset.forName("UTF-8")), 0, 16);
-        this.stream.write("foobarbazquxdoom".getBytes(Charset.forName("UTF-8")), 0, 16);
+        byte[] input = "foobarbazquxdoomfoobarbazquxdoom".getBytes(Charset.forName("UTF-8"));
+        this.stream.write(input, 0, 16);
+        this.stream.write(input, 16, 16);
         this.stream.close();
 
         EncryptStreamTest.assertCiphertext(
@@ -153,9 +132,7 @@ public class EncryptStreamTest
     }
 
     final private RandomSourceInterface randomSource;
-    final private PaddedBufferedBlockCipher cipher;
-    final private Mac blockMac;
-    final private Mac finalMac;
+    final private LockboxKeyCipher cipher;
     final private List<Byte> bytes16;
     final private List<Byte> bytes28;
     final private KeyInterface key;
