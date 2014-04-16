@@ -17,7 +17,6 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.bouncycastle.crypto.DataLengthException;
@@ -211,7 +210,7 @@ public class EncryptStream extends FilterOutputStream
             byte[] output = new byte[this.outputSize(ciphertextSize)];
 
             this.cipher.processBytes(data, 0, data.length, output, 0);
-            this.authenticate(data, ciphertextSize);
+            this.authenticate(output, ciphertextSize);
 
             this.out.write(output);
         } else {
@@ -252,6 +251,7 @@ public class EncryptStream extends FilterOutputStream
         this.finalMac.doFinal(output, outputSize);
 
         this.out.write(output);
+        this.out.flush();
         this.out.close();
     }
 
@@ -284,8 +284,6 @@ public class EncryptStream extends FilterOutputStream
         try {
             this.out.write(header);
         } finally {
-            Collections.fill(iv, (byte) 0);
-            Arrays.fill(ivArray, (byte) 0);
             Arrays.fill(encryptionSecret, (byte) 0);
             Arrays.fill(authenticationSecret, (byte) 0);
         }

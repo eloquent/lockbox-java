@@ -17,7 +17,6 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.Bytes;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.List;
 import org.bouncycastle.crypto.Mac;
@@ -27,6 +26,7 @@ import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
+import org.bouncycastle.util.Arrays;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -96,22 +96,61 @@ public class EncryptStreamTest
         Assert.assertSame(this.stream.finalMac().getClass(), HMac.class);
     }
 
-//    @Test
-//    public void testStream() throws Throwable
-//    {
-//        this.stream.write("foo".getBytes(Charset.forName("UTF-8")), 0, 3);
-//        this.stream.write("bar".getBytes(Charset.forName("UTF-8")), 0, 3);
-//        this.stream.write("baz".getBytes(Charset.forName("UTF-8")), 0, 3);
-//        this.stream.write("qux".getBytes(Charset.forName("UTF-8")), 0, 3);
-//        this.stream.write("dooms".getBytes(Charset.forName("UTF-8")), 0, 3);
-//        this.stream.write("plat".getBytes(Charset.forName("UTF-8")), 0, 3);
-//        this.stream.close();
-//
-//        Assert.assertEquals(
-//            BaseEncoding.base64Url().omitPadding().encode(this.out.toByteArray()),
-//            "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
-//        );
-//    }
+    @Test
+    public void testStream() throws Throwable
+    {
+        this.stream.write("foo".getBytes(Charset.forName("UTF-8")), 0, 3);
+        this.stream.write("bar".getBytes(Charset.forName("UTF-8")), 0, 3);
+        this.stream.write("baz".getBytes(Charset.forName("UTF-8")), 0, 3);
+        this.stream.write("qux".getBytes(Charset.forName("UTF-8")), 0, 3);
+        this.stream.write("dooms".getBytes(Charset.forName("UTF-8")), 0, 3);
+        this.stream.write("plat".getBytes(Charset.forName("UTF-8")), 0, 3);
+        this.stream.close();
+
+        EncryptStreamTest.assertCiphertext(
+            this.out.toByteArray(),
+            "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
+        );
+    }
+
+    @Test
+    public void testStreamWithExactBlockSizes() throws Throwable
+    {
+        this.stream.write("foobarbazquxdoom".getBytes(Charset.forName("UTF-8")), 0, 16);
+        this.stream.write("foobarbazquxdoom".getBytes(Charset.forName("UTF-8")), 0, 16);
+        this.stream.close();
+
+        EncryptStreamTest.assertCiphertext(
+            this.out.toByteArray(),
+            "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARu0_Bk3cPXHsLggdoFLPnlwR29pd_lX36Diz3sv2v6sIsAmdbSuDnDnVctQhnxXOgECTCSb8G-xnE_kmnhWk432g"
+        );
+    }
+
+    static private void assertCiphertext(byte[] actual, String expected)
+    {
+        BaseEncoding encoding = BaseEncoding.base64Url().omitPadding();
+
+        byte[] expectedBytes = encoding.decode(expected);
+        String expectedVersion = encoding.encode(Arrays.copyOfRange(expectedBytes, 0, 1));
+        String expectedType = encoding.encode(Arrays.copyOfRange(expectedBytes, 1, 2));
+        String expectedIv = encoding.encode(Arrays.copyOfRange(expectedBytes, 2, 18));
+        String expectedData = encoding.encode(Arrays.copyOfRange(expectedBytes, 18, expectedBytes.length - 28));
+        String expectedMac = encoding
+            .encode(Arrays.copyOfRange(expectedBytes, expectedBytes.length - 28, expectedBytes.length));
+
+        String actualVersion = encoding.encode(Arrays.copyOfRange(actual, 0, 1));
+        String actualType = encoding.encode(Arrays.copyOfRange(actual, 1, 2));
+        String actualIv = encoding.encode(Arrays.copyOfRange(actual, 2, 18));
+        String actualData = encoding.encode(Arrays.copyOfRange(actual, 18, actual.length - 28));
+        String actualMac = encoding.encode(Arrays.copyOfRange(actual, actual.length - 28, actual.length));
+
+        Assert.assertEquals(actualVersion, expectedVersion);
+        Assert.assertEquals(actualType, expectedType);
+        Assert.assertEquals(actualIv, expectedIv);
+        Assert.assertEquals(actualData, expectedData);
+        Assert.assertEquals(actualMac, expectedMac);
+        Assert.assertEquals(encoding.encode(actual), expected);
+    }
 
     final private RandomSourceInterface randomSource;
     final private PaddedBufferedBlockCipher cipher;
