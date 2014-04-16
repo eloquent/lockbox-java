@@ -100,9 +100,10 @@ public class LockboxKeyCipher extends BufferedBlockCipher implements
 
         byte[] authenticationSecret = Bytes
             .toArray(lockboxParameters.key().authenticationSecret());
+        KeyParameter authenticationKey = new KeyParameter(authenticationSecret);
 
-        this.finalMac.init(new KeyParameter(authenticationSecret));
-        this.blockMac.init(new KeyParameter(authenticationSecret));
+        this.finalMac.init(authenticationKey);
+        this.blockMac.init(authenticationKey);
 
         Arrays.fill(authenticationSecret, (byte) 0);
 
@@ -213,21 +214,8 @@ public class LockboxKeyCipher extends BufferedBlockCipher implements
         }
 
         int outputSize = this.getUpdateOutputSize(size);
-        int ciphertextOffset = outputOffset;
-
-        if (outputSize > 0 && !this.isHeaderSent) {
-            ciphertextOffset += 18;
-        }
-
-        if (output.length < outputOffset + outputSize) {
-            throw new DataLengthException();
-        }
-
-        if (outputSize > 0 && !this.isHeaderSent) {
-            output[outputOffset] = output[outputOffset + 1] = 1;
-            System.arraycopy(this.iv, 0, output, outputOffset + 2, 16);
-            this.finalMac.update(output, outputOffset, 18);
-        }
+        int ciphertextOffset = outputOffset +
+            this.handleHeader(output, outputOffset, outputSize);
 
         this.internalCipher.processBytes(
             input,
@@ -276,21 +264,8 @@ public class LockboxKeyCipher extends BufferedBlockCipher implements
         }
 
         int outputSize = this.getOutputSize(0);
-        int ciphertextOffset = outputOffset;
-
-        if (outputSize > 0 && !this.isHeaderSent) {
-            ciphertextOffset += 18;
-        }
-
-        if (output.length < outputOffset + outputSize) {
-            throw new DataLengthException();
-        }
-
-        if (outputSize > 0 && !this.isHeaderSent) {
-            output[outputOffset] = output[outputOffset + 1] = 1;
-            System.arraycopy(this.iv, 0, output, outputOffset + 2, 16);
-            this.finalMac.update(output, outputOffset, 18);
-        }
+        int ciphertextOffset = outputOffset +
+            this.handleHeader(output, outputOffset, outputSize);
 
         this.internalCipher.doFinal(output, ciphertextOffset);
 
@@ -330,6 +305,40 @@ public class LockboxKeyCipher extends BufferedBlockCipher implements
     {
         this.internalCipher.reset();
         this.isHeaderSent = false;
+    }
+
+    /**
+     * Prepend the header to output if necessary.
+     *
+     * @param output       The space for any output that might be produced.
+     * @param outputOffset The offset to which the output will be copied.
+     * @param outputSize   The length of output to be written.
+     *
+     * @return The number of bytes of header data written.
+     */
+    private int handleHeader(
+        final byte[] output,
+        final int outputOffset,
+        final int outputSize
+    ) {
+        int size;
+        if (outputSize > 0 && !this.isHeaderSent) {
+            size = 18;
+        } else {
+            size = 0;
+        }
+
+        if (output.length < outputOffset + outputSize) {
+            throw new DataLengthException();
+        }
+
+        if (outputSize > 0 && !this.isHeaderSent) {
+            output[outputOffset] = output[outputOffset + 1] = 1;
+            System.arraycopy(this.iv, 0, output, outputOffset + 2, 16);
+            this.finalMac.update(output, outputOffset, 18);
+        }
+
+        return size;
     }
 
     /**
