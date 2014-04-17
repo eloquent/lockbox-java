@@ -14,15 +14,15 @@ import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 
 /**
- * The interface implemented by Lockbox key ciphers.
+ * The interface implemented by ciphers.
  */
-public interface LockboxKeyCipherInterface
+public interface CipherInterface
 {
     /**
      * Initialize the cipher.
      *
      * @param forEncryption True if the cipher should be initialized for encryption, false for decryption.
-     * @param parameters    The key and other data required by the cipher.
+     * @param parameters    The parameters required by the cipher.
      *
      * @throws IllegalArgumentException If the parameters argument is invalid.
      */
@@ -103,7 +103,7 @@ public interface LockboxKeyCipherInterface
      * @return The number of bytes produced.
      * @exception DataLengthException        If there isn't enough space in output.
      * @exception IllegalStateException      If the cipher isn't initialized.
-     * @exception InvalidCipherTextException If padding is expected and not found.
+     * @exception InvalidCipherTextException If decryption fails.
      */
     public int doFinal(
         final byte[] output,

@@ -9,7 +9,7 @@
 
 package co.lqnt.lockbox.stream;
 
-import co.lqnt.lockbox.cipher.LockboxKeyCipher;
+import co.lqnt.lockbox.cipher.KeyEncryptionCipher;
 import co.lqnt.lockbox.key.Key;
 import co.lqnt.lockbox.key.KeyInterface;
 import co.lqnt.lockbox.random.RandomSourceInterface;
@@ -31,7 +31,7 @@ public class EncryptStreamTest
     public EncryptStreamTest() throws Throwable
     {
         this.randomSource = Mockito.mock(RandomSourceInterface.class);
-        this.cipher = new LockboxKeyCipher();
+        this.cipher = new KeyEncryptionCipher();
 
         this.bytes16 = Bytes.asList("1234567890123456".getBytes(Charset.forName("US-ASCII")));
         this.bytes28 = Bytes.asList("1234567890123456789012345678".getBytes(Charset.forName("US-ASCII")));
@@ -70,7 +70,7 @@ public class EncryptStreamTest
         this.stream = new EncryptStream(this.out, this.key);
 
         Assert.assertSame(this.stream.randomSource().getClass(), SecureRandom.class);
-        Assert.assertSame(this.stream.cipher().getClass(), LockboxKeyCipher.class);
+        Assert.assertSame(this.stream.cipher().getClass(), KeyEncryptionCipher.class);
     }
 
     @Test
@@ -132,7 +132,7 @@ public class EncryptStreamTest
     }
 
     final private RandomSourceInterface randomSource;
-    final private LockboxKeyCipher cipher;
+    final private KeyEncryptionCipher cipher;
     final private List<Byte> bytes16;
     final private List<Byte> bytes28;
     final private KeyInterface key;

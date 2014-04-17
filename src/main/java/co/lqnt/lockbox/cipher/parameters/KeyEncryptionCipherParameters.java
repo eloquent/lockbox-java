@@ -7,25 +7,25 @@
  * that was distributed with this source code.
  */
 
-package co.lqnt.lockbox.cipher;
+package co.lqnt.lockbox.cipher.parameters;
 
 import co.lqnt.lockbox.key.KeyInterface;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Parameters for the Lockbox key-based cipher.
+ * Parameters for the key encryption cipher.
  */
-public class LockboxKeyCipherParameters implements
-    LockboxKeyCipherParametersInterface
+public class KeyEncryptionCipherParameters implements
+    KeyEncryptionCipherParametersInterface
 {
     /**
-     * Construct a new Lockbox key cipher parameters instance.
+     * Construct a new key encryption cipher parameters instance.
      *
      * @param key The key to use.
      * @param iv  The initialization vector to use.
      */
-    public LockboxKeyCipherParameters(
+    public KeyEncryptionCipherParameters(
         final KeyInterface key,
         final List<Byte> iv
     ) {

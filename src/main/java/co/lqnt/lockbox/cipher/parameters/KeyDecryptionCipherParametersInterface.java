@@ -7,16 +7,15 @@
  * that was distributed with this source code.
  */
 
-package co.lqnt.lockbox.cipher;
+package co.lqnt.lockbox.cipher.parameters;
 
 import co.lqnt.lockbox.key.KeyInterface;
-import java.util.List;
 import org.bouncycastle.crypto.CipherParameters;
 
 /**
- * The interface implemented by Lockbox key cipher parameters.
+ * The interface implemented by key decryption cipher parameters.
  */
-public interface LockboxKeyCipherParametersInterface extends CipherParameters
+public interface KeyDecryptionCipherParametersInterface extends CipherParameters
 {
     /**
      * Get the key.
@@ -24,11 +23,4 @@ public interface LockboxKeyCipherParametersInterface extends CipherParameters
      * @return The key.
      */
     public KeyInterface key();
-
-    /**
-     * Get the initialization vector.
-     *
-     * @return The initialization vector.
-     */
-    public List<Byte> iv();
 }

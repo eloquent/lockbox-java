@@ -9,9 +9,9 @@
 
 package co.lqnt.lockbox.stream;
 
-import co.lqnt.lockbox.cipher.LockboxKeyCipher;
-import co.lqnt.lockbox.cipher.LockboxKeyCipherInterface;
-import co.lqnt.lockbox.cipher.LockboxKeyCipherParameters;
+import co.lqnt.lockbox.cipher.KeyEncryptionCipher;
+import co.lqnt.lockbox.cipher.CipherInterface;
+import co.lqnt.lockbox.cipher.parameters.KeyEncryptionCipherParameters;
 import co.lqnt.lockbox.key.KeyInterface;
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
@@ -35,7 +35,7 @@ public class EncryptStream extends FilterOutputStream
      */
     public EncryptStream(final OutputStream out, final KeyInterface key)
     {
-        this(out, key, SecureRandom.instance(), new LockboxKeyCipher());
+        this(out, key, SecureRandom.instance(), new KeyEncryptionCipher());
     }
 
     /**
@@ -50,7 +50,7 @@ public class EncryptStream extends FilterOutputStream
         final OutputStream out,
         final KeyInterface key,
         final RandomSourceInterface randomSource,
-        final LockboxKeyCipherInterface cipher
+        final CipherInterface cipher
     ) {
         super(out);
 
@@ -96,7 +96,7 @@ public class EncryptStream extends FilterOutputStream
      *
      * @return The cipher.
      */
-    public LockboxKeyCipherInterface cipher()
+    public CipherInterface cipher()
     {
         return this.cipher;
     }
@@ -180,7 +180,7 @@ public class EncryptStream extends FilterOutputStream
         if (this.isInitialized.compareAndSet(false, true)) {
             this.cipher.init(
                 true,
-                new LockboxKeyCipherParameters(
+                new KeyEncryptionCipherParameters(
                     this.key,
                     this.randomSource.generate(16)
                 )
@@ -190,6 +190,6 @@ public class EncryptStream extends FilterOutputStream
 
     final private KeyInterface key;
     final private RandomSourceInterface randomSource;
-    final private LockboxKeyCipherInterface cipher;
+    final private CipherInterface cipher;
     final private AtomicBoolean isInitialized;
 }

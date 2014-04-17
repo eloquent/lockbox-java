@@ -9,6 +9,7 @@
 
 package co.lqnt.lockbox.cipher;
 
+import co.lqnt.lockbox.cipher.parameters.KeyEncryptionCipherParametersInterface;
 import com.google.common.primitives.Bytes;
 import java.util.Arrays;
 import org.bouncycastle.crypto.BufferedBlockCipher;
@@ -28,15 +29,15 @@ import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 
 /**
- * The key-based Lockbox cipher.
+ * The key encryption cipher.
  */
-public class LockboxKeyCipher extends BufferedBlockCipher implements
-    LockboxKeyCipherInterface
+public class KeyEncryptionCipher extends BufferedBlockCipher implements
+    CipherInterface
 {
     /**
-     * Create a new Lockbox key cipher.
+     * Create a new key encryption cipher.
      */
-    public LockboxKeyCipher()
+    public KeyEncryptionCipher()
     {
         this.internalCipher = new PaddedBufferedBlockCipher(
             new CBCBlockCipher(new AESEngine()),
@@ -51,9 +52,9 @@ public class LockboxKeyCipher extends BufferedBlockCipher implements
      * Initialize the cipher.
      *
      * @param forEncryption True if the cipher should be initialized for encryption, false for decryption.
-     * @param parameters    The key and other data required by the cipher.
+     * @param parameters    The parameters required by the cipher.
      *
-     * @throws IllegalArgumentException If the parameters argument is invalid.
+     * @throws IllegalArgumentException If any argument is invalid.
      */
     @Override
     public void init(
@@ -62,15 +63,20 @@ public class LockboxKeyCipher extends BufferedBlockCipher implements
     ) throws
         IllegalArgumentException
     {
-        if (!(parameters instanceof LockboxKeyCipherParametersInterface)) {
+        if (!forEncryption) {
+            throw new IllegalArgumentException(
+                "This cipher only supports encryption."
+            );
+        }
+        if (!(parameters instanceof KeyEncryptionCipherParametersInterface)) {
             throw new IllegalArgumentException(
                 "Parameters must be an instance of " +
-                    "LockboxKeyCipherParametersInterface."
+                    "KeyEncryptionCipherParametersInterface."
             );
         }
 
-        LockboxKeyCipherParametersInterface lockboxParameters =
-            (LockboxKeyCipherParametersInterface) parameters;
+        KeyEncryptionCipherParametersInterface lockboxParameters =
+            (KeyEncryptionCipherParametersInterface) parameters;
 
         this.iv = Bytes.toArray(lockboxParameters.iv());
 
@@ -111,7 +117,7 @@ public class LockboxKeyCipher extends BufferedBlockCipher implements
             .toArray(lockboxParameters.key().encryptionSecret());
 
         this.internalCipher.init(
-            forEncryption,
+            true,
             new ParametersWithIV(new KeyParameter(encryptionSecret), this.iv)
         );
 
@@ -248,7 +254,7 @@ public class LockboxKeyCipher extends BufferedBlockCipher implements
      * @return The number of bytes produced.
      * @exception DataLengthException        If there isn't enough space in output.
      * @exception IllegalStateException      If the cipher isn't initialized.
-     * @exception InvalidCipherTextException If padding is expected and not found.
+     * @exception InvalidCipherTextException If decryption fails.
      */
     @Override
     public int doFinal(
