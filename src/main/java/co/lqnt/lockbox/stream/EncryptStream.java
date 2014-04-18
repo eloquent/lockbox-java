@@ -9,9 +9,9 @@
 
 package co.lqnt.lockbox.stream;
 
-import co.lqnt.lockbox.cipher.KeyEncryptionCipher;
-import co.lqnt.lockbox.cipher.CipherInterface;
-import co.lqnt.lockbox.cipher.parameters.KeyEncryptionCipherParameters;
+import co.lqnt.lockbox.cipher.EncryptionCipherInterface;
+import co.lqnt.lockbox.cipher.EncryptionCipher;
+import co.lqnt.lockbox.cipher.parameters.EncryptionCipherParameters;
 import co.lqnt.lockbox.key.KeyInterface;
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
@@ -19,8 +19,6 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.bouncycastle.crypto.DataLengthException;
-import org.bouncycastle.crypto.InvalidCipherTextException;
 
 /**
  * Encrypts streaming data.
@@ -35,7 +33,7 @@ public class EncryptStream extends FilterOutputStream
      */
     public EncryptStream(final OutputStream out, final KeyInterface key)
     {
-        this(out, key, SecureRandom.instance(), new KeyEncryptionCipher());
+        this(out, key, SecureRandom.instance(), new EncryptionCipher());
     }
 
     /**
@@ -50,7 +48,7 @@ public class EncryptStream extends FilterOutputStream
         final OutputStream out,
         final KeyInterface key,
         final RandomSourceInterface randomSource,
-        final CipherInterface cipher
+        final EncryptionCipherInterface cipher
     ) {
         super(out);
 
@@ -96,7 +94,7 @@ public class EncryptStream extends FilterOutputStream
      *
      * @return The cipher.
      */
-    public CipherInterface cipher()
+    public EncryptionCipherInterface cipher()
     {
         return this.cipher;
     }
@@ -132,15 +130,15 @@ public class EncryptStream extends FilterOutputStream
     {
         this.initialize();
 
-        int outputSize = this.cipher.getUpdateOutputSize(size);
+        int outputSize = this.cipher.processOutputSize(size);
         if (outputSize > 0) {
             byte[] output = new byte[outputSize];
-            this.cipher.processBytes(data, offset, size, output, 0);
+            this.cipher.process(data, offset, size, output, 0);
 
             this.out.write(output);
         } else {
             byte[] output = new byte[0];
-            this.cipher.processBytes(data, offset, size, output, 0);
+            this.cipher.process(data, offset, size, output, 0);
         }
     }
 
@@ -154,18 +152,10 @@ public class EncryptStream extends FilterOutputStream
     {
         this.initialize();
 
-        int outputSize = this.cipher.getOutputSize(0);
+        int outputSize = this.cipher.finalOutputSize(0);
         byte[] output = new byte[outputSize];
 
-        try {
-            this.cipher.doFinal(output, 0);
-        } catch (DataLengthException e) {
-            throw new IOException(e);
-        } catch (IllegalStateException e) {
-            throw new IOException(e);
-        } catch (InvalidCipherTextException e) {
-            throw new IOException(e);
-        }
+        this.cipher.finalize(output, 0);
 
         this.out.write(output);
         this.out.flush();
@@ -178,9 +168,8 @@ public class EncryptStream extends FilterOutputStream
     private void initialize()
     {
         if (this.isInitialized.compareAndSet(false, true)) {
-            this.cipher.init(
-                true,
-                new KeyEncryptionCipherParameters(
+            this.cipher.initialize(
+                new EncryptionCipherParameters(
                     this.key,
                     this.randomSource.generate(16)
                 )
@@ -190,6 +179,6 @@ public class EncryptStream extends FilterOutputStream
 
     final private KeyInterface key;
     final private RandomSourceInterface randomSource;
-    final private CipherInterface cipher;
+    final private EncryptionCipherInterface cipher;
     final private AtomicBoolean isInitialized;
 }

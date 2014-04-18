@@ -14,15 +14,15 @@ import co.lqnt.lockbox.key.KeyInterface;
 /**
  * Parameters for the key decryption cipher.
  */
-public class KeyDecryptionCipherParameters implements
-    KeyDecryptionCipherParametersInterface
+public class DecryptionCipherParameters implements
+    DecryptionCipherParametersInterface
 {
     /**
      * Construct a new key decryption cipher parameters instance.
      *
      * @param key The key to use.
      */
-    public KeyDecryptionCipherParameters(final KeyInterface key)
+    public DecryptionCipherParameters(final KeyInterface key)
     {
         this.key = key;
     }

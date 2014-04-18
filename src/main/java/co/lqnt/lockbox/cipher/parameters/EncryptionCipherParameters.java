@@ -16,8 +16,8 @@ import java.util.List;
 /**
  * Parameters for the key encryption cipher.
  */
-public class KeyEncryptionCipherParameters implements
-    KeyEncryptionCipherParametersInterface
+public class EncryptionCipherParameters implements
+    EncryptionCipherParametersInterface
 {
     /**
      * Construct a new key encryption cipher parameters instance.
@@ -25,7 +25,7 @@ public class KeyEncryptionCipherParameters implements
      * @param key The key to use.
      * @param iv  The initialization vector to use.
      */
-    public KeyEncryptionCipherParameters(
+    public EncryptionCipherParameters(
         final KeyInterface key,
         final List<Byte> iv
     ) {

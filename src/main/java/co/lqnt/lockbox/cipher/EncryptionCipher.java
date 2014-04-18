@@ -9,11 +9,10 @@
 
 package co.lqnt.lockbox.cipher;
 
-import co.lqnt.lockbox.cipher.parameters.KeyEncryptionCipherParametersInterface;
+import co.lqnt.lockbox.cipher.exception.OutputSizeException;
+import co.lqnt.lockbox.cipher.parameters.EncryptionCipherParametersInterface;
 import com.google.common.primitives.Bytes;
 import java.util.Arrays;
-import org.bouncycastle.crypto.BufferedBlockCipher;
-import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.digests.SHA224Digest;
@@ -31,15 +30,14 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 /**
  * The key encryption cipher.
  */
-public class KeyEncryptionCipher extends BufferedBlockCipher implements
-    CipherInterface
+public class EncryptionCipher implements EncryptionCipherInterface
 {
     /**
      * Create a new key encryption cipher.
      */
-    public KeyEncryptionCipher()
+    public EncryptionCipher()
     {
-        this.internalCipher = new PaddedBufferedBlockCipher(
+        this.cipher = new PaddedBufferedBlockCipher(
             new CBCBlockCipher(new AESEngine()),
             new PKCS7Padding()
         );
@@ -51,36 +49,14 @@ public class KeyEncryptionCipher extends BufferedBlockCipher implements
     /**
      * Initialize the cipher.
      *
-     * @param forEncryption True if the cipher should be initialized for encryption, false for decryption.
-     * @param parameters    The parameters required by the cipher.
-     *
-     * @throws IllegalArgumentException If any argument is invalid.
+     * @param parameters The parameters required by the cipher.
      */
-    @Override
-    public void init(
-        final boolean forEncryption,
-        final CipherParameters parameters
-    ) throws
-        IllegalArgumentException
-    {
-        if (!forEncryption) {
-            throw new IllegalArgumentException(
-                "This cipher only supports encryption."
-            );
-        }
-        if (!(parameters instanceof KeyEncryptionCipherParametersInterface)) {
-            throw new IllegalArgumentException(
-                "Parameters must be an instance of " +
-                    "KeyEncryptionCipherParametersInterface."
-            );
-        }
+    public void initialize(
+        final EncryptionCipherParametersInterface parameters
+    ) {
+        this.iv = Bytes.toArray(parameters.iv());
 
-        KeyEncryptionCipherParametersInterface lockboxParameters =
-            (KeyEncryptionCipherParametersInterface) parameters;
-
-        this.iv = Bytes.toArray(lockboxParameters.iv());
-
-        switch (lockboxParameters.key().authenticationSecretBits()) {
+        switch (parameters.key().authenticationSecretBits()) {
             case 224:
                 this.blockMac = new HMac(new SHA224Digest());
                 this.finalMac = new HMac(new SHA224Digest());
@@ -105,7 +81,7 @@ public class KeyEncryptionCipher extends BufferedBlockCipher implements
         }
 
         byte[] authenticationSecret = Bytes
-            .toArray(lockboxParameters.key().authenticationSecret());
+            .toArray(parameters.key().authenticationSecret());
         KeyParameter authenticationKey = new KeyParameter(authenticationSecret);
 
         this.finalMac.init(authenticationKey);
@@ -114,9 +90,9 @@ public class KeyEncryptionCipher extends BufferedBlockCipher implements
         Arrays.fill(authenticationSecret, (byte) 0);
 
         byte[] encryptionSecret = Bytes
-            .toArray(lockboxParameters.key().encryptionSecret());
+            .toArray(parameters.key().encryptionSecret());
 
-        this.internalCipher.init(
+        this.cipher.init(
             true,
             new ParametersWithIV(new KeyParameter(encryptionSecret), this.iv)
         );
@@ -127,42 +103,19 @@ public class KeyEncryptionCipher extends BufferedBlockCipher implements
     }
 
     /**
-     * Get the size of the output buffer required for an update() with an input
-     * of the specified byte size.
+     * Get the size of the output buffer required for a process() call with an
+     * input of the specified byte size.
      *
      * @param inputSize The input size in bytes.
      *
      * @return The output size in bytes.
      */
-    @Override
-    public int getUpdateOutputSize(final int inputSize)
+    public int processOutputSize(final int inputSize)
     {
-        int size = this.internalCipher.getUpdateOutputSize(inputSize) / 16 * 18;
+        int size = this.cipher.getUpdateOutputSize(inputSize) / 16 * 18;
 
         if (size > 0 && !this.isHeaderSent) {
             size += 18;
-        }
-
-        return size;
-    }
-
-    /**
-     * Get the size of the output buffer required for an update() plus a
-     * doFinal() with an input of the specified byte size.
-     *
-     * @param inputSize The input size in bytes.
-     *
-     * @return The output size in bytes.
-     */
-    @Override
-    public int getOutputSize(final int inputSize)
-    {
-        int size = this.internalCipher.getOutputSize(inputSize) / 16 * 18;
-
-        if (this.isHeaderSent) {
-            size += this.finalMac.getMacSize();
-        } else {
-            size += this.finalMac.getMacSize() + 18;
         }
 
         return size;
@@ -176,19 +129,18 @@ public class KeyEncryptionCipher extends BufferedBlockCipher implements
      * @param outputOffset The offset to which the output will be copied.
      *
      * @return The number of bytes produced.
-     * @exception DataLengthException   If there isn't enough space in output.
      * @exception IllegalStateException If the cipher isn't initialized.
+     * @exception OutputSizeException   If there isn't enough space in output.
      */
-    @Override
-    public int processByte(
+    public int process(
         final byte input,
         final byte[] output,
         final int outputOffset
     ) throws
-        DataLengthException,
-        IllegalStateException
+        IllegalStateException,
+        OutputSizeException
     {
-        return this.processBytes(new byte[]{input}, 0, 1, output, outputOffset);
+        return this.process(new byte[]{input}, 0, 1, output, outputOffset);
     }
 
     /**
@@ -201,29 +153,28 @@ public class KeyEncryptionCipher extends BufferedBlockCipher implements
      * @param outputOffset The offset to which the output will be copied.
      *
      * @return The number of bytes produced.
-     * @exception DataLengthException   If there isn't enough space in output.
      * @exception IllegalStateException If the cipher isn't initialized.
+     * @exception OutputSizeException   If there isn't enough space in output.
      */
-    @Override
-    public int processBytes(
+    public int process(
         final byte[] input,
         final int inputOffset,
         final int size,
         final byte[] output,
         final int outputOffset
     ) throws
-        DataLengthException,
-        IllegalStateException
+        IllegalStateException,
+        OutputSizeException
     {
         if (null == this.iv) {
             throw new IllegalStateException("Cipher not initialized.");
         }
 
-        int outputSize = this.getUpdateOutputSize(size);
+        int outputSize = this.processOutputSize(size);
         int ciphertextOffset = outputOffset +
             this.handleHeader(output, outputOffset, outputSize);
 
-        this.internalCipher.processBytes(
+        this.cipher.processBytes(
             input,
             inputOffset,
             size,
@@ -246,34 +197,58 @@ public class KeyEncryptionCipher extends BufferedBlockCipher implements
     }
 
     /**
-     * Process the last block in the buffer.
+     * Get the size of the output buffer required for a process() call with an
+     * input of the specified byte size plus a finalize() call.
+     *
+     * @param inputSize The input size in bytes.
+     *
+     * @return The output size in bytes.
+     */
+    public int finalOutputSize(final int inputSize)
+    {
+        int size = this.cipher.getOutputSize(inputSize) / 16 * 18;
+
+        if (this.isHeaderSent) {
+            size += this.finalMac.getMacSize();
+        } else {
+            size += this.finalMac.getMacSize() + 18;
+        }
+
+        return size;
+    }
+
+    /**
+     * Finalize the cipher output.
      *
      * @param output       The space for any output that might be produced.
      * @param outputOffset The offset to which the output will be copied.
      *
      * @return The number of bytes produced.
-     * @exception DataLengthException        If there isn't enough space in output.
      * @exception IllegalStateException      If the cipher isn't initialized.
-     * @exception InvalidCipherTextException If decryption fails.
+     * @exception OutputSizeException        If there isn't enough space in output.
      */
-    @Override
-    public int doFinal(
-        final byte[] output,
-        final int outputOffset
-    ) throws
-        DataLengthException,
-        IllegalStateException,
-        InvalidCipherTextException
+    public int finalize(final byte[] output, final int outputOffset)
+        throws IllegalStateException, OutputSizeException
     {
         if (null == this.iv) {
             throw new IllegalStateException("Cipher not initialized.");
         }
 
-        int outputSize = this.getOutputSize(0);
+        int outputSize = this.finalOutputSize(0);
         int ciphertextOffset = outputOffset +
             this.handleHeader(output, outputOffset, outputSize);
 
-        this.internalCipher.doFinal(output, ciphertextOffset);
+        try {
+            this.cipher.doFinal(output, ciphertextOffset);
+        } catch (DataLengthException e) {
+            throw new OutputSizeException(
+                output.length - outputOffset,
+                outputSize,
+                e
+            );
+        } catch (InvalidCipherTextException e) {
+            throw new RuntimeException(e);
+        }
 
         int ciphertextSize;
         if (outputSize > 0) {
@@ -304,12 +279,11 @@ public class KeyEncryptionCipher extends BufferedBlockCipher implements
     }
 
     /**
-     * Reset the cipher to its state after the last init() call.
+     * Reset the cipher to its state after the last initialize() call.
      */
-    @Override
     public void reset()
     {
-        this.internalCipher.reset();
+        this.cipher.reset();
         this.isHeaderSent = false;
     }
 
@@ -375,7 +349,7 @@ public class KeyEncryptionCipher extends BufferedBlockCipher implements
         }
     }
 
-    final private PaddedBufferedBlockCipher internalCipher;
+    final private PaddedBufferedBlockCipher cipher;
     private byte[] iv;
     private HMac blockMac;
     private HMac finalMac;

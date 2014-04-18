@@ -10,13 +10,12 @@
 package co.lqnt.lockbox.cipher.parameters;
 
 import co.lqnt.lockbox.key.KeyInterface;
-import java.util.List;
 import org.bouncycastle.crypto.CipherParameters;
 
 /**
- * The interface implemented by key encryption cipher parameters.
+ * The interface implemented by key decryption cipher parameters.
  */
-public interface KeyEncryptionCipherParametersInterface extends CipherParameters
+public interface DecryptionCipherParametersInterface extends CipherParameters
 {
     /**
      * Get the key.
@@ -24,11 +23,4 @@ public interface KeyEncryptionCipherParametersInterface extends CipherParameters
      * @return The key.
      */
     public KeyInterface key();
-
-    /**
-     * Get the initialization vector.
-     *
-     * @return The initialization vector.
-     */
-    public List<Byte> iv();
 }
