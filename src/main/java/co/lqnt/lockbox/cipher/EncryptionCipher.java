@@ -171,6 +171,13 @@ public class EncryptionCipher implements EncryptionCipherInterface
         }
 
         int outputSize = this.processOutputSize(size);
+        if (outputSize > output.length - outputOffset) {
+            throw new OutputSizeException(
+                output.length - outputOffset,
+                outputSize
+            );
+        }
+
         int ciphertextOffset = outputOffset +
             this.handleHeader(output, outputOffset, outputSize);
 
@@ -235,6 +242,13 @@ public class EncryptionCipher implements EncryptionCipherInterface
         }
 
         int outputSize = this.finalOutputSize(0);
+        if (outputSize > output.length - outputOffset) {
+            throw new OutputSizeException(
+                output.length - outputOffset,
+                outputSize
+            );
+        }
+
         int ciphertextOffset = outputOffset +
             this.handleHeader(output, outputOffset, outputSize);
 

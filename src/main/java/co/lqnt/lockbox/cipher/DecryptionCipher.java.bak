@@ -9,12 +9,9 @@
 
 package co.lqnt.lockbox.cipher;
 
-import co.lqnt.lockbox.cipher.parameters.KeyDecryptionCipherParametersInterface;
+import co.lqnt.lockbox.cipher.exception.OutputSizeException;
+import co.lqnt.lockbox.cipher.parameters.DecryptionCipherParametersInterface;
 import java.nio.ByteBuffer;
-import org.bouncycastle.crypto.BufferedBlockCipher;
-import org.bouncycastle.crypto.CipherParameters;
-import org.bouncycastle.crypto.DataLengthException;
-import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.AESEngine;
 import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
@@ -24,15 +21,14 @@ import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 /**
  * The key decryption cipher.
  */
-public class KeyDecryptionCipher extends BufferedBlockCipher implements
-    CipherInterface
+public class DecryptionCipher implements DecryptionCipherInterface
 {
     /**
      * Create a new key decryption cipher.
      */
-    public KeyDecryptionCipher()
+    public DecryptionCipher()
     {
-        this.internalCipher = new PaddedBufferedBlockCipher(
+        this.cipher = new PaddedBufferedBlockCipher(
             new CBCBlockCipher(new AESEngine()),
             new PKCS7Padding()
         );
@@ -45,46 +41,26 @@ public class KeyDecryptionCipher extends BufferedBlockCipher implements
     /**
      * Initialize the cipher.
      *
-     * @param forEncryption True if the cipher should be initialized for encryption, false for decryption.
-     * @param parameters    The parameters required by the cipher.
-     *
-     * @throws IllegalArgumentException If any argument is invalid.
+     * @param parameters The parameters required by the cipher.
      */
-    @Override
-    public void init(
-        final boolean forEncryption,
-        final CipherParameters parameters
-    ) throws
-        IllegalArgumentException
-    {
-        if (forEncryption) {
-            throw new IllegalArgumentException(
-                "This cipher only supports decryption."
-            );
-        }
-        if (!(parameters instanceof KeyDecryptionCipherParametersInterface)) {
-            throw new IllegalArgumentException(
-                "Parameters must be an instance of " +
-                    "KeyDecryptionCipherParametersInterface."
-            );
-        }
-
-        this.parameters = (KeyDecryptionCipherParametersInterface) parameters;
+    public void initialize(
+        final DecryptionCipherParametersInterface parameters
+    ) {
+        this.parameters = parameters;
         this.buffer = ByteBuffer
             .allocate(36 + this.parameters.key().authenticationSecretBytes());
         this.isHeaderReceived = false;
     }
 
     /**
-     * Get the size of the output buffer required for an update() with an input
-     * of the specified byte size.
+     * Get the size of the output buffer required for a process() call with an
+     * input of the specified byte size.
      *
      * @param inputSize The input size in bytes.
      *
      * @return The output size in bytes.
      */
-    @Override
-    public int getUpdateOutputSize(final int inputSize)
+    public int processOutputSize(final int inputSize)
     {
         int size = inputSize +
             this.buffer.position() -
@@ -96,31 +72,7 @@ public class KeyDecryptionCipher extends BufferedBlockCipher implements
 
         size = (int) Math.floor(size / 18) * 16;
 
-        return this.internalCipher.getUpdateOutputSize(size);
-    }
-
-    /**
-     * Get the size of the output buffer required for an update() plus a
-     * doFinal() with an input of the specified byte size.
-     *
-     * @param inputSize The input size in bytes.
-     *
-     * @return The output size in bytes.
-     */
-    @Override
-    public int getOutputSize(final int inputSize)
-    {
-        int size = inputSize +
-            this.buffer.position() -
-            this.parameters.key().authenticationSecretBytes();
-
-        if (!this.isHeaderReceived) {
-            size -= 18;
-        }
-
-        size = (int) Math.floor(size / 18) * 16;
-
-        return this.internalCipher.getOutputSize(size);
+        return this.cipher.getUpdateOutputSize(size);
     }
 
     /**
@@ -131,19 +83,18 @@ public class KeyDecryptionCipher extends BufferedBlockCipher implements
      * @param outputOffset The offset to which the output will be copied.
      *
      * @return The number of bytes produced.
-     * @exception DataLengthException   If there isn't enough space in output.
      * @exception IllegalStateException If the cipher isn't initialized.
+     * @exception OutputSizeException   If there isn't enough space in output.
      */
-    @Override
-    public int processByte(
+    public int process(
         final byte input,
         final byte[] output,
         final int outputOffset
     ) throws
-        DataLengthException,
-        IllegalStateException
+        IllegalStateException,
+        OutputSizeException
     {
-        return this.processBytes(new byte[]{input}, 0, 1, output, outputOffset);
+        return this.process(new byte[]{input}, 0, 1, output, outputOffset);
     }
 
     /**
@@ -156,69 +107,84 @@ public class KeyDecryptionCipher extends BufferedBlockCipher implements
      * @param outputOffset The offset to which the output will be copied.
      *
      * @return The number of bytes produced.
-     * @exception DataLengthException   If there isn't enough space in output.
      * @exception IllegalStateException If the cipher isn't initialized.
+     * @exception OutputSizeException   If there isn't enough space in output.
      */
-    @Override
-    public int processBytes(
+    public int process(
         final byte[] input,
         final int inputOffset,
         final int size,
         final byte[] output,
         final int outputOffset
     ) throws
-        DataLengthException,
-        IllegalStateException
+        IllegalStateException,
+        OutputSizeException
     {
-//        if (null == this.iv) {
-//            throw new IllegalStateException("Cipher not initialized.");
-//        }
-//
-//        int outputSize = this.getUpdateOutputSize(size);
-//        int ciphertextOffset = outputOffset +
-//            this.handleHeader(output, outputOffset, outputSize);
-//
-//        this.internalCipher.processBytes(
-//            input,
-//            inputOffset,
-//            size,
-//            output,
-//            ciphertextOffset
-//        );
-//
-//        if (outputSize > 0) {
-//            int ciphertextSize = outputSize;
-//
-//            if (!this.isHeaderSent) {
-//                this.isHeaderSent = true;
-//                ciphertextSize -= 18;
-//            }
-//
-//            this.authenticate(output, ciphertextOffset, ciphertextSize);
-//        }
-//
-//        return outputSize;
+        if (null == this.parameters) {
+            throw new IllegalStateException("Cipher not initialized.");
+        }
+
+        int outputSize = this.getUpdateOutputSize(size);
+        int ciphertextOffset = outputOffset +
+            this.handleHeader(output, outputOffset, outputSize);
+
+        this.internalCipher.processBytes(
+            input,
+            inputOffset,
+            size,
+            output,
+            ciphertextOffset
+        );
+
+        if (outputSize > 0) {
+            int ciphertextSize = outputSize;
+
+            if (!this.isHeaderSent) {
+                this.isHeaderSent = true;
+                ciphertextSize -= 18;
+            }
+
+            this.authenticate(output, ciphertextOffset, ciphertextSize);
+        }
+
+        return outputSize;
     }
 
     /**
-     * Process the last block in the buffer.
+     * Get the size of the output buffer required for a process() call with an
+     * input of the specified byte size plus a finalize() call.
+     *
+     * @param inputSize The input size in bytes.
+     *
+     * @return The output size in bytes.
+     */
+    public int finalOutputSize(final int inputSize)
+    {
+        int size = inputSize +
+            this.buffer.position() -
+            this.parameters.key().authenticationSecretBytes();
+
+        if (!this.isHeaderReceived) {
+            size -= 18;
+        }
+
+        size = (int) Math.floor(size / 18) * 16;
+
+        return this.cipher.getOutputSize(size);
+    }
+
+    /**
+     * Finalize the cipher output.
      *
      * @param output       The space for any output that might be produced.
      * @param outputOffset The offset to which the output will be copied.
      *
      * @return The number of bytes produced.
-     * @exception DataLengthException        If there isn't enough space in output.
      * @exception IllegalStateException      If the cipher isn't initialized.
-     * @exception InvalidCipherTextException If decryption fails.
+     * @exception OutputSizeException        If there isn't enough space in output.
      */
-    @Override
-    public int doFinal(
-        final byte[] output,
-        final int outputOffset
-    ) throws
-        DataLengthException,
-        IllegalStateException,
-        InvalidCipherTextException
+    public int finalize(final byte[] output, final int outputOffset)
+        throws IllegalStateException, OutputSizeException
     {
 //        if (null == this.iv) {
 //            throw new IllegalStateException("Cipher not initialized.");
@@ -259,19 +225,18 @@ public class KeyDecryptionCipher extends BufferedBlockCipher implements
     }
 
     /**
-     * Reset the cipher to its state after the last init() call.
+     * Reset the cipher to its state after the last initialize() call.
      */
-    @Override
     public void reset()
     {
-        this.internalCipher.reset();
+        this.cipher.reset();
         this.buffer = ByteBuffer
             .allocate(36 + this.parameters.key().authenticationSecretBytes());
         this.isHeaderReceived = false;
     }
 
-    final private PaddedBufferedBlockCipher internalCipher;
-    private KeyDecryptionCipherParametersInterface parameters;
+    final private PaddedBufferedBlockCipher cipher;
+    private DecryptionCipherParametersInterface parameters;
     private ByteBuffer buffer;
     private HMac blockMac;
     private HMac finalMac;
