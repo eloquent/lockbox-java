@@ -15,9 +15,9 @@ import java.util.List;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class DecryptionResultTest
+public class CipherResultTest
 {
-    public DecryptionResultTest()
+    public CipherResultTest()
     {
         this.data = Bytes.asList("foobar".getBytes(Charset.forName("UTF-8")));
     }
@@ -25,9 +25,9 @@ public class DecryptionResultTest
     @Test
     public void testConstructor()
     {
-        this.result = new DecryptionResult(DecryptionResultType.SUCCESS, this.data);
+        this.result = new CipherResult(CipherResultType.SUCCESS, this.data);
 
-        Assert.assertSame(this.result.type(), DecryptionResultType.SUCCESS);
+        Assert.assertSame(this.result.type(), CipherResultType.SUCCESS);
         Assert.assertTrue(this.result.isSuccessful());
         Assert.assertTrue(this.result.data().isPresent());
         Assert.assertEquals(this.result.data().get(), this.data);
@@ -36,9 +36,9 @@ public class DecryptionResultTest
     @Test
     public void testConstructorDataOnly()
     {
-        this.result = new DecryptionResult(this.data);
+        this.result = new CipherResult(this.data);
 
-        Assert.assertSame(this.result.type(), DecryptionResultType.SUCCESS);
+        Assert.assertSame(this.result.type(), CipherResultType.SUCCESS);
         Assert.assertTrue(this.result.isSuccessful());
         Assert.assertTrue(this.result.data().isPresent());
         Assert.assertEquals(this.result.data().get(), this.data);
@@ -47,9 +47,9 @@ public class DecryptionResultTest
     @Test
     public void testConstructorTypeOnly()
     {
-        this.result = new DecryptionResult(DecryptionResultType.SUCCESS);
+        this.result = new CipherResult(CipherResultType.SUCCESS);
 
-        Assert.assertSame(this.result.type(), DecryptionResultType.SUCCESS);
+        Assert.assertSame(this.result.type(), CipherResultType.SUCCESS);
         Assert.assertTrue(this.result.isSuccessful());
         Assert.assertFalse(this.result.data().isPresent());
     }
@@ -57,7 +57,7 @@ public class DecryptionResultTest
     @Test
     public void testSetData()
     {
-        this.result = new DecryptionResult(DecryptionResultType.SUCCESS);
+        this.result = new CipherResult(CipherResultType.SUCCESS);
         this.result.setData(this.data);
 
         Assert.assertTrue(this.result.data().isPresent());
@@ -65,5 +65,5 @@ public class DecryptionResultTest
     }
 
     final private List<Byte> data;
-    private DecryptionResult result;
+    private CipherResult result;
 }

@@ -9,8 +9,8 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
-import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
 import com.google.common.primitives.Bytes;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -34,8 +34,8 @@ public class KeyTest
         );
     }
 
-    @DataProvider(name = "validEncryptionSecretData")
-    public Object[][] validEncryptionSecretData()
+    @DataProvider(name = "validEncryptSecretData")
+    public Object[][] validEncryptSecretData()
     {
         return new Object[][]{
             {this.bytes32, 256, this.bytes64, 512},
@@ -53,22 +53,22 @@ public class KeyTest
         };
     }
 
-    @Test(dataProvider = "validEncryptionSecretData")
+    @Test(dataProvider = "validEncryptSecretData")
     public void testConstructor(
-        final List<Byte> encryptionSecret,
-        final int encryptionSecretBits,
-        final List<Byte> authenticationSecret,
-        final int authenticationSecretBits
+        final List<Byte> encryptSecret,
+        final int encryptSecretBits,
+        final List<Byte> authSecret,
+        final int authSecretBits
     ) throws Throwable
     {
-        this.key = new Key(encryptionSecret, authenticationSecret, "name", "description");
+        this.key = new Key(encryptSecret, authSecret, "name", "description");
 
-        Assert.assertEquals(this.key.encryptionSecret(), encryptionSecret);
-        Assert.assertEquals(this.key.encryptionSecretBytes(), encryptionSecretBits / 8);
-        Assert.assertEquals(this.key.encryptionSecretBits(), encryptionSecretBits);
-        Assert.assertEquals(this.key.authenticationSecret(), authenticationSecret);
-        Assert.assertEquals(this.key.authenticationSecretBytes(), authenticationSecretBits / 8);
-        Assert.assertEquals(this.key.authenticationSecretBits(), authenticationSecretBits);
+        Assert.assertEquals(this.key.encryptSecret(), encryptSecret);
+        Assert.assertEquals(this.key.encryptSecretBytes(), encryptSecretBits / 8);
+        Assert.assertEquals(this.key.encryptSecretBits(), encryptSecretBits);
+        Assert.assertEquals(this.key.authSecret(), authSecret);
+        Assert.assertEquals(this.key.authSecretBytes(), authSecretBits / 8);
+        Assert.assertEquals(this.key.authSecretBits(), authSecretBits);
         Assert.assertEquals(this.key.name().get(), "name");
         Assert.assertEquals(this.key.description().get(), "description");
     }
@@ -78,12 +78,12 @@ public class KeyTest
     {
         this.key = new Key(this.bytes16, this.bytes28, "name");
 
-        Assert.assertEquals(this.key.encryptionSecret(), this.bytes16);
-        Assert.assertEquals(this.key.encryptionSecretBytes(), 16);
-        Assert.assertEquals(this.key.encryptionSecretBits(), 128);
-        Assert.assertEquals(this.key.authenticationSecret(), this.bytes28);
-        Assert.assertEquals(this.key.authenticationSecretBytes(), 28);
-        Assert.assertEquals(this.key.authenticationSecretBits(), 224);
+        Assert.assertEquals(this.key.encryptSecret(), this.bytes16);
+        Assert.assertEquals(this.key.encryptSecretBytes(), 16);
+        Assert.assertEquals(this.key.encryptSecretBits(), 128);
+        Assert.assertEquals(this.key.authSecret(), this.bytes28);
+        Assert.assertEquals(this.key.authSecretBytes(), 28);
+        Assert.assertEquals(this.key.authSecretBits(), 224);
         Assert.assertEquals(this.key.name().get(), "name");
         Assert.assertFalse(this.key.description().isPresent());
     }
@@ -93,24 +93,24 @@ public class KeyTest
     {
         this.key = new Key(this.bytes16, this.bytes28);
 
-        Assert.assertEquals(this.key.encryptionSecret(), this.bytes16);
-        Assert.assertEquals(this.key.encryptionSecretBytes(), 16);
-        Assert.assertEquals(this.key.encryptionSecretBits(), 128);
-        Assert.assertEquals(this.key.authenticationSecret(), this.bytes28);
-        Assert.assertEquals(this.key.authenticationSecretBytes(), 28);
-        Assert.assertEquals(this.key.authenticationSecretBits(), 224);
+        Assert.assertEquals(this.key.encryptSecret(), this.bytes16);
+        Assert.assertEquals(this.key.encryptSecretBytes(), 16);
+        Assert.assertEquals(this.key.encryptSecretBits(), 128);
+        Assert.assertEquals(this.key.authSecret(), this.bytes28);
+        Assert.assertEquals(this.key.authSecretBytes(), 28);
+        Assert.assertEquals(this.key.authSecretBits(), 224);
         Assert.assertFalse(this.key.name().isPresent());
         Assert.assertFalse(this.key.description().isPresent());
     }
 
-    @Test(expectedExceptions = InvalidEncryptionSecretSizeException.class)
-    public void testConstructorFailureInvalidEncryptionSecretSize() throws Throwable
+    @Test(expectedExceptions = InvalidEncryptSecretSizeException.class)
+    public void testConstructorFailureInvalidEncryptSecretSize() throws Throwable
     {
         new Key(Bytes.asList("foo".getBytes(Charset.forName("US-ASCII"))), this.bytes28);
     }
 
-    @Test(expectedExceptions = InvalidAuthenticationSecretSizeException.class)
-    public void testConstructorFailureInvalidAuthenticationSecretSize() throws Throwable
+    @Test(expectedExceptions = InvalidAuthSecretSizeException.class)
+    public void testConstructorFailureInvalidAuthSecretSize() throws Throwable
     {
         new Key(this.bytes16, Bytes.asList("foo".getBytes(Charset.forName("US-ASCII"))));
     }

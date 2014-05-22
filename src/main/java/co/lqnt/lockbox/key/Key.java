@@ -9,10 +9,11 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
-import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
 import com.google.common.base.Optional;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,76 +24,76 @@ public class Key implements KeyInterface
     /**
      * Construct a new key.
      *
-     * @param encryptionSecret     The encryption secret.
-     * @param authenticationSecret The authentication secret.
+     * @param encryptSecret The encrypt secret.
+     * @param authSecret    The auth secret.
      *
-     * @throws InvalidEncryptionSecretSizeException     If the encryption secret is an invalid size.
-     * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
+     * @throws InvalidEncryptSecretSizeException If the encrypt secret is an invalid size.
+     * @throws InvalidAuthSecretSizeException    If the auth secret is an invalid size.
      */
     public Key(
-        final List<Byte> encryptionSecret,
-        final List<Byte> authenticationSecret
+        final List<Byte> encryptSecret,
+        final List<Byte> authSecret
     ) throws
-        InvalidEncryptionSecretSizeException,
-        InvalidAuthenticationSecretSizeException
+        InvalidEncryptSecretSizeException,
+        InvalidAuthSecretSizeException
     {
-        this(encryptionSecret, authenticationSecret, null, null);
+        this(encryptSecret, authSecret, null, null);
     }
 
     /**
      * Construct a new key.
      *
-     * @param encryptionSecret     The encryption secret.
-     * @param authenticationSecret The authentication secret.
-     * @param name                 The name.
+     * @param encryptSecret The encrypt secret.
+     * @param authSecret    The auth secret.
+     * @param name          The name.
      *
-     * @throws InvalidEncryptionSecretSizeException     If the encryption secret is an invalid size.
-     * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
+     * @throws InvalidEncryptSecretSizeException If the encrypt secret is an invalid size.
+     * @throws InvalidAuthSecretSizeException    If the auth secret is an invalid size.
      */
     public Key(
-        final List<Byte> encryptionSecret,
-        final List<Byte> authenticationSecret,
+        final List<Byte> encryptSecret,
+        final List<Byte> authSecret,
         final String name
     ) throws
-        InvalidEncryptionSecretSizeException,
-        InvalidAuthenticationSecretSizeException
+        InvalidEncryptSecretSizeException,
+        InvalidAuthSecretSizeException
     {
-        this(encryptionSecret, authenticationSecret, name, null);
+        this(encryptSecret, authSecret, name, null);
     }
 
     /**
      * Construct a new key.
      *
-     * @param encryptionSecret     The encryption secret.
-     * @param authenticationSecret The authentication secret.
-     * @param name                 The name.
-     * @param description          The description.
+     * @param encryptSecret The encrypt secret.
+     * @param authSecret    The auth secret.
+     * @param name          The name.
+     * @param description   The description.
      *
-     * @throws InvalidEncryptionSecretSizeException     If the encryption secret is an invalid size.
-     * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
+     * @throws InvalidEncryptSecretSizeException If the encrypt secret is an invalid size.
+     * @throws InvalidAuthSecretSizeException    If the auth secret is an invalid size.
      */
     public Key(
-        final List<Byte> encryptionSecret,
-        final List<Byte> authenticationSecret,
+        final List<Byte> encryptSecret,
+        final List<Byte> authSecret,
         final String name,
         final String description
     ) throws
-        InvalidEncryptionSecretSizeException,
-        InvalidAuthenticationSecretSizeException
+        InvalidEncryptSecretSizeException,
+        InvalidAuthSecretSizeException
     {
-        switch (encryptionSecret.size()) {
+        switch (encryptSecret.size()) {
             case 32:
             case 24:
             case 16:
                 break;
 
             default:
-                throw new InvalidEncryptionSecretSizeException(
-                    encryptionSecret.size() * 8
+                throw new InvalidEncryptSecretSizeException(
+                    encryptSecret.size() * 8
                 );
         }
 
-        switch (authenticationSecret.size()) {
+        switch (authSecret.size()) {
             case 64:
             case 48:
             case 32:
@@ -100,79 +101,79 @@ public class Key implements KeyInterface
                 break;
 
             default:
-                throw new InvalidAuthenticationSecretSizeException(
-                    authenticationSecret.size() * 8
+                throw new InvalidAuthSecretSizeException(
+                    authSecret.size() * 8
                 );
         }
 
-        this.encryptionSecret = new ArrayList<Byte>(encryptionSecret);
-        this.encryptionSecretBytes = encryptionSecret.size();
-        this.encryptionSecretBits = encryptionSecret.size() * 8;
-        this.authenticationSecret = new ArrayList<Byte>(authenticationSecret);
-        this.authenticationSecretBytes = authenticationSecret.size();
-        this.authenticationSecretBits = authenticationSecret.size() * 8;
+        this.encryptSecret = new ArrayList<Byte>(encryptSecret);
+        this.encryptSecretBytes = encryptSecret.size();
+        this.encryptSecretBits = encryptSecret.size() * 8;
+        this.authSecret = new ArrayList<Byte>(authSecret);
+        this.authSecretBytes = authSecret.size();
+        this.authSecretBits = authSecret.size() * 8;
         this.name = Optional.fromNullable(name);
         this.description = Optional.fromNullable(description);
     }
 
     /**
-     * Get the encryption secret.
+     * Get the encrypt secret.
      *
-     * @return The encryption secret.
+     * @return The encrypt secret.
      */
-    public List<Byte> encryptionSecret()
+    public List<Byte> encryptSecret()
     {
-        return new ArrayList<Byte>(this.encryptionSecret);
+        return new ArrayList<Byte>(this.encryptSecret);
     }
 
     /**
-     * Get the size of the encryption secret in bytes.
+     * Get the size of the encrypt secret in bytes.
      *
-     * @return The size of the encryption secret in bytes.
+     * @return The size of the encrypt secret in bytes.
      */
-    public int encryptionSecretBytes()
+    public int encryptSecretBytes()
     {
-        return this.encryptionSecretBytes;
+        return this.encryptSecretBytes;
     }
 
     /**
-     * Get the size of the encryption secret in bits.
+     * Get the size of the encrypt secret in bits.
      *
-     * @return The size of the encryption secret in bits.
+     * @return The size of the encrypt secret in bits.
      */
-    public int encryptionSecretBits()
+    public int encryptSecretBits()
     {
-        return this.encryptionSecretBits;
+        return this.encryptSecretBits;
     }
 
     /**
-     * Get the authentication secret.
+     * Get the auth secret.
      *
-     * @return The authentication secret.
+     * @return The auth secret.
      */
-    public List<Byte> authenticationSecret()
+    public List<Byte> authSecret()
     {
-        return new ArrayList<Byte>(this.authenticationSecret);
+        return new ArrayList<Byte>(this.authSecret);
     }
 
     /**
-     * Get the size of the authentication secret in bytes.
+     * Get the size of the auth secret in bytes.
      *
-     * @return The size of the authentication secret in bytes.
+     * @return The size of the auth secret in bytes.
      */
-    public int authenticationSecretBytes()
+    public int authSecretBytes()
     {
-        return this.authenticationSecretBytes;
+        return this.authSecretBytes;
     }
 
     /**
-     * Get the size of the authentication secret in bits.
+     * Get the size of the auth secret in bits.
      *
-     * @return The size of the authentication secret in bits.
+     * @return The size of the auth secret in bits.
      */
-    public int authenticationSecretBits()
+    public int authSecretBits()
     {
-        return this.authenticationSecretBits;
+        return this.authSecretBits;
     }
 
     /**
@@ -195,12 +196,23 @@ public class Key implements KeyInterface
         return this.description;
     }
 
-    final private List<Byte> encryptionSecret;
-    final private int encryptionSecretBytes;
-    final private int encryptionSecretBits;
-    final private List<Byte> authenticationSecret;
-    final private int authenticationSecretBytes;
-    final private int authenticationSecretBits;
-    final private Optional<String> name;
-    final private Optional<String> description;
+    /**
+     * Erase these parameters, removing any sensitive data.
+     */
+    public void erase()
+    {
+        Collections.fill(this.encryptSecret, (byte) 0);
+        Collections.fill(this.authSecret, (byte) 0);
+        this.name = Optional.<String>absent();
+        this.description = Optional.<String>absent();
+    }
+
+    final private List<Byte> encryptSecret;
+    final private int encryptSecretBytes;
+    final private int encryptSecretBits;
+    final private List<Byte> authSecret;
+    final private int authSecretBytes;
+    final private int authSecretBits;
+    private Optional<String> name;
+    private Optional<String> description;
 }

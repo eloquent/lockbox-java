@@ -9,55 +9,56 @@
 
 package co.lqnt.lockbox.key;
 
+import co.lqnt.lockbox.cipher.parameters.CipherParametersInterface;
 import com.google.common.base.Optional;
 import java.util.List;
 
 /**
  * The interface implemented by encryption keys.
  */
-public interface KeyInterface
+public interface KeyInterface extends CipherParametersInterface
 {
     /**
-     * Get the encryption secret.
+     * Get the encrypt secret.
      *
-     * @return The encryption secret.
+     * @return The encrypt secret.
      */
-    public List<Byte> encryptionSecret();
+    public List<Byte> encryptSecret();
 
     /**
-     * Get the size of the encryption secret in bytes.
+     * Get the size of the encrypt secret in bytes.
      *
-     * @return The size of the encryption secret in bytes.
+     * @return The size of the encrypt secret in bytes.
      */
-    public int encryptionSecretBytes();
+    public int encryptSecretBytes();
 
     /**
-     * Get the size of the encryption secret in bits.
+     * Get the size of the encrypt secret in bits.
      *
-     * @return The size of the encryption secret in bits.
+     * @return The size of the encrypt secret in bits.
      */
-    public int encryptionSecretBits();
+    public int encryptSecretBits();
 
     /**
-     * Get the authentication secret.
+     * Get the auth secret.
      *
-     * @return The authentication secret.
+     * @return The auth secret.
      */
-    public List<Byte> authenticationSecret();
+    public List<Byte> authSecret();
 
     /**
-     * Get the size of the authentication secret in bytes.
+     * Get the size of the auth secret in bytes.
      *
-     * @return The size of the authentication secret in bytes.
+     * @return The size of the auth secret in bytes.
      */
-    public int authenticationSecretBytes();
+    public int authSecretBytes();
 
     /**
-     * Get the size of the authentication secret in bits.
+     * Get the size of the auth secret in bits.
      *
-     * @return The size of the authentication secret in bits.
+     * @return The size of the auth secret in bits.
      */
-    public int authenticationSecretBits();
+    public int authSecretBits();
 
     /**
      * Get the name.

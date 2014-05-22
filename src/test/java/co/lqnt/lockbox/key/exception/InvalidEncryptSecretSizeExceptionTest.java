@@ -12,18 +12,18 @@ package co.lqnt.lockbox.key.exception;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class InvalidAuthenticationSecretSizeExceptionTest
+public class InvalidEncryptSecretSizeExceptionTest
 {
     @Test
     public void testException()
     {
         Exception cause = new Exception();
-        InvalidAuthenticationSecretSizeException exception = new InvalidAuthenticationSecretSizeException(111, cause);
+        InvalidEncryptSecretSizeException exception = new InvalidEncryptSecretSizeException(111, cause);
 
         Assert.assertEquals(111, exception.size());
         Assert.assertEquals(
             exception.getMessage(),
-            "Invalid authentication secret size 111. Authentication secret must be 224, 256, 384, or 512 bits."
+            "Invalid encrypt secret size 111. Encrypt secret must be 128, 192, or 256 bits."
         );
         Assert.assertSame(exception.getCause(), cause);
     }
@@ -31,12 +31,12 @@ public class InvalidAuthenticationSecretSizeExceptionTest
     @Test
     public void testExceptionWithoutCause()
     {
-        InvalidAuthenticationSecretSizeException exception = new InvalidAuthenticationSecretSizeException(111);
+        InvalidEncryptSecretSizeException exception = new InvalidEncryptSecretSizeException(111);
 
         Assert.assertEquals(111, exception.size());
         Assert.assertEquals(
             exception.getMessage(),
-            "Invalid authentication secret size 111. Authentication secret must be 224, 256, 384, or 512 bits."
+            "Invalid encrypt secret size 111. Encrypt secret must be 128, 192, or 256 bits."
         );
         Assert.assertNull(exception.getCause());
     }

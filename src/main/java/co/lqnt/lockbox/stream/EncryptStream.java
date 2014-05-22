@@ -9,9 +9,9 @@
 
 package co.lqnt.lockbox.stream;
 
-import co.lqnt.lockbox.cipher.EncryptionCipherInterface;
-import co.lqnt.lockbox.cipher.EncryptionCipher;
-import co.lqnt.lockbox.cipher.parameters.EncryptionCipherParameters;
+import co.lqnt.lockbox.cipher.CipherInterface;
+import co.lqnt.lockbox.cipher.EncryptCipher;
+import co.lqnt.lockbox.cipher.parameters.EncryptParameters;
 import co.lqnt.lockbox.key.KeyInterface;
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
@@ -33,7 +33,7 @@ public class EncryptStream extends FilterOutputStream
      */
     public EncryptStream(final OutputStream out, final KeyInterface key)
     {
-        this(out, key, SecureRandom.instance(), new EncryptionCipher());
+        this(out, key, SecureRandom.instance(), new EncryptCipher());
     }
 
     /**
@@ -48,7 +48,7 @@ public class EncryptStream extends FilterOutputStream
         final OutputStream out,
         final KeyInterface key,
         final RandomSourceInterface randomSource,
-        final EncryptionCipherInterface cipher
+        final CipherInterface cipher
     ) {
         super(out);
 
@@ -94,7 +94,7 @@ public class EncryptStream extends FilterOutputStream
      *
      * @return The cipher.
      */
-    public EncryptionCipherInterface cipher()
+    public CipherInterface cipher()
     {
         return this.cipher;
     }
@@ -169,16 +169,13 @@ public class EncryptStream extends FilterOutputStream
     {
         if (this.isInitialized.compareAndSet(false, true)) {
             this.cipher.initialize(
-                new EncryptionCipherParameters(
-                    this.key,
-                    this.randomSource.generate(16)
-                )
+                new EncryptParameters(this.key, this.randomSource.generate(16))
             );
         }
     }
 
     final private KeyInterface key;
     final private RandomSourceInterface randomSource;
-    final private EncryptionCipherInterface cipher;
+    final private CipherInterface cipher;
     final private AtomicBoolean isInitialized;
 }

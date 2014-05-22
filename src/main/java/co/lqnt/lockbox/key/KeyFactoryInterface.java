@@ -9,8 +9,8 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
-import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
 import java.util.List;
 
 /**
@@ -21,57 +21,57 @@ public interface KeyFactoryInterface
     /**
      * Create a new key from existing key data.
      *
-     * @param encryptionSecret     The encryption secret.
-     * @param authenticationSecret The authentication secret.
+     * @param encryptSecret The encrypt secret.
+     * @param authSecret    The auth secret.
      *
      * @return The key.
-     * @throws InvalidEncryptionSecretSizeException     If the encryption secret is an invalid size.
-     * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
+     * @throws InvalidEncryptSecretSizeException If the encrypt secret is an invalid size.
+     * @throws InvalidAuthSecretSizeException    If the auth secret is an invalid size.
      */
     public KeyInterface createKey(
-        final List<Byte> encryptionSecret,
-        final List<Byte> authenticationSecret
+        final List<Byte> encryptSecret,
+        final List<Byte> authSecret
     ) throws
-        InvalidEncryptionSecretSizeException,
-        InvalidAuthenticationSecretSizeException;
+        InvalidEncryptSecretSizeException,
+        InvalidAuthSecretSizeException;
 
     /**
      * Create a new key from existing key data.
      *
-     * @param encryptionSecret     The encryption secret.
-     * @param authenticationSecret The authentication secret.
-     * @param name                 The name.
+     * @param encryptSecret The encrypt secret.
+     * @param authSecret    The auth secret.
+     * @param name          The name.
      *
      * @return The key.
-     * @throws InvalidEncryptionSecretSizeException     If the encryption secret is an invalid size.
-     * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
+     * @throws InvalidEncryptSecretSizeException If the encrypt secret is an invalid size.
+     * @throws InvalidAuthSecretSizeException    If the auth secret is an invalid size.
      */
     public KeyInterface createKey(
-        final List<Byte> encryptionSecret,
-        final List<Byte> authenticationSecret,
+        final List<Byte> encryptSecret,
+        final List<Byte> authSecret,
         final String name
     ) throws
-        InvalidEncryptionSecretSizeException,
-        InvalidAuthenticationSecretSizeException;
+        InvalidEncryptSecretSizeException,
+        InvalidAuthSecretSizeException;
 
     /**
      * Create a new key from existing key data.
      *
-     * @param encryptionSecret     The encryption secret.
-     * @param authenticationSecret The authentication secret.
-     * @param name                 The name.
-     * @param description          The description.
+     * @param encryptSecret The encrypt secret.
+     * @param authSecret    The auth secret.
+     * @param name          The name.
+     * @param description   The description.
      *
      * @return The key.
-     * @throws InvalidEncryptionSecretSizeException     If the encryption secret is an invalid size.
-     * @throws InvalidAuthenticationSecretSizeException If the authentication secret is an invalid size.
+     * @throws InvalidEncryptSecretSizeException If the encrypt secret is an invalid size.
+     * @throws InvalidAuthSecretSizeException    If the auth secret is an invalid size.
      */
     public KeyInterface createKey(
-        final List<Byte> encryptionSecret,
-        final List<Byte> authenticationSecret,
+        final List<Byte> encryptSecret,
+        final List<Byte> authSecret,
         final String name,
         final String description
     ) throws
-        InvalidEncryptionSecretSizeException,
-        InvalidAuthenticationSecretSizeException;
+        InvalidEncryptSecretSizeException,
+        InvalidAuthSecretSizeException;
 }

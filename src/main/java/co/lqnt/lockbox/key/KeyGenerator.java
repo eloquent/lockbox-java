@@ -9,11 +9,10 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
-import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
-import com.google.common.primitives.Bytes;
 
 /**
  * The interface implemented by encryption key generators.
@@ -114,9 +113,9 @@ public class KeyGenerator implements KeyGeneratorInterface
         KeyInterface key;
         try {
             key = this.generateKey(name, description, 256, 256);
-        } catch (InvalidEncryptionSecretSizeException e) {
+        } catch (InvalidEncryptSecretSizeException e) {
             throw new RuntimeException(e);
-        } catch (InvalidAuthenticationSecretSizeException e) {
+        } catch (InvalidAuthSecretSizeException e) {
             throw new RuntimeException(e);
         }
 
@@ -126,62 +125,60 @@ public class KeyGenerator implements KeyGeneratorInterface
     /**
      * Generate a new key.
      *
-     * @param encryptionSecretBits The size of the encryption secret in bits.
-     * @param authenticationSecretBits The size of the authentication secret in bits.
+     * @param encryptSecretBits The size of the encrypt secret in bits.
+     * @param authSecretBits    The size of the auth secret in bits.
      *
      * @return The generated key.
-     * @throws InvalidEncryptionSecretSizeException     If the requested encryption secret size is invalid.
-     * @throws InvalidAuthenticationSecretSizeException If the requested authentication secret size is invalid.
+     * @throws InvalidEncryptSecretSizeException If the requested encrypt secret size is invalid.
+     * @throws InvalidAuthSecretSizeException    If the requested auth secret size is invalid.
      */
     public KeyInterface generateKey(
-        final int encryptionSecretBits,
-        final int authenticationSecretBits
+        final int encryptSecretBits,
+        final int authSecretBits
     ) throws
-        InvalidEncryptionSecretSizeException,
-        InvalidAuthenticationSecretSizeException
+        InvalidEncryptSecretSizeException,
+        InvalidAuthSecretSizeException
     {
         return this.generateKey(
             null,
             null,
-            encryptionSecretBits,
-            authenticationSecretBits
+            encryptSecretBits,
+            authSecretBits
         );
     }
 
     /**
      * Generate a new key.
      *
-     * @param name The name.
-     * @param description The description.
-     * @param encryptionSecretBits The size of the encryption secret in bits.
-     * @param authenticationSecretBits The size of the authentication secret in bits.
+     * @param name              The name.
+     * @param description       The description.
+     * @param encryptSecretBits The size of the encrypt secret in bits.
+     * @param authSecretBits    The size of the auth secret in bits.
      *
      * @return The generated key.
-     * @throws InvalidEncryptionSecretSizeException     If the requested encryption secret size is invalid.
-     * @throws InvalidAuthenticationSecretSizeException If the requested authentication secret size is invalid.
+     * @throws InvalidEncryptSecretSizeException If the requested encrypt secret size is invalid.
+     * @throws InvalidAuthSecretSizeException    If the requested auth secret size is invalid.
      */
     public KeyInterface generateKey(
         final String name,
         final String description,
-        final int encryptionSecretBits,
-        final int authenticationSecretBits
+        final int encryptSecretBits,
+        final int authSecretBits
     ) throws
-        InvalidEncryptionSecretSizeException,
-        InvalidAuthenticationSecretSizeException
+        InvalidEncryptSecretSizeException,
+        InvalidAuthSecretSizeException
     {
-        switch (encryptionSecretBits) {
+        switch (encryptSecretBits) {
             case 256:
             case 192:
             case 128:
                 break;
 
             default:
-                throw new InvalidEncryptionSecretSizeException(
-                    encryptionSecretBits
-                );
+                throw new InvalidEncryptSecretSizeException(encryptSecretBits);
         }
 
-        switch (authenticationSecretBits) {
+        switch (authSecretBits) {
             case 512:
             case 384:
             case 256:
@@ -189,14 +186,12 @@ public class KeyGenerator implements KeyGeneratorInterface
                 break;
 
             default:
-                throw new InvalidAuthenticationSecretSizeException(
-                    authenticationSecretBits
-                );
+                throw new InvalidAuthSecretSizeException(authSecretBits);
         }
 
         return this.factory().createKey(
-            this.randomSource().generate(encryptionSecretBits / 8),
-            this.randomSource().generate(authenticationSecretBits / 8),
+            this.randomSource().generate(encryptSecretBits / 8),
+            this.randomSource().generate(authSecretBits / 8),
             name,
             description
         );

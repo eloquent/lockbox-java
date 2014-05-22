@@ -10,34 +10,34 @@
 package co.lqnt.lockbox.key.exception;
 
 /**
- * The authentication secret size is invalid.
+ * The auth secret size is invalid.
  */
-final public class InvalidAuthenticationSecretSizeException extends Exception
+final public class InvalidAuthSecretSizeException extends Exception
 {
     /**
-     * Construct a new invalid authentication secret size exception.
+     * Construct a new invalid auth secret size exception.
      *
      * @param size The invalid secret size.
      */
-    public InvalidAuthenticationSecretSizeException(final int size)
+    public InvalidAuthSecretSizeException(final int size)
     {
         this(size, null);
     }
 
     /**
-     * Construct a new invalid authentication secret size exception.
+     * Construct a new invalid auth secret size exception.
      *
      * @param size  The invalid secret size.
      * @param cause The cause.
      */
-    public InvalidAuthenticationSecretSizeException(
+    public InvalidAuthSecretSizeException(
         final int size,
         final Throwable cause
     ) {
         super(
             String.format(
-                "Invalid authentication secret size %d. " +
-                "Authentication secret must be 224, 256, 384, or 512 bits.",
+                "Invalid auth secret size %d. " +
+                "Auth secret must be 224, 256, 384, or 512 bits.",
                 size
             ),
             cause

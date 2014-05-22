@@ -9,7 +9,10 @@
 
 package co.lqnt.lockbox.cipher;
 
+import co.lqnt.lockbox.cipher.exception.CipherStateException;
 import co.lqnt.lockbox.cipher.exception.OutputSizeException;
+import co.lqnt.lockbox.cipher.exception.UnsupportedCipherParametersException;
+import co.lqnt.lockbox.cipher.parameters.CipherParametersInterface;
 
 /**
  * The interface implemented by key ciphers.
@@ -17,12 +20,29 @@ import co.lqnt.lockbox.cipher.exception.OutputSizeException;
 public interface CipherInterface
 {
     /**
+     * Returns true if this cipher is initialized.
+     *
+     * @return True if initialized.
+     */
+    public boolean isInitialized();
+
+    /**
+     * Initialize the cipher.
+     *
+     * @param parameters The parameters required by the cipher.
+     *
+     * @throws UnsupportedCipherParametersException If unsupported parameters are supplied.
+     */
+    public void initialize(final CipherParametersInterface parameters);
+
+    /**
      * Get the size of the output buffer required for a process() call with an
      * input of the specified byte size.
      *
      * @param inputSize The input size in bytes.
      *
      * @return The output size in bytes.
+     * @throws CipherStateException If the cipher is in an invalid state.
      */
     public int processOutputSize(final int inputSize);
 
@@ -34,16 +54,14 @@ public interface CipherInterface
      * @param outputOffset The offset to which the output will be copied.
      *
      * @return The number of bytes produced.
-     * @exception IllegalStateException If the cipher isn't initialized.
-     * @exception OutputSizeException   If there isn't enough space in output.
+     * @throws CipherStateException If the cipher is in an invalid state.
+     * @throws OutputSizeException  If there isn't enough space in output.
      */
     public int process(
         final byte input,
         final byte[] output,
         final int outputOffset
-    ) throws
-        IllegalStateException,
-        OutputSizeException;
+    );
 
     /**
      * Process an array of bytes, producing an output block if necessary.
@@ -55,8 +73,8 @@ public interface CipherInterface
      * @param outputOffset The offset to which the output will be copied.
      *
      * @return The number of bytes produced.
-     * @exception IllegalStateException If the cipher isn't initialized.
-     * @exception OutputSizeException   If there isn't enough space in output.
+     * @throws CipherStateException If the cipher is in an invalid state.
+     * @throws OutputSizeException  If there isn't enough space in output.
      */
     public int process(
         final byte[] input,
@@ -64,9 +82,7 @@ public interface CipherInterface
         final int size,
         final byte[] output,
         final int outputOffset
-    ) throws
-        IllegalStateException,
-        OutputSizeException;
+    );
 
     /**
      * Get the size of the output buffer required for a process() call with an
@@ -75,6 +91,7 @@ public interface CipherInterface
      * @param inputSize The input size in bytes.
      *
      * @return The output size in bytes.
+     * @throws CipherStateException If the cipher is in an invalid state.
      */
     public int finalOutputSize(final int inputSize);
 
@@ -85,11 +102,10 @@ public interface CipherInterface
      * @param outputOffset The offset to which the output will be copied.
      *
      * @return The number of bytes produced.
-     * @exception IllegalStateException      If the cipher isn't initialized.
-     * @exception OutputSizeException        If there isn't enough space in output.
+     * @throws CipherStateException If the cipher is in an invalid state.
+     * @throws OutputSizeException  If there isn't enough space in output.
      */
-    public int finalize(final byte[] output, final int outputOffset)
-        throws IllegalStateException, OutputSizeException;
+    public int finalize(final byte[] output, final int outputOffset);
 
     /**
      * Reset the cipher to its state after the last initialize() call.

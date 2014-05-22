@@ -9,8 +9,8 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
-import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
 import co.lqnt.lockbox.key.exception.InvalidIterationsException;
 import co.lqnt.lockbox.key.exception.InvalidSaltSizeException;
 import co.lqnt.lockbox.random.RandomSourceInterface;
@@ -257,9 +257,9 @@ public class KeyDeriver implements KeyDeriverInterface
                 name,
                 description
             );
-        } catch (InvalidEncryptionSecretSizeException e) {
+        } catch (InvalidEncryptSecretSizeException e) {
             throw new RuntimeException(e);
-        } catch (InvalidAuthenticationSecretSizeException e) {
+        } catch (InvalidAuthSecretSizeException e) {
             throw new RuntimeException(e);
         }
 

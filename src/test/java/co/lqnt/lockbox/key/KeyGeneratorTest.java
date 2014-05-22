@@ -9,8 +9,8 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
-import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
 import com.google.common.primitives.Bytes;
@@ -104,8 +104,8 @@ public class KeyGeneratorTest
             authenticationSecretBits
         );
 
-        Assert.assertEquals(key.encryptionSecret(), encryptionSecret);
-        Assert.assertEquals(key.authenticationSecret(), authenticationSecret);
+        Assert.assertEquals(key.encryptSecret(), encryptionSecret);
+        Assert.assertEquals(key.authSecret(), authenticationSecret);
         Assert.assertEquals(key.name().get(), "name");
         Assert.assertEquals(key.description().get(), "description");
     }
@@ -115,8 +115,8 @@ public class KeyGeneratorTest
     {
         KeyInterface key = this.generator.generateKey("name", "description");
 
-        Assert.assertEquals(key.encryptionSecret(), this.bytes32);
-        Assert.assertEquals(key.authenticationSecret(), this.bytes32);
+        Assert.assertEquals(key.encryptSecret(), this.bytes32);
+        Assert.assertEquals(key.authSecret(), this.bytes32);
         Assert.assertEquals(key.name().get(), "name");
         Assert.assertEquals(key.description().get(), "description");
     }
@@ -126,8 +126,8 @@ public class KeyGeneratorTest
     {
         KeyInterface key = this.generator.generateKey("name");
 
-        Assert.assertEquals(key.encryptionSecret(), this.bytes32);
-        Assert.assertEquals(key.authenticationSecret(), this.bytes32);
+        Assert.assertEquals(key.encryptSecret(), this.bytes32);
+        Assert.assertEquals(key.authSecret(), this.bytes32);
         Assert.assertEquals(key.name().get(), "name");
         Assert.assertFalse(key.description().isPresent());
     }
@@ -137,8 +137,8 @@ public class KeyGeneratorTest
     {
         KeyInterface key = this.generator.generateKey();
 
-        Assert.assertEquals(key.encryptionSecret(), this.bytes32);
-        Assert.assertEquals(key.authenticationSecret(), this.bytes32);
+        Assert.assertEquals(key.encryptSecret(), this.bytes32);
+        Assert.assertEquals(key.authSecret(), this.bytes32);
         Assert.assertFalse(key.name().isPresent());
         Assert.assertFalse(key.description().isPresent());
     }
@@ -148,19 +148,19 @@ public class KeyGeneratorTest
     {
         KeyInterface key = this.generator.generateKey(128, 224);
 
-        Assert.assertEquals(key.encryptionSecret(), this.bytes16);
-        Assert.assertEquals(key.authenticationSecret(), this.bytes28);
+        Assert.assertEquals(key.encryptSecret(), this.bytes16);
+        Assert.assertEquals(key.authSecret(), this.bytes28);
         Assert.assertFalse(key.name().isPresent());
         Assert.assertFalse(key.description().isPresent());
     }
 
-    @Test(expectedExceptions = InvalidEncryptionSecretSizeException.class)
+    @Test(expectedExceptions = InvalidEncryptSecretSizeException.class)
     public void testGenerateKeyFailureEncryptionKeySize() throws Throwable
     {
         this.generator.generateKey(111, 224);
     }
 
-    @Test(expectedExceptions = InvalidAuthenticationSecretSizeException.class)
+    @Test(expectedExceptions = InvalidAuthSecretSizeException.class)
     public void testGenerateKeyFailureAuthenticationKeySize() throws Throwable
     {
         this.generator.generateKey(128, 111);
@@ -172,7 +172,7 @@ public class KeyGeneratorTest
         this.factory = Mockito.mock(KeyFactoryInterface.class);
         this.generator = new KeyGenerator(this.factory, this.randomSource);
         Mockito.when(this.factory.createKey(this.bytes32, this.bytes32, null, null))
-            .thenThrow(new InvalidEncryptionSecretSizeException(256));
+            .thenThrow(new InvalidEncryptSecretSizeException(256));
 
         this.generator.generateKey();
     }
@@ -183,7 +183,7 @@ public class KeyGeneratorTest
         this.factory = Mockito.mock(KeyFactoryInterface.class);
         this.generator = new KeyGenerator(this.factory, this.randomSource);
         Mockito.when(this.factory.createKey(this.bytes32, this.bytes32, null, null))
-            .thenThrow(new InvalidAuthenticationSecretSizeException(256));
+            .thenThrow(new InvalidAuthSecretSizeException(256));
 
         this.generator.generateKey();
     }

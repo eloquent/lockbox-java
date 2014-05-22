@@ -13,36 +13,36 @@ import com.google.common.base.Optional;
 import java.util.List;
 
 /**
- * The interface implemented by decryption results.
+ * The interface implemented by cipher results.
  */
-public interface DecryptionResultInterface
+public interface CipherResultInterface
 {
     /**
      * Get the result type.
-     * 
+     *
      * @return The result type.
      */
-    public DecryptionResultType type();
-    
+    public CipherResultType type();
+
     /**
      * Returns true if this result is successful.
      *
      * @return True if successful.
      */
     public boolean isSuccessful();
-    
+
     /**
-     * Set the decrypted data.
-     * 
+     * Set the data.
+     *
      * @param data The data.
      */
     public void setData(final List<Byte> data);
-    
+
     /**
-     * Get the decrypted data.
+     * Get the data.
      *
      * This data will not be present for unsuccessful and/or streaming results.
-     * 
+     *
      * @return The data, if available.
      */
     public Optional<List<Byte>> data();

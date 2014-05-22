@@ -9,8 +9,8 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
-import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
 import co.lqnt.lockbox.key.exception.InvalidIterationsException;
 import co.lqnt.lockbox.key.exception.InvalidSaltSizeException;
 import co.lqnt.lockbox.random.RandomSourceInterface;
@@ -95,11 +95,11 @@ public class KeyDeriverTest
         KeyInterface key = this.deriver.deriveKeyFromPassword(passwordChars, iterations, salt, "name", "description");
 
         Assert.assertEquals(
-            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(key.encryptionSecret())),
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(key.encryptSecret())),
             encryptionSecret
         );
         Assert.assertEquals(
-            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(key.authenticationSecret())),
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(key.authSecret())),
             authenticationSecret
         );
         Assert.assertEquals(key.name().get(), "name");
@@ -114,11 +114,11 @@ public class KeyDeriverTest
         KeyInterface key = this.deriver.deriveKeyFromPassword(passwordChars, 10, this.bytes64);
 
         Assert.assertEquals(
-            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(key.encryptionSecret())),
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(key.encryptSecret())),
             "pcVNTpc-PE-kn5dDsuK6UDMQXXJmAQpOygkGavbvTXE"
         );
         Assert.assertEquals(
-            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(key.authenticationSecret())),
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(key.authSecret())),
             "1HoCzL6MzfPLCUXIkCdNrQT4v7vpjltxDGbT2qTLqZk"
         );
         Assert.assertFalse(key.name().isPresent());
@@ -133,11 +133,11 @@ public class KeyDeriverTest
         DerivedKeyDataInterface keyData = this.deriver.deriveKeyFromPassword(passwordChars, 10);
 
         Assert.assertEquals(
-            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().encryptionSecret())),
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().encryptSecret())),
             "pcVNTpc-PE-kn5dDsuK6UDMQXXJmAQpOygkGavbvTXE"
         );
         Assert.assertEquals(
-            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().authenticationSecret())),
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().authSecret())),
             "1HoCzL6MzfPLCUXIkCdNrQT4v7vpjltxDGbT2qTLqZk"
         );
         Assert.assertFalse(keyData.key().name().isPresent());
@@ -152,11 +152,11 @@ public class KeyDeriverTest
         DerivedKeyDataInterface keyData = this.deriver.deriveKeyFromPassword(passwordChars, 10, "name");
 
         Assert.assertEquals(
-            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().encryptionSecret())),
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().encryptSecret())),
             "pcVNTpc-PE-kn5dDsuK6UDMQXXJmAQpOygkGavbvTXE"
         );
         Assert.assertEquals(
-            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().authenticationSecret())),
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().authSecret())),
             "1HoCzL6MzfPLCUXIkCdNrQT4v7vpjltxDGbT2qTLqZk"
         );
         Assert.assertEquals(keyData.key().name().get(), "name");
@@ -171,11 +171,11 @@ public class KeyDeriverTest
         DerivedKeyDataInterface keyData = this.deriver.deriveKeyFromPassword(passwordChars, 10, "name", "description");
 
         Assert.assertEquals(
-            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().encryptionSecret())),
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().encryptSecret())),
             "pcVNTpc-PE-kn5dDsuK6UDMQXXJmAQpOygkGavbvTXE"
         );
         Assert.assertEquals(
-            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().authenticationSecret())),
+            BaseEncoding.base64Url().omitPadding().encode(Bytes.toArray(keyData.key().authSecret())),
             "1HoCzL6MzfPLCUXIkCdNrQT4v7vpjltxDGbT2qTLqZk"
         );
         Assert.assertEquals(keyData.key().name().get(), "name");
@@ -222,7 +222,7 @@ public class KeyDeriverTest
                     Mockito.anyString()
                 )
             )
-            .thenThrow(new InvalidEncryptionSecretSizeException(111));
+            .thenThrow(new InvalidEncryptSecretSizeException(111));
 
         this.deriver.deriveKeyFromPassword(Chars.asList("foobar".toCharArray()), 10);
     }
@@ -241,7 +241,7 @@ public class KeyDeriverTest
                     Mockito.anyString()
                 )
             )
-            .thenThrow(new InvalidAuthenticationSecretSizeException(111));
+            .thenThrow(new InvalidAuthSecretSizeException(111));
 
         this.deriver.deriveKeyFromPassword(Chars.asList("foobar".toCharArray()), 10);
     }

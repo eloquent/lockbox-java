@@ -9,8 +9,8 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidAuthenticationSecretSizeException;
-import co.lqnt.lockbox.key.exception.InvalidEncryptionSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
 
 /**
  * The interface implemented by encryption key generators.
@@ -49,38 +49,38 @@ public interface KeyGeneratorInterface
     /**
      * Generate a new key.
      *
-     * @param encryptionSecretBits The size of the encryption secret in bits.
-     * @param authenticationSecretBits The size of the authentication secret in bits.
+     * @param encryptSecretBits The size of the encrypt secret in bits.
+     * @param authSecretBits    The size of the auth secret in bits.
      *
      * @return The generated key.
-     * @throws InvalidEncryptionSecretSizeException     If the requested encryption secret size is invalid.
-     * @throws InvalidAuthenticationSecretSizeException If the requested authentication secret size is invalid.
+     * @throws InvalidEncryptSecretSizeException If the requested encrypt secret size is invalid.
+     * @throws InvalidAuthSecretSizeException    If the requested auth secret size is invalid.
      */
     public KeyInterface generateKey(
-        final int encryptionSecretBits,
-        final int authenticationSecretBits
+        final int encryptSecretBits,
+        final int authSecretBits
     ) throws
-        InvalidEncryptionSecretSizeException,
-        InvalidAuthenticationSecretSizeException;
+        InvalidEncryptSecretSizeException,
+        InvalidAuthSecretSizeException;
 
     /**
      * Generate a new key.
      *
-     * @param name The name.
-     * @param description The description.
-     * @param encryptionSecretBits The size of the encryption secret in bits.
-     * @param authenticationSecretBits The size of the authentication secret in bits.
+     * @param name              The name.
+     * @param description       The description.
+     * @param encryptSecretBits The size of the encrypt secret in bits.
+     * @param authSecretBits    The size of the auth secret in bits.
      *
      * @return The generated key.
-     * @throws InvalidEncryptionSecretSizeException     If the requested encryption secret size is invalid.
-     * @throws InvalidAuthenticationSecretSizeException If the requested authentication secret size is invalid.
+     * @throws InvalidEncryptSecretSizeException If the requested encrypt secret size is invalid.
+     * @throws InvalidAuthSecretSizeException    If the requested auth secret size is invalid.
      */
     public KeyInterface generateKey(
         final String name,
         final String description,
-        final int encryptionSecretBits,
-        final int authenticationSecretBits
+        final int encryptSecretBits,
+        final int authSecretBits
     ) throws
-        InvalidEncryptionSecretSizeException,
-        InvalidAuthenticationSecretSizeException;
+        InvalidEncryptSecretSizeException,
+        InvalidAuthSecretSizeException;
 }

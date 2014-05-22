@@ -14,54 +14,54 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents the result of an attempted decryption.
+ * An abstract base class for implementing cipher results.
  */
-public class DecryptionResult implements DecryptionResultInterface
+abstract public class AbstractCipherResult implements CipherResultInterface
 {
     /**
-     * Construct a new decryption result.
-     * 
+     * Construct a new cipher result.
+     *
      * @param type The result type.
      */
-    public DecryptionResult(final DecryptionResultType type)
+    public AbstractCipherResult(final CipherResultType type)
     {
         this(type, null);
     }
-    
+
     /**
-     * Construct a new decryption result.
-     * 
-     * @param data The decrypted data.
+     * Construct a new cipher result.
+     *
+     * @param data The data.
      */
-    public DecryptionResult(final List<Byte> data)
+    public AbstractCipherResult(final List<Byte> data)
     {
-        this(DecryptionResultType.SUCCESS, data);
+        this(CipherResultType.SUCCESS, data);
     }
-    
+
     /**
-     * Construct a new decryption result.
-     * 
+     * Construct a new cipher result.
+     *
      * @param type The result type.
-     * @param data The decrypted data.
+     * @param data The data.
      */
-    public DecryptionResult(
-        final DecryptionResultType type,
+    public AbstractCipherResult(
+        final CipherResultType type,
         final List<Byte> data
     ) {
         this.type = type;
         this.data = data;
     }
-    
+
     /**
      * Get the result type.
-     * 
+     *
      * @return The result type.
      */
-    public DecryptionResultType type()
+    public CipherResultType type()
     {
         return this.type;
     }
-    
+
     /**
      * Returns true if this result is successful.
      *
@@ -71,22 +71,22 @@ public class DecryptionResult implements DecryptionResultInterface
     {
         return this.type().isSuccessful();
     }
-    
+
     /**
-     * Set the decrypted data.
-     * 
+     * Set the data.
+     *
      * @param data The data.
      */
     public void setData(final List<Byte> data)
     {
         this.data = data;
     }
-    
+
     /**
-     * Get the decrypted data.
+     * Get the data.
      *
      * This data will not be present for unsuccessful and/or streaming results.
-     * 
+     *
      * @return The data, if available.
      */
     public Optional<List<Byte>> data()
@@ -94,10 +94,10 @@ public class DecryptionResult implements DecryptionResultInterface
         if (null == this.data) {
             return Optional.<List<Byte>>absent();
         }
-        
+
         return Optional.<List<Byte>>of(new ArrayList<Byte>(this.data));
     }
-    
-    final private DecryptionResultType type;
+
+    final private CipherResultType type;
     private List<Byte> data;
 }

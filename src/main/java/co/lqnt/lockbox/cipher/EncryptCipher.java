@@ -9,8 +9,14 @@
 
 package co.lqnt.lockbox.cipher;
 
+import co.lqnt.lockbox.cipher.exception.CipherStateException;
 import co.lqnt.lockbox.cipher.exception.OutputSizeException;
-import co.lqnt.lockbox.cipher.parameters.EncryptionCipherParametersInterface;
+import co.lqnt.lockbox.cipher.exception.UnsupportedCipherParametersException;
+import co.lqnt.lockbox.cipher.parameters.CipherParametersInterface;
+import co.lqnt.lockbox.cipher.parameters.EncryptParametersInterface;
+import co.lqnt.lockbox.key.KeyInterface;
+import co.lqnt.lockbox.random.RandomSourceInterface;
+import co.lqnt.lockbox.random.SecureRandom;
 import com.google.common.primitives.Bytes;
 import java.util.Arrays;
 import org.bouncycastle.crypto.DataLengthException;
@@ -28,35 +34,86 @@ import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 
 /**
- * The key encryption cipher.
+ * Encrypts data with a key.
  */
-public class EncryptionCipher implements EncryptionCipherInterface
+public class EncryptCipher implements CipherInterface
 {
     /**
-     * Create a new key encryption cipher.
+     * Create a new encrypt cipher.
      */
-    public EncryptionCipher()
+    public EncryptCipher()
     {
+        this(SecureRandom.instance());
+    }
+
+    /**
+     * Create a new encrypt cipher.
+     *
+     * @param randomSource The random source to use.
+     */
+    public EncryptCipher(final RandomSourceInterface randomSource)
+    {
+        this.randomSource = randomSource;
         this.cipher = new PaddedBufferedBlockCipher(
             new CBCBlockCipher(new AESEngine()),
             new PKCS7Padding()
         );
         this.blockMac = null;
         this.finalMac = null;
-        this.isHeaderSent = false;
+        this.isInitialized = this.isHeaderSent = false;
+    }
+
+    /**
+     * Get the random source.
+     *
+     * @return The random source.
+     */
+    public RandomSourceInterface randomSource()
+    {
+        return this.randomSource;
+    }
+
+    /**
+     * Returns true if this cipher is initialized.
+     *
+     * @return True if initialized.
+     */
+    public boolean isInitialized()
+    {
+        return this.isInitialized;
     }
 
     /**
      * Initialize the cipher.
      *
      * @param parameters The parameters required by the cipher.
+     *
+     * @throws UnsupportedCipherParametersException If unsupported parameters are supplied.
      */
-    public void initialize(
-        final EncryptionCipherParametersInterface parameters
-    ) {
-        this.iv = Bytes.toArray(parameters.iv());
+    public void initialize(final CipherParametersInterface parameters)
+    {
+        KeyInterface key = null;
 
-        switch (parameters.key().authenticationSecretBits()) {
+        if (parameters instanceof EncryptParametersInterface) {
+            EncryptParametersInterface encryptParameters =
+                (EncryptParametersInterface) parameters;
+
+            key = encryptParameters.key();
+
+            if (encryptParameters.iv().isPresent()) {
+                this.iv = Bytes.toArray(encryptParameters.iv().get());
+            }
+        } else if (parameters instanceof KeyInterface) {
+            key = (KeyInterface) parameters;
+        } else {
+            throw new UnsupportedCipherParametersException(this, parameters);
+        }
+
+        if (null == this.iv) {
+            this.iv = Bytes.toArray(this.randomSource().generate(16));
+        }
+
+        switch (key.authSecretBits()) {
             case 224:
                 this.blockMac = new HMac(new SHA224Digest());
                 this.finalMac = new HMac(new SHA224Digest());
@@ -80,24 +137,22 @@ public class EncryptionCipher implements EncryptionCipherInterface
                 this.finalMac = new HMac(new SHA256Digest());
         }
 
-        byte[] authenticationSecret = Bytes
-            .toArray(parameters.key().authenticationSecret());
-        KeyParameter authenticationKey = new KeyParameter(authenticationSecret);
+        byte[] authSecret = Bytes.toArray(key.authSecret());
+        KeyParameter authKey = new KeyParameter(authSecret);
 
-        this.finalMac.init(authenticationKey);
-        this.blockMac.init(authenticationKey);
+        this.finalMac.init(authKey);
+        this.blockMac.init(authKey);
 
-        Arrays.fill(authenticationSecret, (byte) 0);
+        Arrays.fill(authSecret, (byte) 0);
 
-        byte[] encryptionSecret = Bytes
-            .toArray(parameters.key().encryptionSecret());
+        byte[] encryptSecret = Bytes.toArray(key.encryptSecret());
 
         this.cipher.init(
             true,
-            new ParametersWithIV(new KeyParameter(encryptionSecret), this.iv)
+            new ParametersWithIV(new KeyParameter(encryptSecret), this.iv)
         );
 
-        Arrays.fill(encryptionSecret, (byte) 0);
+        Arrays.fill(encryptSecret, (byte) 0);
 
         this.isHeaderSent = false;
     }
@@ -109,6 +164,7 @@ public class EncryptionCipher implements EncryptionCipherInterface
      * @param inputSize The input size in bytes.
      *
      * @return The output size in bytes.
+     * @throws CipherStateException If the cipher is in an invalid state.
      */
     public int processOutputSize(final int inputSize)
     {
@@ -129,17 +185,14 @@ public class EncryptionCipher implements EncryptionCipherInterface
      * @param outputOffset The offset to which the output will be copied.
      *
      * @return The number of bytes produced.
-     * @exception IllegalStateException If the cipher isn't initialized.
-     * @exception OutputSizeException   If there isn't enough space in output.
+     * @throws CipherStateException If the cipher is in an invalid state.
+     * @throws OutputSizeException  If there isn't enough space in output.
      */
     public int process(
         final byte input,
         final byte[] output,
         final int outputOffset
-    ) throws
-        IllegalStateException,
-        OutputSizeException
-    {
+    ) {
         return this.process(new byte[]{input}, 0, 1, output, outputOffset);
     }
 
@@ -153,8 +206,8 @@ public class EncryptionCipher implements EncryptionCipherInterface
      * @param outputOffset The offset to which the output will be copied.
      *
      * @return The number of bytes produced.
-     * @exception IllegalStateException If the cipher isn't initialized.
-     * @exception OutputSizeException   If there isn't enough space in output.
+     * @throws CipherStateException If the cipher is in an invalid state.
+     * @throws OutputSizeException  If there isn't enough space in output.
      */
     public int process(
         final byte[] input,
@@ -162,10 +215,7 @@ public class EncryptionCipher implements EncryptionCipherInterface
         final int size,
         final byte[] output,
         final int outputOffset
-    ) throws
-        IllegalStateException,
-        OutputSizeException
-    {
+    ) {
         if (null == this.iv) {
             throw new IllegalStateException("Cipher not initialized.");
         }
@@ -210,6 +260,7 @@ public class EncryptionCipher implements EncryptionCipherInterface
      * @param inputSize The input size in bytes.
      *
      * @return The output size in bytes.
+     * @throws CipherStateException If the cipher is in an invalid state.
      */
     public int finalOutputSize(final int inputSize)
     {
@@ -231,11 +282,10 @@ public class EncryptionCipher implements EncryptionCipherInterface
      * @param outputOffset The offset to which the output will be copied.
      *
      * @return The number of bytes produced.
-     * @exception IllegalStateException      If the cipher isn't initialized.
-     * @exception OutputSizeException        If there isn't enough space in output.
+     * @throws CipherStateException If the cipher is in an invalid state.
+     * @throws OutputSizeException  If there isn't enough space in output.
      */
     public int finalize(final byte[] output, final int outputOffset)
-        throws IllegalStateException, OutputSizeException
     {
         if (null == this.iv) {
             throw new IllegalStateException("Cipher not initialized.");
@@ -363,9 +413,11 @@ public class EncryptionCipher implements EncryptionCipherInterface
         }
     }
 
+    final private RandomSourceInterface randomSource;
     final private PaddedBufferedBlockCipher cipher;
     private byte[] iv;
     private HMac blockMac;
     private HMac finalMac;
+    private boolean isInitialized;
     private boolean isHeaderSent;
 }

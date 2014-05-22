@@ -30,8 +30,8 @@ public class KeyFactoryTest
     {
         KeyInterface key = this.factory.createKey(this.bytes16, this.bytes28, "name", "description");
 
-        Assert.assertEquals(key.encryptionSecret(), this.bytes16);
-        Assert.assertEquals(key.authenticationSecret(), this.bytes28);
+        Assert.assertEquals(key.encryptSecret(), this.bytes16);
+        Assert.assertEquals(key.authSecret(), this.bytes28);
         Assert.assertEquals(key.name().get(), "name");
         Assert.assertEquals(key.description().get(), "description");
     }
@@ -41,8 +41,8 @@ public class KeyFactoryTest
     {
         KeyInterface key = this.factory.createKey(this.bytes16, this.bytes28, "name");
 
-        Assert.assertEquals(key.encryptionSecret(), this.bytes16);
-        Assert.assertEquals(key.authenticationSecret(), this.bytes28);
+        Assert.assertEquals(key.encryptSecret(), this.bytes16);
+        Assert.assertEquals(key.authSecret(), this.bytes28);
         Assert.assertEquals(key.name().get(), "name");
         Assert.assertFalse(key.description().isPresent());
     }
@@ -52,8 +52,8 @@ public class KeyFactoryTest
     {
         KeyInterface key = this.factory.createKey(this.bytes16, this.bytes28);
 
-        Assert.assertEquals(key.encryptionSecret(), this.bytes16);
-        Assert.assertEquals(key.authenticationSecret(), this.bytes28);
+        Assert.assertEquals(key.encryptSecret(), this.bytes16);
+        Assert.assertEquals(key.authSecret(), this.bytes28);
         Assert.assertFalse(key.name().isPresent());
         Assert.assertFalse(key.description().isPresent());
     }
