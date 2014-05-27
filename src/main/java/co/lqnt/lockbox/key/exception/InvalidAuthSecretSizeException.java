@@ -12,7 +12,8 @@ package co.lqnt.lockbox.key.exception;
 /**
  * The auth secret size is invalid.
  */
-final public class InvalidAuthSecretSizeException extends Exception
+final public class InvalidAuthSecretSizeException extends
+    InvalidKeyParameterException
 {
     /**
      * Construct a new invalid auth secret size exception.

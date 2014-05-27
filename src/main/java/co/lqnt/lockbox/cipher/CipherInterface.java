@@ -15,7 +15,7 @@ import co.lqnt.lockbox.cipher.exception.UnsupportedCipherParametersException;
 import co.lqnt.lockbox.cipher.parameters.CipherParametersInterface;
 
 /**
- * The interface implemented by key ciphers.
+ * The interface implemented by ciphers.
  */
 public interface CipherInterface
 {
@@ -27,7 +27,7 @@ public interface CipherInterface
     public boolean isInitialized();
 
     /**
-     * Initialize the cipher.
+     * Initialize this cipher.
      *
      * @param parameters The parameters required by the cipher.
      *

@@ -11,6 +11,7 @@ package co.lqnt.lockbox.key;
 
 import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
 import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidKeyParameterException;
 import com.google.common.base.Optional;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,15 +28,13 @@ public class Key implements KeyInterface
      * @param encryptSecret The encrypt secret.
      * @param authSecret    The auth secret.
      *
-     * @throws InvalidEncryptSecretSizeException If the encrypt secret is an invalid size.
-     * @throws InvalidAuthSecretSizeException    If the auth secret is an invalid size.
+     * @throws InvalidKeyParameterException If any of the supplied parameters are invalid.
      */
     public Key(
         final List<Byte> encryptSecret,
         final List<Byte> authSecret
     ) throws
-        InvalidEncryptSecretSizeException,
-        InvalidAuthSecretSizeException
+        InvalidKeyParameterException
     {
         this(encryptSecret, authSecret, null, null);
     }
@@ -47,16 +46,14 @@ public class Key implements KeyInterface
      * @param authSecret    The auth secret.
      * @param name          The name.
      *
-     * @throws InvalidEncryptSecretSizeException If the encrypt secret is an invalid size.
-     * @throws InvalidAuthSecretSizeException    If the auth secret is an invalid size.
+     * @throws InvalidKeyParameterException If any of the supplied parameters are invalid.
      */
     public Key(
         final List<Byte> encryptSecret,
         final List<Byte> authSecret,
         final String name
     ) throws
-        InvalidEncryptSecretSizeException,
-        InvalidAuthSecretSizeException
+        InvalidKeyParameterException
     {
         this(encryptSecret, authSecret, name, null);
     }
@@ -69,8 +66,7 @@ public class Key implements KeyInterface
      * @param name          The name.
      * @param description   The description.
      *
-     * @throws InvalidEncryptSecretSizeException If the encrypt secret is an invalid size.
-     * @throws InvalidAuthSecretSizeException    If the auth secret is an invalid size.
+     * @throws InvalidKeyParameterException If any of the supplied parameters are invalid.
      */
     public Key(
         final List<Byte> encryptSecret,
@@ -78,8 +74,7 @@ public class Key implements KeyInterface
         final String name,
         final String description
     ) throws
-        InvalidEncryptSecretSizeException,
-        InvalidAuthSecretSizeException
+        InvalidKeyParameterException
     {
         switch (encryptSecret.size()) {
             case 32:

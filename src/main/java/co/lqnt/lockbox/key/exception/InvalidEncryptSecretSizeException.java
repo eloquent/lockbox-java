@@ -12,7 +12,8 @@ package co.lqnt.lockbox.key.exception;
 /**
  * The encrypt secret size is invalid.
  */
-final public class InvalidEncryptSecretSizeException extends Exception
+final public class InvalidEncryptSecretSizeException extends
+    InvalidKeyParameterException
 {
     /**
      * Construct a new invalid encrypt secret size exception.

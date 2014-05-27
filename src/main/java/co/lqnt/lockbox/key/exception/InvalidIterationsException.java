@@ -12,7 +12,8 @@ package co.lqnt.lockbox.key.exception;
 /**
  * The number of iterations is invalid.
  */
-final public class InvalidIterationsException extends Exception
+final public class InvalidIterationsException extends
+    InvalidKeyParameterException
 {
     /**
      * Construct a new invalid iterations exception.

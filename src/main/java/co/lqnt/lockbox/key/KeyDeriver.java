@@ -9,9 +9,8 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
-import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
 import co.lqnt.lockbox.key.exception.InvalidIterationsException;
+import co.lqnt.lockbox.key.exception.InvalidKeyParameterException;
 import co.lqnt.lockbox.key.exception.InvalidSaltSizeException;
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
@@ -108,13 +107,13 @@ public class KeyDeriver implements KeyDeriverInterface
      * @param iterations  The number of hash iterations to use.
      *
      * @return The derived key.
-     * @throws InvalidIterationsException If the number of iterations is invalid.
+     * @throws InvalidKeyParameterException If any of the supplied parameters is invalid.
      */
     public DerivedKeyDataInterface deriveKeyFromPassword(
         final List<Character> password,
         final int iterations
     ) throws
-        InvalidIterationsException
+        InvalidKeyParameterException
     {
         return this.deriveKeyFromPassword(password, iterations, null, null);
     }
@@ -127,14 +126,14 @@ public class KeyDeriver implements KeyDeriverInterface
      * @param name        The name.
      *
      * @return The derived key.
-     * @throws InvalidIterationsException If the number of iterations is invalid.
+     * @throws InvalidKeyParameterException If any of the supplied parameters is invalid.
      */
     public DerivedKeyDataInterface deriveKeyFromPassword(
         final List<Character> password,
         final int iterations,
         final String name
     ) throws
-        InvalidIterationsException
+        InvalidKeyParameterException
     {
         return this.deriveKeyFromPassword(password, iterations, name, null);
     }
@@ -148,7 +147,7 @@ public class KeyDeriver implements KeyDeriverInterface
      * @param description The description.
      *
      * @return The derived key.
-     * @throws InvalidIterationsException If the number of iterations is invalid.
+     * @throws InvalidKeyParameterException If any of the supplied parameters is invalid.
      */
     public DerivedKeyDataInterface deriveKeyFromPassword(
         final List<Character> password,
@@ -156,27 +155,20 @@ public class KeyDeriver implements KeyDeriverInterface
         final String name,
         final String description
     ) throws
-        InvalidIterationsException
+        InvalidKeyParameterException
     {
         List<Byte> salt = this.randomSource().generate(64);
 
-        DerivedKeyData keyData;
-        try {
-            keyData = new DerivedKeyData(
-                this.deriveKeyFromPassword(
-                    password,
-                    iterations,
-                    salt,
-                    name,
-                    description
-                ),
-                salt
-            );
-        } catch (InvalidSaltSizeException e) {
-            throw new RuntimeException(e);
-        }
-
-        return keyData;
+        return new DerivedKeyData(
+            this.deriveKeyFromPassword(
+                password,
+                iterations,
+                salt,
+                name,
+                description
+            ),
+            salt
+        );
     }
 
     /**
@@ -187,16 +179,14 @@ public class KeyDeriver implements KeyDeriverInterface
      * @param salt        The salt to use.
      *
      * @return The derived key.
-     * @throws InvalidIterationsException If the number of iterations is invalid.
-     * @throws InvalidSaltSizeException   If the salt size is invalid.
+     * @throws InvalidKeyParameterException If any of the supplied parameters is invalid.
      */
     public KeyInterface deriveKeyFromPassword(
         final List<Character> password,
         final int iterations,
         final List<Byte> salt
     ) throws
-        InvalidIterationsException,
-        InvalidSaltSizeException
+        InvalidKeyParameterException
     {
         return this.deriveKeyFromPassword(
             password,
@@ -217,8 +207,7 @@ public class KeyDeriver implements KeyDeriverInterface
      * @param description The description.
      *
      * @return The derived key.
-     * @throws InvalidIterationsException If the number of iterations is invalid.
-     * @throws InvalidSaltSizeException   If the salt size is invalid.
+     * @throws InvalidKeyParameterException If any of the supplied parameters is invalid.
      */
     public KeyInterface deriveKeyFromPassword(
         final List<Character> password,
@@ -227,8 +216,7 @@ public class KeyDeriver implements KeyDeriverInterface
         final String name,
         final String description
     ) throws
-        InvalidIterationsException,
-        InvalidSaltSizeException
+        InvalidKeyParameterException
     {
         if (iterations < 1) {
             throw new InvalidIterationsException(iterations);
@@ -249,21 +237,12 @@ public class KeyDeriver implements KeyDeriverInterface
         Arrays.fill(passwordChars, '\u0000');
         Arrays.fill(passwordBytes, (byte) 0);
 
-        KeyInterface key;
-        try {
-            key = this.factory().createKey(
-                Bytes.asList(Arrays.copyOfRange(keyParameter.getKey(), 0, 32)),
-                Bytes.asList(Arrays.copyOfRange(keyParameter.getKey(), 32, 64)),
-                name,
-                description
-            );
-        } catch (InvalidEncryptSecretSizeException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidAuthSecretSizeException e) {
-            throw new RuntimeException(e);
-        }
-
-        return key;
+        return this.factory().createKey(
+            Bytes.asList(Arrays.copyOfRange(keyParameter.getKey(), 0, 32)),
+            Bytes.asList(Arrays.copyOfRange(keyParameter.getKey(), 32, 64)),
+            name,
+            description
+        );
     }
 
     static private KeyDeriver instance;

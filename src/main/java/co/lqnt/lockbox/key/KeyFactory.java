@@ -9,8 +9,7 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
-import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidKeyParameterException;
 import java.util.List;
 
 /**
@@ -39,15 +38,13 @@ public class KeyFactory implements KeyFactoryInterface
      * @param authSecret    The auth secret.
      *
      * @return The key.
-     * @throws InvalidEncryptSecretSizeException If the encrypt secret is an invalid size.
-     * @throws InvalidAuthSecretSizeException    If the auth secret is an invalid size.
+     * @throws InvalidKeyParameterException If any of the supplied parameters is invalid.
      */
     public KeyInterface createKey(
         final List<Byte> encryptSecret,
         final List<Byte> authSecret
     ) throws
-        InvalidEncryptSecretSizeException,
-        InvalidAuthSecretSizeException
+        InvalidKeyParameterException
     {
         return new Key(encryptSecret, authSecret);
     }
@@ -60,16 +57,14 @@ public class KeyFactory implements KeyFactoryInterface
      * @param name          The name.
      *
      * @return The key.
-     * @throws InvalidEncryptSecretSizeException If the encrypt secret is an invalid size.
-     * @throws InvalidAuthSecretSizeException    If the auth secret is an invalid size.
+     * @throws InvalidKeyParameterException If any of the supplied parameters is invalid.
      */
     public KeyInterface createKey(
         final List<Byte> encryptSecret,
         final List<Byte> authSecret,
         final String name
     ) throws
-        InvalidEncryptSecretSizeException,
-        InvalidAuthSecretSizeException
+        InvalidKeyParameterException
     {
         return new Key(encryptSecret, authSecret, name);
     }
@@ -83,8 +78,7 @@ public class KeyFactory implements KeyFactoryInterface
      * @param description   The description.
      *
      * @return The key.
-     * @throws InvalidEncryptSecretSizeException If the encrypt secret is an invalid size.
-     * @throws InvalidAuthSecretSizeException    If the auth secret is an invalid size.
+     * @throws InvalidKeyParameterException If any of the supplied parameters is invalid.
      */
     public KeyInterface createKey(
         final List<Byte> encryptSecret,
@@ -92,8 +86,7 @@ public class KeyFactory implements KeyFactoryInterface
         final String name,
         final String description
     ) throws
-        InvalidEncryptSecretSizeException,
-        InvalidAuthSecretSizeException
+        InvalidKeyParameterException
     {
         return new Key(encryptSecret, authSecret, name, description);
     }

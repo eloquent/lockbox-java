@@ -12,7 +12,7 @@ package co.lqnt.lockbox.key.exception;
 /**
  * The salt size is invalid.
  */
-final public class InvalidSaltSizeException extends Exception
+final public class InvalidSaltSizeException extends InvalidKeyParameterException
 {
     /**
      * Construct a new invalid salt size exception.

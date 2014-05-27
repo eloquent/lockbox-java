@@ -9,8 +9,7 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
-import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
+import co.lqnt.lockbox.key.exception.InvalidKeyParameterException;
 
 /**
  * The interface implemented by encryption key generators.
@@ -53,15 +52,13 @@ public interface KeyGeneratorInterface
      * @param authSecretBits    The size of the auth secret in bits.
      *
      * @return The generated key.
-     * @throws InvalidEncryptSecretSizeException If the requested encrypt secret size is invalid.
-     * @throws InvalidAuthSecretSizeException    If the requested auth secret size is invalid.
+     * @throws InvalidKeyParameterException If any of the supplied parameters is invalid.
      */
     public KeyInterface generateKey(
         final int encryptSecretBits,
         final int authSecretBits
     ) throws
-        InvalidEncryptSecretSizeException,
-        InvalidAuthSecretSizeException;
+        InvalidKeyParameterException;
 
     /**
      * Generate a new key.
@@ -72,8 +69,7 @@ public interface KeyGeneratorInterface
      * @param authSecretBits    The size of the auth secret in bits.
      *
      * @return The generated key.
-     * @throws InvalidEncryptSecretSizeException If the requested encrypt secret size is invalid.
-     * @throws InvalidAuthSecretSizeException    If the requested auth secret size is invalid.
+     * @throws InvalidKeyParameterException If any of the supplied parameters is invalid.
      */
     public KeyInterface generateKey(
         final String name,
@@ -81,6 +77,5 @@ public interface KeyGeneratorInterface
         final int encryptSecretBits,
         final int authSecretBits
     ) throws
-        InvalidEncryptSecretSizeException,
-        InvalidAuthSecretSizeException;
+        InvalidKeyParameterException;
 }

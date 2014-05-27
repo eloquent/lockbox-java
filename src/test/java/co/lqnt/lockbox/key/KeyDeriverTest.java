@@ -9,8 +9,6 @@
 
 package co.lqnt.lockbox.key;
 
-import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
-import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
 import co.lqnt.lockbox.key.exception.InvalidIterationsException;
 import co.lqnt.lockbox.key.exception.InvalidSaltSizeException;
 import co.lqnt.lockbox.random.RandomSourceInterface;
@@ -197,53 +195,6 @@ public class KeyDeriverTest
             10,
             Bytes.asList("1234567890123456".getBytes(Charset.forName("US-ASCII")))
         );
-    }
-
-    @Test(expectedExceptions = RuntimeException.class)
-    public void testDeriveKeyFromPasswordFailureGeneratedSaltSize() throws Throwable
-    {
-        Mockito.when(this.randomSource.generate(64))
-            .thenReturn(Bytes.asList("1234567890123456".getBytes(Charset.forName("US-ASCII"))));
-
-        this.deriver.deriveKeyFromPassword(Chars.asList("foobar".toCharArray()), 10);
-    }
-
-    @Test(expectedExceptions = RuntimeException.class)
-    public void testDeriveKeyFromPasswordFailureEncryptionSecretSize() throws Throwable
-    {
-        this.factory = Mockito.mock(KeyFactoryInterface.class);
-        this.deriver = new KeyDeriver(this.factory, this.pbeParametersGenerator, this.randomSource);
-        Mockito
-            .when(
-                this.factory.createKey(
-                    Mockito.anyListOf(Byte.class),
-                    Mockito.anyListOf(Byte.class),
-                    Mockito.anyString(),
-                    Mockito.anyString()
-                )
-            )
-            .thenThrow(new InvalidEncryptSecretSizeException(111));
-
-        this.deriver.deriveKeyFromPassword(Chars.asList("foobar".toCharArray()), 10);
-    }
-
-    @Test(expectedExceptions = RuntimeException.class)
-    public void testDeriveKeyFromPasswordFailureAuthenticationSecretSize() throws Throwable
-    {
-        this.factory = Mockito.mock(KeyFactoryInterface.class);
-        this.deriver = new KeyDeriver(this.factory, this.pbeParametersGenerator, this.randomSource);
-        Mockito
-            .when(
-                this.factory.createKey(
-                    Mockito.anyListOf(Byte.class),
-                    Mockito.anyListOf(Byte.class),
-                    Mockito.anyString(),
-                    Mockito.anyString()
-                )
-            )
-            .thenThrow(new InvalidAuthSecretSizeException(111));
-
-        this.deriver.deriveKeyFromPassword(Chars.asList("foobar".toCharArray()), 10);
     }
 
     @Test
