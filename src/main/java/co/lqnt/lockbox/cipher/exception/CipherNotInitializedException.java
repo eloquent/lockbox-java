@@ -36,6 +36,6 @@ final public class CipherNotInitializedException extends CipherStateException
         final CipherInterface cipher,
         final Throwable cause
     ) {
-        super(cipher, "The cipher is not initialized finalized.", cause);
+        super(cipher, "The cipher is not initialized.", cause);
     }
 }
