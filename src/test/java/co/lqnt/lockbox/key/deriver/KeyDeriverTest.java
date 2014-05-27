@@ -10,8 +10,6 @@
 package co.lqnt.lockbox.key.deriver;
 
 import co.lqnt.lockbox.key.KeyInterface;
-import co.lqnt.lockbox.key.deriver.KeyDeriver;
-import co.lqnt.lockbox.key.deriver.DerivedKeyDataInterface;
 import co.lqnt.lockbox.key.factory.KeyFactoryInterface;
 import co.lqnt.lockbox.key.factory.KeyFactory;
 import co.lqnt.lockbox.key.exception.InvalidIterationsException;

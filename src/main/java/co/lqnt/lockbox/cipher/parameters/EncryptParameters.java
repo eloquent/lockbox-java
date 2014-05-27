@@ -12,7 +12,6 @@ package co.lqnt.lockbox.cipher.parameters;
 import co.lqnt.lockbox.key.KeyInterface;
 import com.google.common.base.Optional;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**

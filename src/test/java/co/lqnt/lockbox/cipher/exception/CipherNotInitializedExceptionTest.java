@@ -42,5 +42,5 @@ public class CipherNotInitializedExceptionTest
         Assert.assertNull(exception.getCause());
     }
     
-    private CipherInterface cipher;
+    final private CipherInterface cipher;
 }

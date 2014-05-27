@@ -10,7 +10,6 @@
 package co.lqnt.lockbox.key.generator;
 
 import co.lqnt.lockbox.key.KeyInterface;
-import co.lqnt.lockbox.key.generator.KeyGenerator;
 import co.lqnt.lockbox.key.factory.KeyFactoryInterface;
 import co.lqnt.lockbox.key.factory.KeyFactory;
 import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;

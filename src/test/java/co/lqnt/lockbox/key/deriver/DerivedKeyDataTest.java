@@ -11,7 +11,6 @@ package co.lqnt.lockbox.key.deriver;
 
 import co.lqnt.lockbox.key.Key;
 import co.lqnt.lockbox.key.KeyInterface;
-import co.lqnt.lockbox.key.deriver.DerivedKeyData;
 import com.google.common.primitives.Bytes;
 import java.nio.charset.Charset;
 import java.util.List;

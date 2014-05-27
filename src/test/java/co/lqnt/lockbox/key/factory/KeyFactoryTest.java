@@ -10,7 +10,6 @@
 package co.lqnt.lockbox.key.factory;
 
 import co.lqnt.lockbox.key.KeyInterface;
-import co.lqnt.lockbox.key.factory.KeyFactory;
 import com.google.common.primitives.Bytes;
 import java.nio.charset.Charset;
 import java.util.List;
