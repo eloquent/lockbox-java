@@ -7,8 +7,12 @@
  * that was distributed with this source code.
  */
 
-package co.lqnt.lockbox.key;
+package co.lqnt.lockbox.key.generator;
 
+import co.lqnt.lockbox.key.KeyInterface;
+import co.lqnt.lockbox.key.generator.KeyGenerator;
+import co.lqnt.lockbox.key.factory.KeyFactoryInterface;
+import co.lqnt.lockbox.key.factory.KeyFactory;
 import co.lqnt.lockbox.key.exception.InvalidAuthSecretSizeException;
 import co.lqnt.lockbox.key.exception.InvalidEncryptSecretSizeException;
 import co.lqnt.lockbox.random.RandomSourceInterface;

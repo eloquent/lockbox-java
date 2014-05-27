@@ -7,8 +7,11 @@
  * that was distributed with this source code.
  */
 
-package co.lqnt.lockbox.key;
+package co.lqnt.lockbox.key.deriver;
 
+import co.lqnt.lockbox.key.KeyInterface;
+import co.lqnt.lockbox.key.factory.KeyFactory;
+import co.lqnt.lockbox.key.factory.KeyFactoryInterface;
 import co.lqnt.lockbox.key.exception.InvalidIterationsException;
 import co.lqnt.lockbox.key.exception.InvalidKeyParameterException;
 import co.lqnt.lockbox.key.exception.InvalidSaltSizeException;

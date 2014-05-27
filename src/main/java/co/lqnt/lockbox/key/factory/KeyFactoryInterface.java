@@ -7,30 +7,17 @@
  * that was distributed with this source code.
  */
 
-package co.lqnt.lockbox.key;
+package co.lqnt.lockbox.key.factory;
 
+import co.lqnt.lockbox.key.KeyInterface;
 import co.lqnt.lockbox.key.exception.InvalidKeyParameterException;
 import java.util.List;
 
 /**
- * Creates encryption keys.
+ * The interface implemented by encryption key factories.
  */
-public class KeyFactory implements KeyFactoryInterface
+public interface KeyFactoryInterface
 {
-    /**
-     * Get the static instance of this factory.
-     *
-     * @return The static factory.
-     */
-    static public KeyFactory instance()
-    {
-        if (null == KeyFactory.instance) {
-            KeyFactory.instance = new KeyFactory();
-        }
-
-        return KeyFactory.instance;
-    }
-
     /**
      * Create a new key from existing key data.
      *
@@ -44,10 +31,7 @@ public class KeyFactory implements KeyFactoryInterface
         final List<Byte> encryptSecret,
         final List<Byte> authSecret
     ) throws
-        InvalidKeyParameterException
-    {
-        return new Key(encryptSecret, authSecret);
-    }
+        InvalidKeyParameterException;
 
     /**
      * Create a new key from existing key data.
@@ -64,10 +48,7 @@ public class KeyFactory implements KeyFactoryInterface
         final List<Byte> authSecret,
         final String name
     ) throws
-        InvalidKeyParameterException
-    {
-        return new Key(encryptSecret, authSecret, name);
-    }
+        InvalidKeyParameterException;
 
     /**
      * Create a new key from existing key data.
@@ -86,10 +67,5 @@ public class KeyFactory implements KeyFactoryInterface
         final String name,
         final String description
     ) throws
-        InvalidKeyParameterException
-    {
-        return new Key(encryptSecret, authSecret, name, description);
-    }
-
-    static private KeyFactory instance;
+        InvalidKeyParameterException;
 }

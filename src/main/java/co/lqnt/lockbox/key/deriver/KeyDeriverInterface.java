@@ -7,8 +7,9 @@
  * that was distributed with this source code.
  */
 
-package co.lqnt.lockbox.key;
+package co.lqnt.lockbox.key.deriver;
 
+import co.lqnt.lockbox.key.KeyInterface;
 import co.lqnt.lockbox.key.exception.InvalidKeyParameterException;
 import java.util.List;
 
