@@ -115,6 +115,28 @@ public class KeyTest
         new Key(this.bytes16, Bytes.asList("foo".getBytes(Charset.forName("US-ASCII"))));
     }
 
+    @Test
+    public void testErase() throws Throwable
+    {
+        this.key = new Key(this.bytes16, this.bytes28, "name", "description");
+        this.key.erase();
+        List<Byte> expectedEncryptSecret =
+            Bytes.asList("\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0".getBytes(Charset.forName("US-ASCII")));
+        List<Byte> expectedAuthSecret =
+            Bytes.asList(
+                "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0".getBytes(Charset.forName("US-ASCII"))
+            );
+
+        Assert.assertEquals(this.key.encryptSecret(), expectedEncryptSecret);
+        Assert.assertEquals(this.key.encryptSecretBytes(), 16);
+        Assert.assertEquals(this.key.encryptSecretBits(), 128);
+        Assert.assertEquals(this.key.authSecret(), expectedAuthSecret);
+        Assert.assertEquals(this.key.authSecretBytes(), 28);
+        Assert.assertEquals(this.key.authSecretBits(), 224);
+        Assert.assertFalse(this.key.name().isPresent());
+        Assert.assertFalse(this.key.description().isPresent());
+    }
+
     private Key key;
     final private List<Byte> bytes16;
     final private List<Byte> bytes24;

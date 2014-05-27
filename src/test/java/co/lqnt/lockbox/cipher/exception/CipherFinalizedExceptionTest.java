@@ -27,7 +27,7 @@ public class CipherFinalizedExceptionTest
         Exception cause = new Exception();
         CipherFinalizedException exception = new CipherFinalizedException(this.cipher, cause);
 
-        Assert.assertSame(this.cipher, exception.cipher());
+        Assert.assertSame(exception.cipher(), this.cipher);
         Assert.assertEquals(exception.getMessage(), "The cipher is already finalized.");
         Assert.assertSame(exception.getCause(), cause);
     }
@@ -37,7 +37,7 @@ public class CipherFinalizedExceptionTest
     {
         CipherFinalizedException exception = new CipherFinalizedException(this.cipher);
 
-        Assert.assertSame(this.cipher, exception.cipher());
+        Assert.assertSame(exception.cipher(), this.cipher);
         Assert.assertEquals(exception.getMessage(), "The cipher is already finalized.");
         Assert.assertNull(exception.getCause());
     }

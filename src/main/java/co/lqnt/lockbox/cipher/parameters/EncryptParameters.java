@@ -24,6 +24,17 @@ public class EncryptParameters implements EncryptParametersInterface
      * Construct a new encrypt parameters instance.
      *
      * @param key The key to use.
+     */
+    public EncryptParameters(final KeyInterface key)
+    {
+        this.key = key;
+        this.iv = null;
+    }
+    
+    /**
+     * Construct a new encrypt parameters instance.
+     *
+     * @param key The key to use.
      * @param iv  The initialization vector to use.
      */
     public EncryptParameters(
@@ -64,10 +75,9 @@ public class EncryptParameters implements EncryptParametersInterface
     public void erase()
     {
         this.key().erase();
-
-        Collections.fill(this.iv, (byte) 0);
+        this.iv = null;
     }
 
     final private KeyInterface key;
-    final private List<Byte> iv;
+    private List<Byte> iv;
 }

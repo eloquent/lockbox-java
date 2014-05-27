@@ -35,7 +35,8 @@ public class UnsupportedCipherParametersExceptionTest
         Exception cause = new Exception();
         UnsupportedCipherParametersException exception = new UnsupportedCipherParametersException(this.cipher, this.parameters, cause);
 
-        Assert.assertSame(this.cipher, exception.cipher());
+        Assert.assertSame(exception.cipher(), this.cipher);
+        Assert.assertSame(exception.parameters(), this.parameters);
         Assert.assertEquals(
             exception.getMessage(),
             "Cipher of type " +
@@ -52,7 +53,8 @@ public class UnsupportedCipherParametersExceptionTest
     {
         UnsupportedCipherParametersException exception = new UnsupportedCipherParametersException(this.cipher, this.parameters);
 
-        Assert.assertSame(this.cipher, exception.cipher());
+        Assert.assertSame(exception.cipher(), this.cipher);
+        Assert.assertSame(exception.parameters(), this.parameters);
         Assert.assertEquals(
             exception.getMessage(),
             "Cipher of type " +

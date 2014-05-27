@@ -27,7 +27,7 @@ public class CipherNotInitializedExceptionTest
         Exception cause = new Exception();
         CipherNotInitializedException exception = new CipherNotInitializedException(this.cipher, cause);
 
-        Assert.assertSame(this.cipher, exception.cipher());
+        Assert.assertSame(exception.cipher(), this.cipher);
         Assert.assertEquals(exception.getMessage(), "The cipher is not initialized.");
         Assert.assertSame(exception.getCause(), cause);
     }
@@ -37,7 +37,7 @@ public class CipherNotInitializedExceptionTest
     {
         CipherNotInitializedException exception = new CipherNotInitializedException(this.cipher);
 
-        Assert.assertSame(this.cipher, exception.cipher());
+        Assert.assertSame(exception.cipher(), this.cipher);
         Assert.assertEquals(exception.getMessage(), "The cipher is not initialized.");
         Assert.assertNull(exception.getCause());
     }
