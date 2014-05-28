@@ -9,14 +9,21 @@
 
 package co.lqnt.lockbox.cipher;
 
+import co.lqnt.lockbox.cipher.exception.CipherFinalizedException;
+import co.lqnt.lockbox.cipher.exception.CipherNotInitializedException;
 import co.lqnt.lockbox.cipher.exception.CipherStateException;
 import co.lqnt.lockbox.cipher.exception.OutputSizeException;
 import co.lqnt.lockbox.cipher.exception.UnsupportedCipherParametersException;
 import co.lqnt.lockbox.cipher.parameters.CipherParametersInterface;
 import co.lqnt.lockbox.cipher.parameters.EncryptParametersInterface;
+import co.lqnt.lockbox.cipher.result.CipherResultInterface;
+import co.lqnt.lockbox.cipher.result.CipherResultType;
+import co.lqnt.lockbox.cipher.result.factory.CipherResultFactory;
+import co.lqnt.lockbox.cipher.result.factory.CipherResultFactoryInterface;
 import co.lqnt.lockbox.key.KeyInterface;
 import co.lqnt.lockbox.random.RandomSourceInterface;
 import co.lqnt.lockbox.random.SecureRandom;
+import com.google.common.base.Optional;
 import com.google.common.primitives.Bytes;
 import java.util.Arrays;
 import org.bouncycastle.crypto.DataLengthException;
@@ -43,24 +50,28 @@ public class EncryptCipher implements CipherInterface
      */
     public EncryptCipher()
     {
-        this(SecureRandom.instance());
+        this(SecureRandom.instance(), CipherResultFactory.instance());
     }
 
     /**
      * Create a new encrypt cipher.
      *
      * @param randomSource The random source to use.
+     * @param resultFactory The result factory to use.
      */
-    public EncryptCipher(final RandomSourceInterface randomSource)
-    {
+    public EncryptCipher(
+        final RandomSourceInterface randomSource,
+        final CipherResultFactoryInterface resultFactory
+    ) {
         this.randomSource = randomSource;
+        this.resultFactory = resultFactory;
         this.cipher = new PaddedBufferedBlockCipher(
             new CBCBlockCipher(new AESEngine()),
             new PKCS7Padding()
         );
-        this.blockMac = null;
-        this.finalMac = null;
-        this.isInitialized = this.isHeaderSent = false;
+        this.blockMac = this.finalMac = null;
+        this.isInitialized = this.isHeaderSent = this.isFinalized = false;
+        this.result = null;
     }
 
     /**
@@ -71,6 +82,16 @@ public class EncryptCipher implements CipherInterface
     public RandomSourceInterface randomSource()
     {
         return this.randomSource;
+    }
+
+    /**
+     * Get the result factory.
+     *
+     * @return The result factory.
+     */
+    public CipherResultFactoryInterface resultFactory()
+    {
+        return this.resultFactory;
     }
 
     /**
@@ -108,6 +129,8 @@ public class EncryptCipher implements CipherInterface
         } else {
             throw new UnsupportedCipherParametersException(this, parameters);
         }
+
+        this.isInitialized = true;
 
         if (null == this.iv) {
             this.iv = Bytes.toArray(this.randomSource().generate(16));
@@ -168,6 +191,13 @@ public class EncryptCipher implements CipherInterface
      */
     public int processOutputSize(final int inputSize)
     {
+        if (!this.isInitialized) {
+            throw new CipherNotInitializedException(this);
+        }
+        if (this.isFinalized) {
+            throw new CipherFinalizedException(this);
+        }
+
         int size = this.cipher.getUpdateOutputSize(inputSize) / 16 * 18;
 
         if (size > 0 && !this.isHeaderSent) {
@@ -216,8 +246,11 @@ public class EncryptCipher implements CipherInterface
         final byte[] output,
         final int outputOffset
     ) {
-        if (null == this.iv) {
-            throw new IllegalStateException("Cipher not initialized.");
+        if (!this.isInitialized) {
+            throw new CipherNotInitializedException(this);
+        }
+        if (this.isFinalized) {
+            throw new CipherFinalizedException(this);
         }
 
         int outputSize = this.processOutputSize(size);
@@ -264,6 +297,13 @@ public class EncryptCipher implements CipherInterface
      */
     public int finalOutputSize(final int inputSize)
     {
+        if (!this.isInitialized) {
+            throw new CipherNotInitializedException(this);
+        }
+        if (this.isFinalized) {
+            throw new CipherFinalizedException(this);
+        }
+
         int size = this.cipher.getOutputSize(inputSize) / 16 * 18;
 
         if (this.isHeaderSent) {
@@ -287,8 +327,11 @@ public class EncryptCipher implements CipherInterface
      */
     public int finalize(final byte[] output, final int outputOffset)
     {
-        if (null == this.iv) {
-            throw new IllegalStateException("Cipher not initialized.");
+        if (!this.isInitialized) {
+            throw new CipherNotInitializedException(this);
+        }
+        if (this.isFinalized) {
+            throw new CipherFinalizedException(this);
         }
 
         int outputSize = this.finalOutputSize(0);
@@ -298,6 +341,8 @@ public class EncryptCipher implements CipherInterface
                 outputSize
             );
         }
+
+        this.isFinalized = true;
 
         int ciphertextOffset = outputOffset +
             this.handleHeader(output, outputOffset, outputSize);
@@ -339,7 +384,75 @@ public class EncryptCipher implements CipherInterface
             mac.length
         );
 
+        this.result = this.resultFactory()
+            .createResult(CipherResultType.SUCCESS);
+
         return outputSize;
+    }
+
+    /**
+     * Finalize the cipher output.
+     *
+     * @param input        The input byte.
+     * @param output       The space for any output that might be produced.
+     * @param outputOffset The offset to which the output will be copied.
+     *
+     * @return The number of bytes produced.
+     * @throws CipherStateException If the cipher is in an invalid state.
+     * @throws OutputSizeException  If there isn't enough space in output.
+     */
+    public int finalize(
+        final byte input,
+        final byte[] output,
+        final int outputOffset
+    ) {
+        return this.finalize(new byte[]{input}, 0, 1, output, outputOffset);
+    }
+
+    /**
+     * Finalize the cipher output.
+     *
+     * @param input        The input byte array.
+     * @param inputOffset  The offset at which the input data starts.
+     * @param size         The number of bytes to be read from the input array.
+     * @param output       The space for any output that might be produced.
+     * @param outputOffset The offset to which the output will be copied.
+     *
+     * @return The number of bytes produced.
+     * @throws CipherStateException If the cipher is in an invalid state.
+     * @throws OutputSizeException  If there isn't enough space in output.
+     */
+    public int finalize(
+        final byte[] input,
+        final int inputOffset,
+        final int size,
+        final byte[] output,
+        final int outputOffset
+    ) {
+        int outputSize =
+            this.process(input, inputOffset, size, output, outputOffset);
+
+        return outputSize + this.finalize(output, outputOffset + outputSize);
+    }
+
+    /**
+     * Returns true if this cipher is finalized.
+     *
+     * @return True if finalized.
+     */
+    public boolean isFinalized()
+    {
+        return this.isFinalized;
+    }
+
+    /**
+     * Get the result.
+     *
+     * @return The result.
+     */
+    public Optional<CipherResultInterface> result()
+    {
+        return Optional.fromNullable(this.result);
     }
 
     /**
@@ -348,7 +461,11 @@ public class EncryptCipher implements CipherInterface
     public void reset()
     {
         this.cipher.reset();
-        this.isHeaderSent = false;
+        if (null != this.finalMac) {
+            this.finalMac.reset();
+        }
+        this.isHeaderSent = this.isFinalized = false;
+        this.result = null;
     }
 
     /**
@@ -414,10 +531,13 @@ public class EncryptCipher implements CipherInterface
     }
 
     final private RandomSourceInterface randomSource;
+    final private CipherResultFactoryInterface resultFactory;
     final private PaddedBufferedBlockCipher cipher;
     private byte[] iv;
     private HMac blockMac;
     private HMac finalMac;
     private boolean isInitialized;
     private boolean isHeaderSent;
+    private boolean isFinalized;
+    private CipherResultInterface result;
 }

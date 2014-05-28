@@ -13,6 +13,8 @@ import co.lqnt.lockbox.cipher.exception.CipherStateException;
 import co.lqnt.lockbox.cipher.exception.OutputSizeException;
 import co.lqnt.lockbox.cipher.exception.UnsupportedCipherParametersException;
 import co.lqnt.lockbox.cipher.parameters.CipherParametersInterface;
+import co.lqnt.lockbox.cipher.result.CipherResultInterface;
+import com.google.common.base.Optional;
 
 /**
  * The interface implemented by ciphers.
@@ -106,6 +108,58 @@ public interface CipherInterface
      * @throws OutputSizeException  If there isn't enough space in output.
      */
     public int finalize(final byte[] output, final int outputOffset);
+
+    /**
+     * Finalize the cipher output.
+     *
+     * @param input        The input byte.
+     * @param output       The space for any output that might be produced.
+     * @param outputOffset The offset to which the output will be copied.
+     *
+     * @return The number of bytes produced.
+     * @throws CipherStateException If the cipher is in an invalid state.
+     * @throws OutputSizeException  If there isn't enough space in output.
+     */
+    public int finalize(
+        final byte input,
+        final byte[] output,
+        final int outputOffset
+    );
+
+    /**
+     * Finalize the cipher output.
+     *
+     * @param input        The input byte array.
+     * @param inputOffset  The offset at which the input data starts.
+     * @param size         The number of bytes to be read from the input array.
+     * @param output       The space for any output that might be produced.
+     * @param outputOffset The offset to which the output will be copied.
+     *
+     * @return The number of bytes produced.
+     * @throws CipherStateException If the cipher is in an invalid state.
+     * @throws OutputSizeException  If there isn't enough space in output.
+     */
+    public int finalize(
+        final byte[] input,
+        final int inputOffset,
+        final int size,
+        final byte[] output,
+        final int outputOffset
+    );
+
+    /**
+     * Returns true if this cipher is finalized.
+     *
+     * @return True if finalized.
+     */
+    public boolean isFinalized();
+
+    /**
+     * Get the result.
+     *
+     * @return The result.
+     */
+    public Optional<CipherResultInterface> result();
 
     /**
      * Reset the cipher to its state after the last initialize() call.
