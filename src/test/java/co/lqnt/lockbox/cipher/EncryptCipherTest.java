@@ -40,6 +40,7 @@ public class EncryptCipherTest
         this.key = new Key(this.bytes16, this.bytes28);
         this.parameters = new EncryptParameters(this.key, this.bytes16);
         this.parametersDefaults = new EncryptParameters(this.key);
+        this.parametersInvalid = Mockito.mock(CipherParametersInterface.class);
         this.base64Url = BaseEncoding.base64Url().omitPadding();
         
         Mockito.when(this.randomSource.generate(16)).thenReturn(this.bytes16);
@@ -80,9 +81,7 @@ public class EncryptCipherTest
     @Test(expectedExceptions = UnsupportedCipherParametersException.class)
     public void testInitializeUnsupported()
     {
-        CipherParametersInterface parameters = Mockito.mock(CipherParametersInterface.class);
-        
-        this.cipher.initialize(parameters);
+        this.cipher.initialize(this.parametersInvalid);
     }
 
     @Test
@@ -102,6 +101,120 @@ public class EncryptCipherTest
         Assert.assertSame(this.cipher.result().get().type(), CipherResultType.SUCCESS);
     }
 
+    @Test
+    public void testCipherWithKeyOnlyParameters()
+    {
+        this.cipher.initialize(this.parametersDefaults);
+        byte[] input = "foobarbazquxdoomsplat".getBytes(Charset.forName("US-ASCII"));
+        byte[] output = new byte[this.cipher.finalOutputSize(input.length)];
+        this.cipher.finalize(input, 0, input.length, output, 0);
+        
+        Assert.assertEquals(
+            this.base64Url.encode(output),
+            "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
+        );
+        Assert.assertTrue(this.cipher.isFinalized());
+        Assert.assertTrue(this.cipher.result().isPresent());
+        Assert.assertSame(this.cipher.result().get().type(), CipherResultType.SUCCESS);
+    }
+
+    @Test
+    public void testCipherWithKeyOnly()
+    {
+        this.cipher.initialize(this.key);
+        byte[] input = "foobarbazquxdoomsplat".getBytes(Charset.forName("US-ASCII"));
+        byte[] output = new byte[this.cipher.finalOutputSize(input.length)];
+        this.cipher.finalize(input, 0, input.length, output, 0);
+        
+        Assert.assertEquals(
+            this.base64Url.encode(output),
+            "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
+        );
+        Assert.assertTrue(this.cipher.isFinalized());
+        Assert.assertTrue(this.cipher.result().isPresent());
+        Assert.assertSame(this.cipher.result().get().type(), CipherResultType.SUCCESS);
+    }
+
+    @Test
+    public void testCipherEmpty()
+    {
+        this.cipher.initialize(this.parameters);
+        byte[] output = new byte[this.cipher.finalOutputSize(0)];
+        this.cipher.finalize(output, 0);
+        
+        Assert.assertEquals(
+            this.base64Url.encode(output),
+            "AQExMjM0NTY3ODkwMTIzNDU2BsV8no6a9yLYUT6rbu2PdNC4LItQ9m-F9dQ65M-pun4OnZkLrHT8zDDw0sE4Dg"
+        );
+        Assert.assertTrue(this.cipher.isFinalized());
+        Assert.assertTrue(this.cipher.result().isPresent());
+        Assert.assertSame(this.cipher.result().get().type(), CipherResultType.SUCCESS);
+    }
+
+    @Test
+    public void testCipherByteByByte()
+    {
+        this.cipher.initialize(this.parameters);
+        byte[] input = "foobarbazquxdoomsplat".getBytes(Charset.forName("US-ASCII"));
+        byte[] output = new byte[this.cipher.finalOutputSize(input.length)];
+        int outputOffset = 0;
+        for (int i = 0; i < input.length; i++) {
+            outputOffset += this.cipher.process(input[i], output, outputOffset);
+        }
+        this.cipher.finalize(output, outputOffset);
+        
+        Assert.assertEquals(
+            this.base64Url.encode(output),
+            "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
+        );
+        Assert.assertTrue(this.cipher.isFinalized());
+        Assert.assertTrue(this.cipher.result().isPresent());
+        Assert.assertSame(this.cipher.result().get().type(), CipherResultType.SUCCESS);
+    }
+
+    @Test
+    public void testCipherWithSmallPackets()
+    {
+        this.cipher.initialize(this.parameters);
+        byte[] output = new byte[this.cipher.finalOutputSize(21)];
+        int outputOffset = 0;
+        outputOffset += this.cipher.process("foo".getBytes(Charset.forName("US-ASCII")), 0, 3, output, outputOffset);
+        outputOffset += this.cipher.process("bar".getBytes(Charset.forName("US-ASCII")), 0, 3, output, outputOffset);
+        outputOffset += this.cipher.process("baz".getBytes(Charset.forName("US-ASCII")), 0, 3, output, outputOffset);
+        outputOffset += this.cipher.process("qux".getBytes(Charset.forName("US-ASCII")), 0, 3, output, outputOffset);
+        outputOffset += this.cipher.process("dooms".getBytes(Charset.forName("US-ASCII")), 0, 5, output, outputOffset);
+        outputOffset += this.cipher.process("plat".getBytes(Charset.forName("US-ASCII")), 0, 4, output, outputOffset);
+        this.cipher.finalize(output, outputOffset);
+        
+        Assert.assertEquals(
+            this.base64Url.encode(output),
+            "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
+        );
+        Assert.assertTrue(this.cipher.isFinalized());
+        Assert.assertTrue(this.cipher.result().isPresent());
+        Assert.assertSame(this.cipher.result().get().type(), CipherResultType.SUCCESS);
+    }
+
+    @Test
+    public void testCipherBlockByBlock()
+    {
+        this.cipher.initialize(this.parameters);
+        byte[] input = "foobarbazquxdoom".getBytes(Charset.forName("US-ASCII"));
+        byte[] output = new byte[this.cipher.finalOutputSize(input.length * 2)];
+        int outputOffset = 0;
+        outputOffset += this.cipher.process(input, 0, input.length, output, outputOffset);
+        outputOffset += this.cipher.process(input, 0, input.length, output, outputOffset);
+        this.cipher.finalize(output, outputOffset);
+        
+        Assert.assertEquals(
+            this.base64Url.encode(output),
+            "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARu0_Bk3cPXHsLggdoFLPnlwR29pd_lX36Diz3sv2v6sIsAmdbSuDnDnVctQhnxXOgECTCSb8G-xnE_kmnhWk432g"
+        );
+        Assert.assertTrue(this.cipher.isFinalized());
+        Assert.assertTrue(this.cipher.result().isPresent());
+        Assert.assertSame(this.cipher.result().get().type(), CipherResultType.SUCCESS);
+    }
+
     private EncryptCipher cipher;
     final private RandomSourceInterface randomSource;
     final private CipherResultFactoryInterface resultFactory;
@@ -110,5 +223,6 @@ public class EncryptCipherTest
     final private KeyInterface key;
     final private CipherParametersInterface parameters;
     final private CipherParametersInterface parametersDefaults;
+    final private CipherParametersInterface parametersInvalid;
     final private BaseEncoding base64Url;
 }

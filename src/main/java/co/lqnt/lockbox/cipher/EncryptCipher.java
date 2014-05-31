@@ -200,7 +200,7 @@ public class EncryptCipher implements CipherInterface
 
         int size = this.cipher.getUpdateOutputSize(inputSize) / 16 * 18;
 
-        if (size > 0 && !this.isHeaderSent) {
+        if (!this.isHeaderSent) {
             size += 18;
         }
 
@@ -246,13 +246,6 @@ public class EncryptCipher implements CipherInterface
         final byte[] output,
         final int outputOffset
     ) {
-        if (!this.isInitialized) {
-            throw new CipherNotInitializedException(this);
-        }
-        if (this.isFinalized) {
-            throw new CipherFinalizedException(this);
-        }
-
         int outputSize = this.processOutputSize(size);
         if (outputSize > output.length - outputOffset) {
             throw new OutputSizeException(
@@ -262,7 +255,7 @@ public class EncryptCipher implements CipherInterface
         }
 
         int ciphertextOffset = outputOffset +
-            this.handleHeader(output, outputOffset, outputSize);
+            this.handleHeader(output, outputOffset);
 
         this.cipher.processBytes(
             input,
@@ -327,13 +320,6 @@ public class EncryptCipher implements CipherInterface
      */
     public int finalize(final byte[] output, final int outputOffset)
     {
-        if (!this.isInitialized) {
-            throw new CipherNotInitializedException(this);
-        }
-        if (this.isFinalized) {
-            throw new CipherFinalizedException(this);
-        }
-
         int outputSize = this.finalOutputSize(0);
         if (outputSize > output.length - outputOffset) {
             throw new OutputSizeException(
@@ -345,7 +331,7 @@ public class EncryptCipher implements CipherInterface
         this.isFinalized = true;
 
         int ciphertextOffset = outputOffset +
-            this.handleHeader(output, outputOffset, outputSize);
+            this.handleHeader(output, outputOffset);
 
         try {
             this.cipher.doFinal(output, ciphertextOffset);
@@ -473,33 +459,26 @@ public class EncryptCipher implements CipherInterface
      *
      * @param output       The space for any output that might be produced.
      * @param outputOffset The offset to which the output will be copied.
-     * @param outputSize   The length of output to be written.
      *
      * @return The number of bytes of header data written.
      */
     private int handleHeader(
         final byte[] output,
-        final int outputOffset,
-        final int outputSize
+        final int outputOffset
     ) {
-        int size;
-        if (outputSize > 0 && !this.isHeaderSent) {
-            size = 18;
-        } else {
-            size = 0;
+        if (this.isHeaderSent) {
+            return 0;
         }
 
-        if (output.length < outputOffset + outputSize) {
+        if (output.length < outputOffset + 18) {
             throw new DataLengthException();
         }
 
-        if (outputSize > 0 && !this.isHeaderSent) {
-            output[outputOffset] = output[outputOffset + 1] = 1;
-            System.arraycopy(this.iv, 0, output, outputOffset + 2, 16);
-            this.finalMac.update(output, outputOffset, 18);
-        }
+        output[outputOffset] = output[outputOffset + 1] = 1;
+        System.arraycopy(this.iv, 0, output, outputOffset + 2, 16);
+        this.finalMac.update(output, outputOffset, 18);
 
-        return size;
+        return 18;
     }
 
     /**
@@ -525,7 +504,7 @@ public class EncryptCipher implements CipherInterface
 
             System.arraycopy(mac, 0, output, (18 * i) + 16 + offset, 2);
             if (i > 0) {
-                System.arraycopy(output, 16 * i, output, (18 * i) + offset, 16);
+                System.arraycopy(output, (16 * i) + offset, output, (18 * i) + offset, 16);
             }
         }
     }
