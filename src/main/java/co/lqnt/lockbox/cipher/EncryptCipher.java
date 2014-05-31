@@ -26,7 +26,7 @@ import co.lqnt.lockbox.random.SecureRandom;
 import com.google.common.base.Optional;
 import com.google.common.primitives.Bytes;
 import java.util.Arrays;
-import org.bouncycastle.crypto.DataLengthException;
+import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.digests.SHA224Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -56,22 +56,21 @@ public class EncryptCipher implements CipherInterface
     /**
      * Create a new encrypt cipher.
      *
-     * @param randomSource The random source to use.
+     * @param randomSource  The random source to use.
      * @param resultFactory The result factory to use.
      */
     public EncryptCipher(
         final RandomSourceInterface randomSource,
         final CipherResultFactoryInterface resultFactory
     ) {
-        this.randomSource = randomSource;
-        this.resultFactory = resultFactory;
-        this.cipher = new PaddedBufferedBlockCipher(
-            new CBCBlockCipher(new AESEngine()),
-            new PKCS7Padding()
+        this(
+            randomSource,
+            resultFactory,
+            new PaddedBufferedBlockCipher(
+                new CBCBlockCipher(new AESEngine()),
+                new PKCS7Padding()
+            )
         );
-        this.blockMac = this.finalMac = null;
-        this.isInitialized = this.isHeaderSent = this.isFinalized = false;
-        this.result = null;
     }
 
     /**
@@ -335,29 +334,17 @@ public class EncryptCipher implements CipherInterface
 
         try {
             this.cipher.doFinal(output, ciphertextOffset);
-        } catch (DataLengthException e) {
-            throw new OutputSizeException(
-                output.length - outputOffset,
-                outputSize,
-                e
-            );
         } catch (InvalidCipherTextException e) {
             throw new RuntimeException(e);
         }
 
-        int ciphertextSize;
-        if (outputSize > 0) {
-            ciphertextSize = outputSize - this.finalMac.getMacSize();
-
-            if (!this.isHeaderSent) {
-                this.isHeaderSent = true;
-                ciphertextSize -= 18;
-            }
-
-            this.authenticate(output, ciphertextOffset, ciphertextSize);
-        } else {
-            ciphertextSize = 0;
+        int ciphertextSize = outputSize - this.finalMac.getMacSize();
+        if (!this.isHeaderSent) {
+            this.isHeaderSent = true;
+            ciphertextSize -= 18;
         }
+
+        this.authenticate(output, ciphertextOffset, ciphertextSize);
 
         byte[] mac = new byte[this.finalMac.getMacSize()];
         this.finalMac.doFinal(mac, 0);
@@ -455,6 +442,26 @@ public class EncryptCipher implements CipherInterface
     }
 
     /**
+     * Create a new encrypt cipher.
+     *
+     * @param randomSource  The random source to use.
+     * @param resultFactory The result factory to use.
+     * @param cipher        The internal cipher to use.
+     */
+    EncryptCipher(
+        final RandomSourceInterface randomSource,
+        final CipherResultFactoryInterface resultFactory,
+        final BufferedBlockCipher cipher
+    ) {
+        this.randomSource = randomSource;
+        this.resultFactory = resultFactory;
+        this.cipher = cipher;
+        this.blockMac = this.finalMac = null;
+        this.isInitialized = this.isHeaderSent = this.isFinalized = false;
+        this.result = null;
+    }
+
+    /**
      * Prepend the header to output if necessary.
      *
      * @param output       The space for any output that might be produced.
@@ -468,10 +475,6 @@ public class EncryptCipher implements CipherInterface
     ) {
         if (this.isHeaderSent) {
             return 0;
-        }
-
-        if (output.length < outputOffset + 18) {
-            throw new DataLengthException();
         }
 
         output[outputOffset] = output[outputOffset + 1] = 1;
@@ -517,7 +520,7 @@ public class EncryptCipher implements CipherInterface
 
     final private RandomSourceInterface randomSource;
     final private CipherResultFactoryInterface resultFactory;
-    final private PaddedBufferedBlockCipher cipher;
+    final private BufferedBlockCipher cipher;
     private byte[] iv;
     private HMac blockMac;
     private HMac finalMac;
