@@ -504,7 +504,13 @@ public class EncryptCipher implements CipherInterface
 
             System.arraycopy(mac, 0, output, (18 * i) + 16 + offset, 2);
             if (i > 0) {
-                System.arraycopy(output, (16 * i) + offset, output, (18 * i) + offset, 16);
+                System.arraycopy(
+                    output,
+                    (16 * i) + offset,
+                    output,
+                    (18 * i) + offset,
+                    16
+                );
             }
         }
     }

@@ -9,6 +9,8 @@
 
 package co.lqnt.lockbox.cipher;
 
+import co.lqnt.lockbox.cipher.exception.CipherFinalizedException;
+import co.lqnt.lockbox.cipher.exception.CipherNotInitializedException;
 import co.lqnt.lockbox.cipher.exception.UnsupportedCipherParametersException;
 import co.lqnt.lockbox.cipher.parameters.CipherParametersInterface;
 import co.lqnt.lockbox.cipher.parameters.EncryptParameters;
@@ -37,7 +39,9 @@ public class EncryptCipherTest
         
         this.bytes16 = Bytes.asList("1234567890123456".getBytes(Charset.forName("US-ASCII")));
         this.bytes28 = Bytes.asList("1234567890123456789012345678".getBytes(Charset.forName("US-ASCII")));
+        this.bytes32 = Bytes.asList("12345678901234567890123456789012".getBytes(Charset.forName("US-ASCII")));
         this.key = new Key(this.bytes16, this.bytes28);
+        this.keyAlternate = new Key(this.bytes32, this.bytes32);
         this.parameters = new EncryptParameters(this.key, this.bytes16);
         this.parametersDefaults = new EncryptParameters(this.key);
         this.parametersInvalid = Mockito.mock(CipherParametersInterface.class);
@@ -215,12 +219,143 @@ public class EncryptCipherTest
         Assert.assertSame(this.cipher.result().get().type(), CipherResultType.SUCCESS);
     }
 
+    @Test
+    public void testCipherBlockByBlockProcessThenFinalize()
+    {
+        this.cipher.initialize(this.parameters);
+        byte[] input = "foobarbazquxdoom".getBytes(Charset.forName("US-ASCII"));
+        byte[] output = new byte[this.cipher.finalOutputSize(input.length * 2)];
+        int outputOffset = 0;
+        outputOffset += this.cipher.process(input, 0, input.length, output, outputOffset);
+        this.cipher.finalize(input, 0, input.length, output, outputOffset);
+        
+        Assert.assertEquals(
+            this.base64Url.encode(output),
+            "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARu0_Bk3cPXHsLggdoFLPnlwR29pd_lX36Diz3sv2v6sIsAmdbSuDnDnVctQhnxXOgECTCSb8G-xnE_kmnhWk432g"
+        );
+        Assert.assertTrue(this.cipher.isFinalized());
+        Assert.assertTrue(this.cipher.result().isPresent());
+        Assert.assertSame(this.cipher.result().get().type(), CipherResultType.SUCCESS);
+    }
+
+    @Test
+    public void testInitializeAfterUse()
+    {
+        byte[] input = "foobarbazquxdoomsplat".getBytes(Charset.forName("US-ASCII"));
+        this.cipher.initialize(this.keyAlternate);
+        byte[] output = new byte[this.cipher.finalOutputSize(input.length)];
+        this.cipher.process(input, 0, input.length, output, 0);
+        this.cipher.initialize(this.parameters);
+        output = new byte[this.cipher.finalOutputSize(input.length)];
+        this.cipher.finalize(input, 0, input.length, output, 0);
+        
+        Assert.assertEquals(
+            this.base64Url.encode(output),
+            "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
+        );
+        Assert.assertTrue(this.cipher.isFinalized());
+        Assert.assertTrue(this.cipher.result().isPresent());
+        Assert.assertSame(this.cipher.result().get().type(), CipherResultType.SUCCESS);
+    }
+
+    @Test
+    public void testResetAfterUse()
+    {
+        this.cipher.reset();
+        byte[] input = "foobarbazquxdoomsplat".getBytes(Charset.forName("US-ASCII"));
+        this.cipher.initialize(this.parameters);
+        byte[] output = new byte[this.cipher.finalOutputSize(input.length)];
+        this.cipher.process(input, 0, input.length, output, 0);
+        this.cipher.reset();
+        this.cipher.finalize(input, 0, input.length, output, 0);
+        
+        Assert.assertEquals(
+            this.base64Url.encode(output),
+            "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
+        );
+        Assert.assertTrue(this.cipher.isFinalized());
+        Assert.assertTrue(this.cipher.result().isPresent());
+        Assert.assertSame(this.cipher.result().get().type(), CipherResultType.SUCCESS);
+    }
+
+    @Test(expectedExceptions = CipherNotInitializedException.class)
+    public void testProcessOutputSizeFailureNotInitialized()
+    {
+        this.cipher.processOutputSize(0);
+    }
+
+    @Test(expectedExceptions = CipherFinalizedException.class)
+    public void testProcessOutputSizeFailureFinalized()
+    {
+        this.cipher.initialize(this.parameters);
+        byte[] output = new byte[this.cipher.finalOutputSize(0)];
+        this.cipher.finalize(output, 0);
+        
+        this.cipher.processOutputSize(0);
+    }
+
+    @Test(expectedExceptions = CipherNotInitializedException.class)
+    public void testProcessFailureNotInitialized()
+    {
+        byte[] input = new byte[0];
+        byte[] output = new byte[0];
+        
+        this.cipher.process(input, 0, 0, output, 0);
+    }
+
+    @Test(expectedExceptions = CipherFinalizedException.class)
+    public void testProcessFailureFinalized()
+    {
+        byte[] input = new byte[0];
+        this.cipher.initialize(this.parameters);
+        byte[] output = new byte[this.cipher.finalOutputSize(0)];
+        this.cipher.finalize(output, 0);
+        
+        this.cipher.process(input, 0, 0, output, 0);
+    }
+
+    @Test(expectedExceptions = CipherNotInitializedException.class)
+    public void testFinalOutputSizeFailureNotInitialized()
+    {
+        this.cipher.finalOutputSize(0);
+    }
+
+    @Test(expectedExceptions = CipherFinalizedException.class)
+    public void testFinalOutputSizeFailureFinalized()
+    {
+        this.cipher.initialize(this.parameters);
+        byte[] output = new byte[this.cipher.finalOutputSize(0)];
+        this.cipher.finalize(output, 0);
+        
+        this.cipher.finalOutputSize(0);
+    }
+
+    @Test(expectedExceptions = CipherNotInitializedException.class)
+    public void testFinalizeFailureNotInitialized()
+    {
+        byte[] output = new byte[0];
+        
+        this.cipher.finalize(output, 0);
+    }
+
+    @Test(expectedExceptions = CipherFinalizedException.class)
+    public void testFinalizeFailureFinalized()
+    {
+        this.cipher.initialize(this.parameters);
+        byte[] output = new byte[this.cipher.finalOutputSize(0)];
+        this.cipher.finalize(output, 0);
+        
+        this.cipher.finalize(output, 0);
+    }
+
     private EncryptCipher cipher;
     final private RandomSourceInterface randomSource;
     final private CipherResultFactoryInterface resultFactory;
     final private List<Byte> bytes16;
     final private List<Byte> bytes28;
+    final private List<Byte> bytes32;
     final private KeyInterface key;
+    final private KeyInterface keyAlternate;
     final private CipherParametersInterface parameters;
     final private CipherParametersInterface parametersDefaults;
     final private CipherParametersInterface parametersInvalid;
