@@ -28,6 +28,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.util.Arrays;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -40,7 +41,7 @@ public class EncryptCipherTest
     {
         this.randomSource = Mockito.mock(RandomSourceInterface.class);
         this.resultFactory = new CipherResultFactory();
-        
+
         this.bytes16 = Bytes.asList("1234567890123456".getBytes(Charset.forName("US-ASCII")));
         this.bytes24 = Bytes.asList("123456789012345678901234".getBytes(Charset.forName("US-ASCII")));
         this.bytes28 = Bytes.asList("1234567890123456789012345678".getBytes(Charset.forName("US-ASCII")));
@@ -53,7 +54,7 @@ public class EncryptCipherTest
         this.parametersDefaults = new EncryptParameters(this.key);
         this.parametersInvalid = Mockito.mock(CipherParametersInterface.class);
         this.base64Url = BaseEncoding.base64Url().omitPadding();
-        
+
         Mockito.when(this.randomSource.generate(16)).thenReturn(this.bytes16);
     }
 
@@ -74,7 +75,7 @@ public class EncryptCipherTest
     public void testConstructorDefaults()
     {
         this.cipher = new EncryptCipher();
-        
+
         Assert.assertSame(this.cipher.randomSource(), SecureRandom.instance());
         Assert.assertSame(this.cipher.resultFactory(), CipherResultFactory.instance());
     }
@@ -83,9 +84,9 @@ public class EncryptCipherTest
     public void testIsInitialized()
     {
         Assert.assertFalse(this.cipher.isInitialized());
-        
+
         this.cipher.initialize(this.parameters);
-        
+
         Assert.assertTrue(this.cipher.isInitialized());
     }
 
@@ -95,7 +96,7 @@ public class EncryptCipherTest
         this.cipher.initialize(this.parametersInvalid);
     }
 
-    @DataProvider(name = "cipherData")
+    @DataProvider
     public Object[][] cipherData()
     {
         return new Object[][]{
@@ -126,7 +127,7 @@ public class EncryptCipherTest
         byte[] input = "foobarbazquxdoomsplat".getBytes(Charset.forName("US-ASCII"));
         byte[] output = new byte[this.cipher.finalOutputSize(input.length)];
         this.cipher.finalize(input, 0, input.length, output, 0);
-        
+
         Assert.assertEquals(this.base64Url.encode(output), expected);
         Assert.assertTrue(this.cipher.isFinalized());
         Assert.assertTrue(this.cipher.result().isPresent());
@@ -140,7 +141,7 @@ public class EncryptCipherTest
         byte[] input = "foobarbazquxdoomsplat".getBytes(Charset.forName("US-ASCII"));
         byte[] output = new byte[this.cipher.finalOutputSize(input.length)];
         this.cipher.finalize(input, 0, input.length, output, 0);
-        
+
         Assert.assertEquals(
             this.base64Url.encode(output),
             "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
@@ -157,7 +158,7 @@ public class EncryptCipherTest
         byte[] input = "foobarbazquxdoomsplat".getBytes(Charset.forName("US-ASCII"));
         byte[] output = new byte[this.cipher.finalOutputSize(input.length)];
         this.cipher.finalize(input, 0, input.length, output, 0);
-        
+
         Assert.assertEquals(
             this.base64Url.encode(output),
             "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
@@ -174,7 +175,7 @@ public class EncryptCipherTest
         byte[] input = "foobarbazquxdoomsplat".getBytes(Charset.forName("US-ASCII"));
         byte[] output = new byte[this.cipher.finalOutputSize(input.length)];
         this.cipher.finalize(input, 0, input.length, output, 0);
-        
+
         Assert.assertEquals(
             this.base64Url.encode(output),
             "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
@@ -190,7 +191,7 @@ public class EncryptCipherTest
         this.cipher.initialize(this.parameters);
         byte[] output = new byte[this.cipher.finalOutputSize(0)];
         this.cipher.finalize(output, 0);
-        
+
         Assert.assertEquals(
             this.base64Url.encode(output),
             "AQExMjM0NTY3ODkwMTIzNDU2BsV8no6a9yLYUT6rbu2PdNC4LItQ9m-F9dQ65M-pun4OnZkLrHT8zDDw0sE4Dg"
@@ -211,7 +212,7 @@ public class EncryptCipherTest
             outputOffset += this.cipher.process(input[i], output, outputOffset);
         }
         this.cipher.finalize(input[input.length - 1], output, outputOffset);
-        
+
         Assert.assertEquals(
             this.base64Url.encode(output),
             "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
@@ -234,7 +235,7 @@ public class EncryptCipherTest
         outputOffset += this.cipher.process("dooms".getBytes(Charset.forName("US-ASCII")), 0, 5, output, outputOffset);
         outputOffset += this.cipher.process("plat".getBytes(Charset.forName("US-ASCII")), 0, 4, output, outputOffset);
         this.cipher.finalize(output, outputOffset);
-        
+
         Assert.assertEquals(
             this.base64Url.encode(output),
             "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
@@ -254,7 +255,7 @@ public class EncryptCipherTest
         outputOffset += this.cipher.process(input, 0, input.length, output, outputOffset);
         outputOffset += this.cipher.process(input, 0, input.length, output, outputOffset);
         this.cipher.finalize(output, outputOffset);
-        
+
         Assert.assertEquals(
             this.base64Url.encode(output),
             "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARu0_Bk3cPXHsLggdoFLPnlwR29pd_lX36Diz3sv2v6sIsAmdbSuDnDnVctQhnxXOgECTCSb8G-xnE_kmnhWk432g"
@@ -273,7 +274,7 @@ public class EncryptCipherTest
         int outputOffset = 0;
         outputOffset += this.cipher.process(input, 0, input.length, output, outputOffset);
         this.cipher.finalize(input, 0, input.length, output, outputOffset);
-        
+
         Assert.assertEquals(
             this.base64Url.encode(output),
             "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARu0_Bk3cPXHsLggdoFLPnlwR29pd_lX36Diz3sv2v6sIsAmdbSuDnDnVctQhnxXOgECTCSb8G-xnE_kmnhWk432g"
@@ -293,7 +294,7 @@ public class EncryptCipherTest
         this.cipher.initialize(this.parameters);
         output = new byte[this.cipher.finalOutputSize(input.length)];
         this.cipher.finalize(input, 0, input.length, output, 0);
-        
+
         Assert.assertEquals(
             this.base64Url.encode(output),
             "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
@@ -313,7 +314,7 @@ public class EncryptCipherTest
         this.cipher.process(input, 0, input.length, output, 0);
         this.cipher.reset();
         this.cipher.finalize(input, 0, input.length, output, 0);
-        
+
         Assert.assertEquals(
             this.base64Url.encode(output),
             "AQExMjM0NTY3ODkwMTIzNDU2T5xLPdYzBeLJW8xyiDdJlARuJu2o4QnrWgwEVekzq_uQOat_qDHhGSRzIGUQo-U-BdePDs_-jLRS8U4RCmUjyg"
@@ -321,6 +322,92 @@ public class EncryptCipherTest
         Assert.assertTrue(this.cipher.isFinalized());
         Assert.assertTrue(this.cipher.result().isPresent());
         Assert.assertSame(this.cipher.result().get().type(), CipherResultType.SUCCESS);
+    }
+
+    @DataProvider
+    public Object[][] processOutputSizeData()
+    {
+        return new Object[][]{
+            {false, 0,  18},
+            {false, 16, 18},
+            {false, 17, 36},
+            {false, 32, 36},
+            {false, 33, 54},
+            {false, 48, 54},
+            {true,  0,  0},
+            {true,  16, 0},
+            {true,  17, 18},
+            {true,  32, 18},
+            {true,  33, 36},
+            {true,  48, 36},
+        };
+    }
+
+    @Test(dataProvider = "processOutputSizeData")
+    public void testProcessOutputSizeBeforeHeader(
+        final boolean isHeaderSent,
+        final int inputSize,
+        final int outputSize
+    ) {
+        this.cipher.initialize(this.parameters);
+        byte[] output;
+        if (isHeaderSent) {
+            output = new byte[this.cipher.processOutputSize(0)];
+            this.cipher.process(new byte[0], 0, 0, output, 0);
+        }
+        int actualOutputSize = this.cipher.processOutputSize(inputSize);
+        byte[] input = new byte[inputSize];
+        Arrays.fill(input, (byte) 0);
+        output = new byte[actualOutputSize];
+        this.cipher.process(input, 0, inputSize, output, 0);
+
+        Assert.assertEquals(actualOutputSize, outputSize);
+        if (outputSize > 0) {
+            Assert.assertNotEquals(output[output.length - 1], (byte) 0);
+        }
+    }
+
+    @DataProvider
+    public Object[][] finalOutputSizeData()
+    {
+        return new Object[][]{
+            {false, 0,  64},
+            {false, 15, 64},
+            {false, 16, 82},
+            {false, 31, 82},
+            {false, 32, 100},
+            {false, 47, 100},
+            {true,  0,  46},
+            {true,  15, 46},
+            {true,  16, 64},
+            {true,  31, 64},
+            {true,  32, 82},
+            {true,  47, 82},
+        };
+    }
+
+    @Test(dataProvider = "finalOutputSizeData")
+    public void testFinalOutputSizeBeforeHeader(
+        final boolean isHeaderSent,
+        final int inputSize,
+        final int outputSize
+    ) {
+        this.cipher.initialize(this.parameters);
+        byte[] output;
+        if (isHeaderSent) {
+            output = new byte[this.cipher.processOutputSize(0)];
+            this.cipher.process(new byte[0], 0, 0, output, 0);
+        }
+        int actualOutputSize = this.cipher.finalOutputSize(inputSize);
+        byte[] input = new byte[inputSize];
+        Arrays.fill(input, (byte) 0);
+        output = new byte[actualOutputSize];
+        this.cipher.finalize(input, 0, inputSize, output, 0);
+
+        Assert.assertEquals(actualOutputSize, outputSize);
+        if (outputSize > 0) {
+            Assert.assertNotEquals(output[output.length - 1], (byte) 0);
+        }
     }
 
     @Test(expectedExceptions = CipherNotInitializedException.class)
@@ -335,7 +422,7 @@ public class EncryptCipherTest
         this.cipher.initialize(this.parameters);
         byte[] output = new byte[this.cipher.finalOutputSize(0)];
         this.cipher.finalize(output, 0);
-        
+
         this.cipher.processOutputSize(0);
     }
 
@@ -344,7 +431,7 @@ public class EncryptCipherTest
     {
         byte[] input = new byte[0];
         byte[] output = new byte[0];
-        
+
         this.cipher.process(input, 0, 0, output, 0);
     }
 
@@ -355,7 +442,7 @@ public class EncryptCipherTest
         this.cipher.initialize(this.parameters);
         byte[] output = new byte[this.cipher.finalOutputSize(0)];
         this.cipher.finalize(output, 0);
-        
+
         this.cipher.process(input, 0, 0, output, 0);
     }
 
@@ -365,7 +452,7 @@ public class EncryptCipherTest
         byte[] input = "foobarbazquxdoomsplat".getBytes(Charset.forName("US-ASCII"));
         this.cipher.initialize(this.parameters);
         byte[] output = new byte[this.cipher.processOutputSize(input.length) - 1];
-        
+
         this.cipher.process(input, 0, input.length, output, 0);
     }
 
@@ -381,7 +468,7 @@ public class EncryptCipherTest
         this.cipher.initialize(this.parameters);
         byte[] output = new byte[this.cipher.finalOutputSize(0)];
         this.cipher.finalize(output, 0);
-        
+
         this.cipher.finalOutputSize(0);
     }
 
@@ -389,7 +476,7 @@ public class EncryptCipherTest
     public void testFinalizeFailureNotInitialized()
     {
         byte[] output = new byte[0];
-        
+
         this.cipher.finalize(output, 0);
     }
 
@@ -399,7 +486,7 @@ public class EncryptCipherTest
         this.cipher.initialize(this.parameters);
         byte[] output = new byte[this.cipher.finalOutputSize(0)];
         this.cipher.finalize(output, 0);
-        
+
         this.cipher.finalize(output, 0);
     }
 
@@ -409,7 +496,7 @@ public class EncryptCipherTest
         byte[] input = "foobarbazquxdoomsplat".getBytes(Charset.forName("US-ASCII"));
         this.cipher.initialize(this.parameters);
         byte[] output = new byte[this.cipher.finalOutputSize(input.length) - 1];
-        
+
         this.cipher.finalize(input, 0, input.length, output, 0);
     }
 
@@ -422,7 +509,7 @@ public class EncryptCipherTest
         this.cipher = new EncryptCipher(this.randomSource, this.resultFactory, internalCipher);
         this.cipher.initialize(this.parameters);
         byte[] output = new byte[this.cipher.finalOutputSize(0)];
-        
+
         this.cipher.finalize(output, 0);
     }
 

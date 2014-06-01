@@ -198,7 +198,9 @@ public class EncryptCipher implements CipherInterface
         }
 
         int size = this.cipher.getUpdateOutputSize(inputSize) / 16 * 18;
-
+        if (size < 0) {
+            size = 0;
+        }
         if (!this.isHeaderSent) {
             size += 18;
         }
